@@ -29,6 +29,16 @@
       z-index: 9999;
     }
 
+    #cgu-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
     #cgu-content {
       background-color: #1c1c1c;
       padding: 30px;
@@ -36,6 +46,7 @@
       max-width: 600px;
       text-align: center;
       box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+      z-index: 1;
     }
 
     #cgu-buttons {
@@ -61,8 +72,8 @@
 </head>
 <body>
 
-<!-- Modal CGU -->
 <div id="cgu-modal">
+  <canvas id="cgu-background"></canvas>
   <div id="cgu-content">
     <h2>Conditions Générales d'Utilisation</h2>
     <p>En accédant à cette animation, vous acceptez les conditions suivantes :<br>
@@ -75,21 +86,36 @@
   </div>
 </div>
 
-<!-- Canvas -->
 <canvas id="canvas" style="display: none;"></canvas>
+
+<audio id="sound" src="2019.mp3" preload="auto"></audio>
 
 <script>
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
 
-  const colors = [
-    "#00A993", "#E68B4A", "#7A1619", "#362777", "#EB7AAE",
-    "#0069AA", "#DC0C15", "#E03A8D", "#FFFFFF", "#2A4899"
-  ];
+  const cguCanvas = document.getElementById("cgu-background");
+  const cguCtx = cguCanvas.getContext("2d");
 
-  const radius = 20;
+  const sound = document.getElementById("sound");
+
+  const colors = ["#00A993", "#E68B4A", "#7A1619", "#362777", "#EB7AAE",
+    "#0069AA", "#DC0C15", "#E03A8D", "#FFFFFF", "#2A4899"];
+
+  const gradientMap = {
+    "#00A993": "#E68B4A", "#E68B4A": "#7A1619", "#7A1619": "#362777",
+    "#362777": "#EB7AAE", "#EB7AAE": "#0069AA", "#0069AA": "#DC0C15",
+    "#DC0C15": "#E03A8D", "#E03A8D": "#FFFFFF", "#FFFFFF": "#2A4899",
+    "#2A4899": "#00A993"
+  };
+
+  const radius = 22;
   const diameter = radius * 2;
   let colorGrid = [];
+  let specialCircles = [];
+  let hiddenCircles = new Set();
+  let disappearing = [];
+  const specialLinks = ["page1.html", "page2.html", "page3.html", "page4.html"];
 
   function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -112,7 +138,6 @@
         }
 
         colorGrid[y][x] = chosenColor;
-        drawCircle(x * diameter + radius, y * diameter + radius, chosenColor);
       }
     }
   }
@@ -132,11 +157,172 @@
     return neighborColors;
   }
 
-  function drawCircle(x, y, color) {
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    ctx.fill();
+  function chooseSpecialCircles() {
+    specialCircles = [];
+    const total = colorGrid.length * colorGrid[0].length;
+    const selectedIndices = new Set();
+    while (selectedIndices.size < 4) {
+      const index = Math.floor(Math.random() * total);
+      selectedIndices.add(index);
+    }
+
+    let count = 0;
+    for (let y = 0; y < colorGrid.length; y++) {
+      for (let x = 0; x < colorGrid[0].length; x++) {
+        const index = y * colorGrid[0].length + x;
+        if (selectedIndices.has(index)) {
+          specialCircles.push({ x, y, link: specialLinks[count++] });
+        }
+      }
+    }
+  }
+
+  function animate(time) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const t = time / 1000;
+
+    for (let y = 0; y < colorGrid.length; y++) {
+      for (let x = 0; x < colorGrid[0].length; x++) {
+        const key = `${x},${y}`;
+        const anim = disappearing.find(a => a.x === x && a.y === y);
+
+        if (hiddenCircles.has(key) && !anim) continue;
+
+        const baseColor = colorGrid[y][x];
+        const cx = x * diameter + radius;
+        const cy = y * diameter + radius;
+
+        let r = radius;
+        if (anim) {
+          const elapsed = time - anim.start;
+          r *= 1 - elapsed / 400;
+          if (elapsed > 400) {
+            hiddenCircles.add(key);
+            disappearing = disappearing.filter(a => a !== anim);
+            continue;
+          }
+        }
+
+        const isSpecial = specialCircles.some(c => c.x === x && c.y === y);
+        if (isSpecial) {
+          const pulse = 0.5 + 0.4 * Math.sin(t * 8);
+          const gradient = ctx.createRadialGradient(cx, cy, r * pulse, cx, cy, r);
+          gradient.addColorStop(0, "#FFFFFF");
+          gradient.addColorStop(1, "#CCCCCC");
+          ctx.fillStyle = gradient;
+        } else {
+          const endColor = gradientMap[baseColor.toUpperCase()] || baseColor;
+          const pulse = 0.3 + 0.2 * Math.sin(t + (x + y) / 5);
+          const gradient = ctx.createRadialGradient(cx, cy, r * pulse, cx, cy, r);
+          gradient.addColorStop(0, baseColor);
+          gradient.addColorStop(1, endColor);
+          ctx.fillStyle = gradient;
+        }
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  canvas.addEventListener("click", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    const col = Math.floor(mx / diameter);
+    const row = Math.floor(my / diameter);
+
+    for (const { x, y, link } of specialCircles) {
+      const cx = x * diameter + radius;
+      const cy = y * diameter + radius;
+      const dist = Math.hypot(mx - cx, my - cy);
+      if (dist < radius) {
+        window.location.href = link;
+        return;
+      }
+    }
+
+    const color = colorGrid[row]?.[col];
+    if (!color) return;
+
+    const toHide = new Set();
+    const visited = new Set();
+    const queue = [[col, row]];
+
+    while (queue.length) {
+      const [x, y] = queue.shift();
+      const key = `${x},${y}`;
+      if (visited.has(key)) continue;
+      visited.add(key);
+
+      if (colorGrid[y]?.[x] === color && !hiddenCircles.has(key)) {
+        toHide.add(key);
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dx !== 0 || dy !== 0) queue.push([x + dx, y + dy]);
+          }
+        }
+      }
+    }
+
+    if (toHide.size > 0) {
+      sound.currentTime = 0;
+      sound.play();
+      const now = performance.now();
+      for (const key of toHide) {
+        const [x, y] = key.split(',').map(Number);
+        disappearing.push({ x, y, start: now });
+      }
+    }
+  });
+
+  function initCguDecor() {
+    cguCanvas.width = window.innerWidth;
+    cguCanvas.height = window.innerHeight;
+    const spacing = 60;
+    const bounds = document.getElementById("cgu-content").getBoundingClientRect();
+    const margin = 50;
+    const startX = bounds.left - margin;
+    const endX = bounds.right + margin;
+    const startY = bounds.top - margin;
+    const endY = bounds.bottom + margin;
+    const cguCircles = [];
+
+    for (let y = startY; y < endY; y += spacing) {
+      for (let x = startX; x < endX; x += spacing) {
+        if (x < bounds.left || x > bounds.right || y < bounds.top || y > bounds.bottom) {
+          const baseColor = colors[Math.floor(Math.random() * colors.length)];
+          const endColor = gradientMap[baseColor.toUpperCase()] || baseColor;
+          cguCircles.push({ x, y, baseColor, endColor, pulseOffset: Math.random() * Math.PI * 2 });
+        }
+      }
+    }
+
+    function animateCguDecor(time) {
+      cguCtx.clearRect(0, 0, cguCanvas.width, cguCanvas.height);
+      const t = time / 1000;
+      for (const circle of cguCircles) {
+        const pulse = 0.3 + 0.2 * Math.sin(t + circle.pulseOffset);
+        const gradient = cguCtx.createRadialGradient(
+          circle.x, circle.y, radius * pulse,
+          circle.x, circle.y, radius
+        );
+        gradient.addColorStop(0, circle.baseColor);
+        gradient.addColorStop(1, circle.endColor);
+
+        cguCtx.beginPath();
+        cguCtx.arc(circle.x, circle.y, radius, 0, Math.PI * 2);
+        cguCtx.fillStyle = gradient;
+        cguCtx.fill();
+      }
+      requestAnimationFrame(animateCguDecor);
+    }
+
+    requestAnimationFrame(animateCguDecor);
   }
 
   function acceptCGU() {
@@ -144,6 +330,8 @@
     canvas.style.display = "block";
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
+    chooseSpecialCircles();
+    requestAnimationFrame(animate);
   }
 
   function refuseCGU() {
@@ -152,6 +340,17 @@
       <p>Vous devez accepter les conditions pour accéder à l'expérience.</p>
     `;
   }
+
+  window.addEventListener("load", () => {
+    initCguDecor();
+  });
+
+  window.addEventListener("resize", () => {
+    if (document.getElementById("cgu-modal").style.display !== "none") {
+      initCguDecor();
+    }
+  });
 </script>
+
 </body>
 </html>

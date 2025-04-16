@@ -174,42 +174,45 @@
   let linearGradientZones = new Map();
 
   function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+  const dpr = window.devicePixelRatio || 1; // Récupérer le ratio de pixels de l'appareil
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  canvas.style.width = `${window.innerWidth}px`;
+  canvas.style.height = `${window.innerHeight}px`;
+  ctx.scale(dpr, dpr); // Adapter le contexte au ratio de pixels
 
-    // Ajuster dynamiquement le rayon en fonction de la taille de l'écran
-    if (isMobile) {
-      // Sur les petits écrans, s'assurer que nous avons au moins 12-15 cercles en largeur
-      const desiredCirclesWidth = window.innerWidth < 380 ? 12 : 15;
-      radius = Math.min(16, Math.floor(window.innerWidth / desiredCirclesWidth / 2));
-    } else {
-      radius = baseRadius;
-    }
-    
-    diameter = radius * 2;
-
-    const cols = Math.ceil(canvas.width / diameter);
-    const rows = Math.ceil(canvas.height / diameter);
-
-    colorGrid = new Array(rows).fill().map(() => new Array(cols).fill(null));
-
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        const neighbors = getNeighborColors(x, y);
-        let chosenColor;
-
-        if (neighbors.length > 0 && Math.random() < 0.8) {
-          chosenColor = neighbors[Math.floor(Math.random() * neighbors.length)];
-        } else {
-          chosenColor = colors[Math.floor(Math.random() * colors.length)];
-        }
-
-        colorGrid[y][x] = chosenColor;
-      }
-    }
-
-    chooseLinearGradientZones();
+  // Ajuster dynamiquement le rayon en fonction de la taille de l'écran
+  if (isMobile) {
+    const desiredCirclesWidth = window.innerWidth < 380 ? 12 : 15;
+    radius = Math.min(16, Math.floor(window.innerWidth / desiredCirclesWidth / 2));
+  } else {
+    radius = baseRadius;
   }
+
+  diameter = radius * 2;
+
+  const cols = Math.ceil(canvas.width / diameter / dpr); // Diviser par le ratio pour compenser
+  const rows = Math.ceil(canvas.height / diameter / dpr);
+
+  colorGrid = new Array(rows).fill().map(() => new Array(cols).fill(null));
+
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      const neighbors = getNeighborColors(x, y);
+      let chosenColor;
+
+      if (neighbors.length > 0 && Math.random() < 0.8) {
+        chosenColor = neighbors[Math.floor(Math.random() * neighbors.length)];
+      } else {
+        chosenColor = colors[Math.floor(Math.random() * colors.length)];
+      }
+
+      colorGrid[y][x] = chosenColor;
+    }
+  }
+
+  chooseLinearGradientZones();
+}
 
   function getNeighborColors(cx, cy) {
     const neighborColors = [];

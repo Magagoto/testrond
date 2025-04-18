@@ -111,6 +111,31 @@
       max-width: 200px;
       display: none;
     }
+    
+    /* Style pour l'affichage du numéro et des coordonnées du cercle */
+    #circle-number-display {
+      display: none;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: white;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      color: black;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      z-index: 1000;
+      min-width: 220px;
+      text-align: left;
+      line-height: 1.5;
+    }
+    
+    .coord-label {
+      color: #555;
+      font-weight: normal;
+      margin-right: 5px;
+    }
   </style>
 </head>
 <body>
@@ -133,6 +158,13 @@
   Touchez les cercles pour les faire disparaître
 </div>
 
+<!-- Mise à jour du div pour afficher le numéro et les coordonnées du cercle -->
+<div id="circle-number-display">
+  <div>Cercle #<span id="circle-number">0</span></div>
+  <div><span class="coord-label">Lat:</span><span id="circle-lat">0.0000</span></div>
+  <div><span class="coord-label">Long:</span><span id="circle-long">0.0000</span></div>
+</div>
+
 <canvas id="canvas" style="display: none;"></canvas>
 <audio id="sound" src="2019.mp3" preload="auto"></audio>
 
@@ -145,6 +177,26 @@
 
   const sound = document.getElementById("sound");
   const mobileInfo = document.getElementById("mobile-info");
+  
+  // Éléments pour l'affichage du numéro et des coordonnées du cercle
+  const numberDisplay = document.getElementById('circle-number-display');
+  const numberSpan = document.getElementById('circle-number');
+  const latSpan = document.getElementById('circle-lat');
+  const longSpan = document.getElementById('circle-long');
+
+  // Variables pour le système de numérotation et coordonnées des cercles
+  let circleMap = new Map(); // Pour stocker les numéros des cercles
+  let circleCoords = new Map(); // Pour stocker les coordonnées géographiques
+  let circleCounter = 1; // Compteur pour assigner des numéros aux cercles
+
+  // Limites géographiques d'Orléans (approximatives)
+  // Centre approximatif d'Orléans : 47.9025, 1.9046
+  const orleansLimits = {
+    minLat: 47.8700, // Sud
+    maxLat: 47.9400, // Nord
+    minLong: 1.8500, // Ouest
+    maxLong: 1.9600  // Est
+  };
 
   // Configuration responsive
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -173,46 +225,59 @@
   
   let linearGradientZones = new Map();
 
+  // Fonction pour générer des coordonnées aléatoires d'Orléans
+  function generateRandomOrleansCoords() {
+    const lat = orleansLimits.minLat + Math.random() * (orleansLimits.maxLat - orleansLimits.minLat);
+    const long = orleansLimits.minLong + Math.random() * (orleansLimits.maxLong - orleansLimits.minLong);
+    return {
+      lat: parseFloat(lat.toFixed(6)),  // 6 décimales pour la précision
+      long: parseFloat(long.toFixed(6))
+    };
+  }
+
   function resizeCanvas() {
-  const dpr = window.devicePixelRatio || 1; // Récupérer le ratio de pixels de l'appareil
-  canvas.width = window.innerWidth * dpr;
-  canvas.height = window.innerHeight * dpr;
-  canvas.style.width = `${window.innerWidth}px`;
-  canvas.style.height = `${window.innerHeight}px`;
-  ctx.scale(dpr, dpr); // Adapter le contexte au ratio de pixels
+    const dpr = window.devicePixelRatio || 1; // Récupérer le ratio de pixels de l'appareil
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    canvas.style.width = `${window.innerWidth}px`;
+    canvas.style.height = `${window.innerHeight}px`;
+    ctx.scale(dpr, dpr); // Adapter le contexte au ratio de pixels
 
-  // Ajuster dynamiquement le rayon en fonction de la taille de l'écran
-  if (isMobile) {
-    const desiredCirclesWidth = window.innerWidth < 380 ? 12 : 15;
-    radius = Math.min(16, Math.floor(window.innerWidth / desiredCirclesWidth / 2));
-  } else {
-    radius = baseRadius;
-  }
-
-  diameter = radius * 2;
-
-  const cols = Math.ceil(canvas.width / diameter / dpr); // Diviser par le ratio pour compenser
-  const rows = Math.ceil(canvas.height / diameter / dpr);
-
-  colorGrid = new Array(rows).fill().map(() => new Array(cols).fill(null));
-
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-      const neighbors = getNeighborColors(x, y);
-      let chosenColor;
-
-      if (neighbors.length > 0 && Math.random() < 0.8) {
-        chosenColor = neighbors[Math.floor(Math.random() * neighbors.length)];
-      } else {
-        chosenColor = colors[Math.floor(Math.random() * colors.length)];
-      }
-
-      colorGrid[y][x] = chosenColor;
+    // Ajuster dynamiquement le rayon en fonction de la taille de l'écran
+    if (isMobile) {
+      const desiredCirclesWidth = window.innerWidth < 380 ? 12 : 15;
+      radius = Math.min(16, Math.floor(window.innerWidth / desiredCirclesWidth / 2));
+    } else {
+      radius = baseRadius;
     }
-  }
 
-  chooseLinearGradientZones();
-}
+    diameter = radius * 2;
+
+    const cols = Math.ceil(canvas.width / diameter / dpr); // Diviser par le ratio pour compenser
+    const rows = Math.ceil(canvas.height / diameter / dpr);
+
+    colorGrid = new Array(rows).fill().map(() => new Array(cols).fill(null));
+
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const neighbors = getNeighborColors(x, y);
+        let chosenColor;
+
+        if (neighbors.length > 0 && Math.random() < 0.8) {
+          chosenColor = neighbors[Math.floor(Math.random() * neighbors.length)];
+        } else {
+          chosenColor = colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        colorGrid[y][x] = chosenColor;
+      }
+    }
+
+    chooseLinearGradientZones();
+    
+    // Réinitialiser la numérotation et les coordonnées des cercles après redimensionnement
+    setTimeout(assignCircleNumbersAndCoords, 100);
+  }
 
   function getNeighborColors(cx, cy) {
     const neighborColors = [];
@@ -431,6 +496,68 @@
     }
   }
 
+  // Fonction pour assigner des numéros et des coordonnées à tous les cercles visibles
+  function assignCircleNumbersAndCoords() {
+    circleMap.clear();
+    circleCoords.clear();
+    circleCounter = 1;
+    
+    for (let y = 0; y < colorGrid.length; y++) {
+      for (let x = 0; x < colorGrid[0].length; x++) {
+        const key = `${x},${y}`;
+        if (!hiddenCircles.has(key)) {
+          circleMap.set(key, circleCounter++);
+          // Générer et stocker des coordonnées aléatoires d'Orléans pour ce cercle
+          circleCoords.set(key, generateRandomOrleansCoords());
+        }
+      }
+    }
+    
+    console.log(`Total de ${circleCounter - 1} cercles numérotés avec coordonnées d'Orléans`);
+  }
+
+  // Gestionnaire d'événements pour le survol
+  function handleHover(e) {
+    e.preventDefault();
+    
+    // Déterminer les coordonnées selon le type d'événement
+    const rect = canvas.getBoundingClientRect();
+    let mx, my;
+    
+    if (e.type.startsWith("touch")) {
+      const touch = e.touches[0] || e.changedTouches[0];
+      mx = touch.clientX - rect.left;
+      my = touch.clientY - rect.top;
+    } else {
+      mx = e.clientX - rect.left;
+      my = e.clientY - rect.top;
+    }
+
+    const col = Math.floor(mx / diameter);
+    const row = Math.floor(my / diameter);
+    const key = `${col},${row}`;
+
+    // Vérifier si on survole un cercle valide
+    if (colorGrid[row]?.[col] && !hiddenCircles.has(key)) {
+      const circleNumber = circleMap.get(key);
+      const coords = circleCoords.get(key);
+      
+      if (circleNumber && coords) {
+        numberSpan.textContent = circleNumber;
+        latSpan.textContent = coords.lat.toFixed(6);
+        longSpan.textContent = coords.long.toFixed(6);
+        numberDisplay.style.display = 'block';
+      }
+    } else {
+      numberDisplay.style.display = 'none';
+    }
+  }
+
+  // Fonction pour gérer la fin du survol
+  function handleHoverEnd() {
+    numberDisplay.style.display = 'none';
+  }
+
   // Gestionnaire d'événements unifié pour les clics et les touches
   function handleInteraction(e) {
     e.preventDefault(); // Empêcher le zoom ou autres comportements par défaut sur mobile
@@ -499,6 +626,11 @@
         const [x, y] = key.split(',').map(Number);
         disappearing.push({ x, y, start: now });
       }
+      
+      // Mettre à jour la numérotation des cercles après disparition
+      setTimeout(() => {
+        assignCircleNumbersAndCoords();
+      }, 500);
     }
   }
 
@@ -580,14 +712,19 @@
     // Ajouter les gestionnaires d'événements
     if (isMobile) {
       canvas.addEventListener("touchstart", handleInteraction, { passive: false });
+      canvas.addEventListener("touchmove", handleHover, { passive: false });
+      canvas.addEventListener("touchend", handleHoverEnd);
       showMobileInfo();
     } else {
       canvas.addEventListener("click", handleInteraction);
+      canvas.addEventListener("mousemove", handleHover);
+      canvas.addEventListener("mouseout", handleHoverEnd);
     }
     
     window.addEventListener("resize", debounce(resizeCanvas, 250));
     resizeCanvas();
     chooseSpecialCircles();
+    assignCircleNumbersAndCoords(); // Numéroter les cercles et attribuer des coordonnées au démarrage
     requestAnimationFrame(optimizeRendering);
   }
 

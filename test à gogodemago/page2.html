@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Page 1</title>
+</head>
+<body style="background-color: black; color: white;">
+  <h1>Bienvenue sur la Page 2</h1>
+  <button id="deleteCirclesButton" class="delete-circles-button">Effacer les cercles</button>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const deleteButton = document.getElementById('deleteCirclesButton');
+      
+      deleteButton.addEventListener('click', function() {
+        // Marquer qu'une suppression est en attente
+        localStorage.setItem('pendingDeletion', 'true');
+        
+        // Afficher un message de confirmation
+        alert('Action enregistrée ! Retournez à la page principale pour voir les cercles disparaître.');
+        
+        // Alternative: rediriger automatiquement vers la page principale
+        // window.location.href = 'index.html'; // Décommentez cette ligne si vous préférez
+      });
+    });
+  </script>
+</body>
+<style>
+    .delete-circles-button {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 15px 30px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s, transform 0.2s;
+    }
+  
+    .delete-circles-button:hover {
+      background-color: #0056b3;
+    }
+  
+    .delete-circles-button:active {
+      transform: translateX(-50%) scale(0.95);
+    }
+  
+    
+  </style>
+  
+  
+  
+</html>
+

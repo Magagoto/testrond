@@ -2,28 +2,54 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Balle Gyro</title>
+  <title>Balle Gyroscope</title>
   <style>
     html, body {
       margin: 0;
       height: 100%;
       overflow: hidden;
       background: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
+
     #ball {
       position: absolute;
       width: 50px;
       height: 50px;
       border-radius: 50%;
-      background: #11ffcc;
+      background: #00ffcc;
+    }
+
+    #start-btn {
+      padding: 1em 2em;
+      font-size: 1.2em;
+      background: #00ffcc;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    #info {
+      position: absolute;
+      bottom: 20px;
+      color: white;
+      font-family: sans-serif;
+      font-size: 0.9em;
     }
   </style>
 </head>
 <body>
+  <button id="start-btn">Activer le gyroscope</button>
   <div id="ball"></div>
+  <div id="info"></div>
 
   <script>
     const ball = document.getElementById("ball");
+    const startBtn = document.getElementById("start-btn");
+    const info = document.getElementById("info");
 
     let posX = window.innerWidth / 2;
     let posY = window.innerHeight / 2;
@@ -35,7 +61,6 @@
     const accelerationFactor = 0.3;
 
     function updateBallPosition() {
-      // Mise à jour de la position avec la vitesse
       posX += velX;
       posY += velY;
 
@@ -56,31 +81,51 @@
         velY *= -0.7;
       }
 
-      // Appliquer friction
       velX *= friction;
       velY *= friction;
 
-      // Appliquer position
       ball.style.left = posX + "px";
       ball.style.top = posY + "px";
 
       requestAnimationFrame(updateBallPosition);
     }
 
-    // Gyroscope
-    if (window.DeviceOrientationEvent) {
+    function startGyro() {
+      // Requête de permission pour iOS
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(permissionState => {
+            if (permissionState === 'granted') {
+              enableGyro();
+              startBtn.style.display = 'none';
+              info.textContent = "Gyroscope activé ✔️";
+            } else {
+              info.textContent = "Permission refusée ❌";
+            }
+          })
+          .catch(console.error);
+      } else {
+        // Android ou navigateurs sans restriction
+        enableGyro();
+        startBtn.style.display = 'none';
+        info.textContent = "Gyroscope activé ✔️";
+      }
+    }
+
+    function enableGyro() {
       window.addEventListener("deviceorientation", (event) => {
-        const gamma = event.gamma || 0; // gauche-droite
-        const beta = event.beta || 0;   // avant-arrière
+        const gamma = event.gamma || 0;
+        const beta = event.beta || 0;
 
         velX += gamma * accelerationFactor;
         velY += beta * accelerationFactor;
       });
-    } else {
-      alert("Votre appareil ne supporte pas le gyroscope.");
+
+      updateBallPosition();
     }
 
-    requestAnimationFrame(updateBallPosition);
+    startBtn.addEventListener("click", startGyro);
   </script>
 </body>
 </html>
+

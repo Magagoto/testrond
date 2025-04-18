@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Gyro-Rond</title>
+  <title>Balle Gyro</title>
   <style>
     html, body {
       margin: 0;
@@ -16,10 +16,6 @@
       height: 50px;
       border-radius: 50%;
       background: #00ffcc;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      transition: background 0.2s;
     }
   </style>
 </head>
@@ -27,30 +23,64 @@
   <div id="ball"></div>
 
   <script>
-    const ball = document.getElementById('ball');
-    let x = window.innerWidth / 2;
-    let y = window.innerHeight / 2;
+    const ball = document.getElementById("ball");
 
+    let posX = window.innerWidth / 2;
+    let posY = window.innerHeight / 2;
+    let velX = 0;
+    let velY = 0;
+
+    const ballSize = 50;
+    const friction = 0.98;
+    const accelerationFactor = 0.3;
+
+    function updateBallPosition() {
+      // Mise à jour de la position avec la vitesse
+      posX += velX;
+      posY += velY;
+
+      // Collision avec les bords
+      if (posX <= 0) {
+        posX = 0;
+        velX *= -0.7;
+      } else if (posX >= window.innerWidth - ballSize) {
+        posX = window.innerWidth - ballSize;
+        velX *= -0.7;
+      }
+
+      if (posY <= 0) {
+        posY = 0;
+        velY *= -0.7;
+      } else if (posY >= window.innerHeight - ballSize) {
+        posY = window.innerHeight - ballSize;
+        velY *= -0.7;
+      }
+
+      // Appliquer friction
+      velX *= friction;
+      velY *= friction;
+
+      // Appliquer position
+      ball.style.left = posX + "px";
+      ball.style.top = posY + "px";
+
+      requestAnimationFrame(updateBallPosition);
+    }
+
+    // Gyroscope
     if (window.DeviceOrientationEvent) {
-      window.addEventListener('deviceorientation', (event) => {
+      window.addEventListener("deviceorientation", (event) => {
         const gamma = event.gamma || 0; // gauche-droite
         const beta = event.beta || 0;   // avant-arrière
 
-        // On applique un facteur de sensibilité
-        x += gamma * 1.5;
-        y += beta * 1.5;
-
-        // On limite le mouvement aux dimensions de l'écran
-        x = Math.max(0, Math.min(window.innerWidth - 50, x));
-        y = Math.max(0, Math.min(window.innerHeight - 50, y));
-
-        ball.style.left = `${x}px`;
-        ball.style.top = `${y}px`;
+        velX += gamma * accelerationFactor;
+        velY += beta * accelerationFactor;
       });
     } else {
-      alert("Votre appareil ne supporte pas les capteurs gyroscopiques.");
+      alert("Votre appareil ne supporte pas le gyroscope.");
     }
+
+    requestAnimationFrame(updateBallPosition);
   </script>
 </body>
 </html>
-

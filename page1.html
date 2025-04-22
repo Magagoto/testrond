@@ -42,127 +42,6 @@
       font-family: sans-serif;
       font-size: 0.9em;
     }
-    
-    /* Style pour les cages rectangulaires */
-    .cage {
-      position: absolute;
-      /* Suppression des bordures */
-      box-sizing: border-box;
-    }
-    
-    /* Cages du haut */
-    .cage-top {
-      top: 10px;
-      height: 30px;
-      width: 30%;
-    }
-    
-    #cage-top-1 {
-      left: 15%;
-    }
-    
-    #cage-top-2 {
-      right: 15%;
-    }
-    
-    /* Cages du bas */
-    .cage-bottom {
-      bottom: 10px;
-      height: 30px;
-      width: 30%;
-    }
-    
-    #cage-bottom-1 {
-      left: 15%;
-    }
-    
-    #cage-bottom-2 {
-      right: 15%;
-    }
-    
-    /* Cages latérales (3 de chaque côté) */
-    .cage-left, .cage-right {
-      width: 30px;
-      height: 15%;
-    }
-    
-    #cage-left-1 {
-      left: 10px;
-      top: 20%;
-    }
-    
-    #cage-left-2 {
-      left: 10px;
-      top: 42.5%;
-    }
-    
-    #cage-left-3 {
-      left: 10px;
-      top: 65%;
-    }
-    
-    #cage-right-1 {
-      right: 10px;
-      top: 20%;
-    }
-    
-    #cage-right-2 {
-      right: 10px;
-      top: 42.5%;
-    }
-    
-    #cage-right-3 {
-      right: 10px;
-      top: 65%;
-    }
-
-    /* Styles pour les coins des cages */
-    .cage-corner {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      background: white;
-    }
-
-    /* Coins pour les cages du haut */
-    .cage-top .corner-left {
-      top: -5px;
-      left: -5px;
-    }
-    .cage-top .corner-right {
-      top: -5px;
-      right: -5px;
-    }
-
-    /* Coins pour les cages du bas */
-    .cage-bottom .corner-left {
-      bottom: -5px;
-      left: -5px;
-    }
-    .cage-bottom .corner-right {
-      bottom: -5px;
-      right: -5px;
-    }
-
-    /* Coins pour les cages latérales gauche */
-    .cage-left .corner-top {
-      top: -5px;
-      left: -5px;
-    }
-    .cage-left .corner-bottom {
-      bottom: -5px;
-      left: -5px;
-    }
-
-    /* Coins pour les cages latérales droite */
-    .cage-right .corner-top {
-      top: -5px;
-      right: -5px;
-    }
-    .cage-right .corner-bottom {
-      bottom: -5px;
-      right: -5px;
-    }
   </style>
 </head>
 <body>
@@ -170,50 +49,20 @@
   <div id="ball"></div>
   <div id="info"></div>
   
-  <!-- Cages rectangulaires -->
-  <div id="cage-top-1" class="cage cage-top">
-    <div class="cage-corner corner-left"></div>
-    <div class="cage-corner corner-right"></div>
-  </div>
-  <div id="cage-top-2" class="cage cage-top">
-    <div class="cage-corner corner-left"></div>
-    <div class="cage-corner corner-right"></div>
-  </div>
+  <!-- Cages SVG repositionnées et correctement orientées -->
+  <img src="SVG/1.svg" alt="Cage Top 1" style="position: absolute; top: 0; left: 15%; width: 30%; height: 30px; transform: rotate(0deg);">
+  <img src="SVG/2.svg" alt="Cage Top 2" style="position: absolute; top: 0; right: 15%; width: 30%; height: 30px; transform: rotate(0deg);">
   
-  <div id="cage-bottom-1" class="cage cage-bottom">
-    <div class="cage-corner corner-left"></div>
-    <div class="cage-corner corner-right"></div>
-  </div>
-  <div id="cage-bottom-2" class="cage cage-bottom">
-    <div class="cage-corner corner-left"></div>
-    <div class="cage-corner corner-right"></div>
-  </div>
+  <img src="SVG/3.svg" alt="Cage Bottom 1" style="position: absolute; bottom: 0; left: 15%; width: 30%; height: 30px; transform: rotate(180deg);">
+  <img src="SVG/4.svg" alt="Cage Bottom 2" style="position: absolute; bottom: 0; right: 15%; width: 30%; height: 30px; transform: rotate(180deg);">
   
-  <div id="cage-left-1" class="cage cage-left">
-    <div class="cage-corner corner-top"></div>
-    <div class="cage-corner corner-bottom"></div>
-  </div>
-  <div id="cage-left-2" class="cage cage-left">
-    <div class="cage-corner corner-top"></div>
-    <div class="cage-corner corner-bottom"></div>
-  </div>
-  <div id="cage-left-3" class="cage cage-left">
-    <div class="cage-corner corner-top"></div>
-    <div class="cage-corner corner-bottom"></div>
-  </div>
+  <img src="SVG/5.svg" alt="Cage Left 1" style="position: absolute; top: 20%; left: 0; width: 30px; height: 15%; transform: rotate(-90deg);">
+  <img src="SVG/6.svg" alt="Cage Left 2" style="position: absolute; top: 42.5%; left: 0; width: 30px; height: 15%; transform: rotate(-90deg);">
+  <img src="SVG/7.svg" alt="Cage Left 3" style="position: absolute; top: 65%; left: 0; width: 30px; height: 15%; transform: rotate(-90deg);">
   
-  <div id="cage-right-1" class="cage cage-right">
-    <div class="cage-corner corner-top"></div>
-    <div class="cage-corner corner-bottom"></div>
-  </div>
-  <div id="cage-right-2" class="cage cage-right">
-    <div class="cage-corner corner-top"></div>
-    <div class="cage-corner corner-bottom"></div>
-  </div>
-  <div id="cage-right-3" class="cage cage-right">
-    <div class="cage-corner corner-top"></div>
-    <div class="cage-corner corner-bottom"></div>
-  </div>
+  <img src="SVG/8.svg" alt="Cage Right 1" style="position: absolute; top: 20%; right: 0; width: 30px; height: 15%; transform: rotate(90deg);">
+  <img src="SVG/9.svg" alt="Cage Right 2" style="position: absolute; top: 42.5%; right: 0; width: 30px; height: 15%; transform: rotate(90deg);">
+  <img src="SVG/10.svg" alt="Cage Right 3" style="position: absolute; top: 65%; right: 0; width: 30px; height: 15%; transform: rotate(90deg);">
 
   <script>
     const ball = document.getElementById("ball");
@@ -233,41 +82,6 @@
       ["#FFFFFF", "#2A4899"],
       ["#2A4899", "#00A993"]
     ];
-
-    // Appliquer un dégradé différent à chaque cage
-    function assignUniqueGradients() {
-      const cages = document.querySelectorAll('.cage');
-      
-      // Créer une copie du tableau de gradients pour pouvoir en retirer au fur et à mesure
-      let availableGradients = [...gradients];
-      
-      // Mélanger le tableau pour une attribution aléatoire
-      availableGradients = shuffleArray(availableGradients);
-      
-      // Assigner un dégradé unique à chaque cage
-      cages.forEach((cage, index) => {
-        if (index < availableGradients.length) {
-          const gradient = availableGradients[index];
-          cage.style.background = `linear-gradient(135deg, ${gradient[0]}, ${gradient[1]})`;
-        }
-      });
-    }
-    
-    // Fonction pour mélanger un tableau (algorithme de Fisher-Yates)
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-
-    // Appliquer un dégradé aléatoire à la balle
-    let currentBallGradientIndex = Math.floor(Math.random() * gradients.length);
-    ball.style.background = `linear-gradient(135deg, ${gradients[currentBallGradientIndex][0]}, ${gradients[currentBallGradientIndex][1]})`;
-
-    // Assigner des dégradés uniques aux cages
-    assignUniqueGradients();
 
     let posX = window.innerWidth / 2;
     let posY = window.innerHeight / 2;
@@ -304,9 +118,6 @@
         posY = window.innerHeight - ballSize;
         velY *= -0.7;
       }
-      
-      // Collision avec les cages rectangulaires
-      checkCageCollisions();
 
       velX *= friction;
       velY *= friction;
@@ -331,54 +142,6 @@
         ball.style.background = `linear-gradient(135deg, ${gradients[currentBallGradientIndex][0]}, ${gradients[currentBallGradientIndex][1]})`;
         lastColorChange = now;
       }
-    }
-    
-    function checkCageCollisions() {
-      const cages = document.querySelectorAll('.cage');
-      const ballRadius = ballSize / 2;
-      const ballCenterX = posX + ballRadius;
-      const ballCenterY = posY + ballRadius;
-      
-      cages.forEach(cage => {
-        const cageRect = cage.getBoundingClientRect();
-        
-        // Vérifier si la balle touche une cage
-        if (ballCenterX + ballRadius > cageRect.left &&
-            ballCenterX - ballRadius < cageRect.right &&
-            ballCenterY + ballRadius > cageRect.top &&
-            ballCenterY - ballRadius < cageRect.bottom) {
-          
-          // Déterminer de quel côté la collision a eu lieu
-          const dx = ballCenterX - (cageRect.left + cageRect.width / 2);
-          const dy = ballCenterY - (cageRect.top + cageRect.height / 2);
-          
-          // Rebond en fonction de la direction de la collision
-          if (Math.abs(dx) > Math.abs(dy)) {
-            // Collision horizontale
-            velX *= -0.7;
-            if (dx > 0) {
-              // Collision à gauche
-              posX = cageRect.right;
-            } else {
-              // Collision à droite
-              posX = cageRect.left - ballSize;
-            }
-          } else {
-            // Collision verticale
-            velY *= -0.7;
-            if (dy > 0) {
-              // Collision en haut
-              posY = cageRect.bottom;
-            } else {
-              // Collision en bas
-              posY = cageRect.top - ballSize;
-            }
-          }
-          
-          // Changer la couleur de la balle lors d'une collision
-          changeBallColor();
-        }
-      });
     }
 
     function startGyro() {

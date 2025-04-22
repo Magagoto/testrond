@@ -22,6 +22,7 @@
       background: #00ffcc;
       background-size: 150% 150%;
       background-position: center;
+      transition: background 0.3s ease;
     }
 
     #start-btn {
@@ -45,26 +46,37 @@
     /* Style pour les cages rectangulaires */
     .cage {
       position: absolute;
-      background: rgba(255, 255, 255, 0.2);
-      border: 2px solid rgba(255, 255, 255, 0.4);
+      /* Pas de bordure */
     }
     
-    /* Cage du haut */
-    #cage-top {
+    /* Cages du haut */
+    .cage-top {
       top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60%;
       height: 30px;
+      width: 30%;
     }
     
-    /* Cage du bas */
-    #cage-bottom {
+    #cage-top-1 {
+      left: 15%;
+    }
+    
+    #cage-top-2 {
+      right: 15%;
+    }
+    
+    /* Cages du bas */
+    .cage-bottom {
       bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60%;
       height: 30px;
+      width: 30%;
+    }
+    
+    #cage-bottom-1 {
+      left: 15%;
+    }
+    
+    #cage-bottom-2 {
+      right: 15%;
     }
     
     /* Cages latérales (3 de chaque côté) */
@@ -110,8 +122,11 @@
   <div id="info"></div>
   
   <!-- Cages rectangulaires -->
-  <div id="cage-top" class="cage"></div>
-  <div id="cage-bottom" class="cage"></div>
+  <div id="cage-top-1" class="cage cage-top"></div>
+  <div id="cage-top-2" class="cage cage-top"></div>
+  
+  <div id="cage-bottom-1" class="cage cage-bottom"></div>
+  <div id="cage-bottom-2" class="cage cage-bottom"></div>
   
   <div id="cage-left-1" class="cage cage-left"></div>
   <div id="cage-left-2" class="cage cage-left"></div>
@@ -140,9 +155,21 @@
       ["#2A4899", "#00A993"]
     ];
 
-    // Choix aléatoire d'un dégradé
-    const gradient = gradients[Math.floor(Math.random() * gradients.length)];
-    ball.style.background = `linear-gradient(135deg, ${gradient[0]}, ${gradient[1]})`;
+    // Fonction pour obtenir un dégradé aléatoire
+    function getRandomGradient() {
+      const randomIndex = Math.floor(Math.random() * gradients.length);
+      return `linear-gradient(135deg, ${gradients[randomIndex][0]}, ${gradients[randomIndex][1]})`;
+    }
+
+    // Appliquer un dégradé aléatoire à la balle
+    let currentBallGradientIndex = Math.floor(Math.random() * gradients.length);
+    ball.style.background = `linear-gradient(135deg, ${gradients[currentBallGradientIndex][0]}, ${gradients[currentBallGradientIndex][1]})`;
+
+    // Appliquer un dégradé aléatoire à chaque cage
+    const cages = document.querySelectorAll('.cage');
+    cages.forEach(cage => {
+      cage.style.background = getRandomGradient();
+    });
 
     let posX = window.innerWidth / 2;
     let posY = window.innerHeight / 2;
@@ -152,8 +179,12 @@
     const ballSize = 80;
     const friction = 0.98;
     
-    // Réduction de la sensibilité (valeur originale: 0.3)
+    // Réduction de la sensibilité
     const accelerationFactor = 0.15;
+    
+    // Variable pour suivre le dernier changement de couleur
+    let lastColorChange = 0;
+    const colorChangeDelay = 300; // Délai minimum entre les changements de couleur (ms)
 
     function updateBallPosition() {
       posX += velX;
@@ -186,6 +217,22 @@
       ball.style.top = posY + "px";
 
       requestAnimationFrame(updateBallPosition);
+    }
+    
+    function changeBallColor() {
+      const now = Date.now();
+      // Vérifier si on peut changer la couleur (pour éviter les changements trop rapides)
+      if (now - lastColorChange >= colorChangeDelay) {
+        // Choisir un nouvel index différent de l'actuel
+        let newIndex;
+        do {
+          newIndex = Math.floor(Math.random() * gradients.length);
+        } while (newIndex === currentBallGradientIndex);
+        
+        currentBallGradientIndex = newIndex;
+        ball.style.background = `linear-gradient(135deg, ${gradients[currentBallGradientIndex][0]}, ${gradients[currentBallGradientIndex][1]})`;
+        lastColorChange = now;
+      }
     }
     
     function checkCageCollisions() {
@@ -229,6 +276,9 @@
               posY = cageRect.top - ballSize;
             }
           }
+          
+          // Changer la couleur de la balle lors d'une collision
+          changeBallColor();
         }
       });
     }

@@ -46,8 +46,7 @@
     /* Style pour les cages rectangulaires */
     .cage {
       position: absolute;
-      /* Bordures blanches comme sur l'image */
-      border: 4px solid white;
+      /* Suppression des bordures */
       box-sizing: border-box;
     }
     
@@ -116,6 +115,54 @@
       right: 10px;
       top: 65%;
     }
+
+    /* Styles pour les coins des cages */
+    .cage-corner {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: white;
+    }
+
+    /* Coins pour les cages du haut */
+    .cage-top .corner-left {
+      top: -5px;
+      left: -5px;
+    }
+    .cage-top .corner-right {
+      top: -5px;
+      right: -5px;
+    }
+
+    /* Coins pour les cages du bas */
+    .cage-bottom .corner-left {
+      bottom: -5px;
+      left: -5px;
+    }
+    .cage-bottom .corner-right {
+      bottom: -5px;
+      right: -5px;
+    }
+
+    /* Coins pour les cages latérales gauche */
+    .cage-left .corner-top {
+      top: -5px;
+      left: -5px;
+    }
+    .cage-left .corner-bottom {
+      bottom: -5px;
+      left: -5px;
+    }
+
+    /* Coins pour les cages latérales droite */
+    .cage-right .corner-top {
+      top: -5px;
+      right: -5px;
+    }
+    .cage-right .corner-bottom {
+      bottom: -5px;
+      right: -5px;
+    }
   </style>
 </head>
 <body>
@@ -124,19 +171,49 @@
   <div id="info"></div>
   
   <!-- Cages rectangulaires -->
-  <div id="cage-top-1" class="cage cage-top"></div>
-  <div id="cage-top-2" class="cage cage-top"></div>
+  <div id="cage-top-1" class="cage cage-top">
+    <div class="cage-corner corner-left"></div>
+    <div class="cage-corner corner-right"></div>
+  </div>
+  <div id="cage-top-2" class="cage cage-top">
+    <div class="cage-corner corner-left"></div>
+    <div class="cage-corner corner-right"></div>
+  </div>
   
-  <div id="cage-bottom-1" class="cage cage-bottom"></div>
-  <div id="cage-bottom-2" class="cage cage-bottom"></div>
+  <div id="cage-bottom-1" class="cage cage-bottom">
+    <div class="cage-corner corner-left"></div>
+    <div class="cage-corner corner-right"></div>
+  </div>
+  <div id="cage-bottom-2" class="cage cage-bottom">
+    <div class="cage-corner corner-left"></div>
+    <div class="cage-corner corner-right"></div>
+  </div>
   
-  <div id="cage-left-1" class="cage cage-left"></div>
-  <div id="cage-left-2" class="cage cage-left"></div>
-  <div id="cage-left-3" class="cage cage-left"></div>
+  <div id="cage-left-1" class="cage cage-left">
+    <div class="cage-corner corner-top"></div>
+    <div class="cage-corner corner-bottom"></div>
+  </div>
+  <div id="cage-left-2" class="cage cage-left">
+    <div class="cage-corner corner-top"></div>
+    <div class="cage-corner corner-bottom"></div>
+  </div>
+  <div id="cage-left-3" class="cage cage-left">
+    <div class="cage-corner corner-top"></div>
+    <div class="cage-corner corner-bottom"></div>
+  </div>
   
-  <div id="cage-right-1" class="cage cage-right"></div>
-  <div id="cage-right-2" class="cage cage-right"></div>
-  <div id="cage-right-3" class="cage cage-right"></div>
+  <div id="cage-right-1" class="cage cage-right">
+    <div class="cage-corner corner-top"></div>
+    <div class="cage-corner corner-bottom"></div>
+  </div>
+  <div id="cage-right-2" class="cage cage-right">
+    <div class="cage-corner corner-top"></div>
+    <div class="cage-corner corner-bottom"></div>
+  </div>
+  <div id="cage-right-3" class="cage cage-right">
+    <div class="cage-corner corner-top"></div>
+    <div class="cage-corner corner-bottom"></div>
+  </div>
 
   <script>
     const ball = document.getElementById("ball");

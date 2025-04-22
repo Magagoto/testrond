@@ -1,10 +1,4 @@
-
-document.getElementById('erase-circles').addEventListener('click', function() {
-  // Retourner à la page précédente
-  history.back();
-});
-   
-  const ball = document.getElementById("ball");
+    const ball = document.getElementById("ball");
     const startBtn = document.getElementById("start-btn");
     const info = document.getElementById("info");
 
@@ -33,12 +27,15 @@ document.getElementById('erase-circles').addEventListener('click', function() {
 
     const ballSize = 80;
     const friction = 0.98;
-    const accelerationFactor = 0.3;
+    
+    // Réduction de la sensibilité (valeur originale: 0.3)
+    const accelerationFactor = 0.15;
 
     function updateBallPosition() {
       posX += velX;
       posY += velY;
 
+      // Vérifier les collisions avec les bords de l'écran
       if (posX <= 0) {
         posX = 0;
         velX *= -0.7;
@@ -54,6 +51,9 @@ document.getElementById('erase-circles').addEventListener('click', function() {
         posY = window.innerHeight - ballSize;
         velY *= -0.7;
       }
+      
+      // Collision avec les cages rectangulaires
+      checkCageCollisions();
 
       velX *= friction;
       velY *= friction;
@@ -62,6 +62,51 @@ document.getElementById('erase-circles').addEventListener('click', function() {
       ball.style.top = posY + "px";
 
       requestAnimationFrame(updateBallPosition);
+    }
+    
+    function checkCageCollisions() {
+      const cages = document.querySelectorAll('.cage');
+      const ballRadius = ballSize / 2;
+      const ballCenterX = posX + ballRadius;
+      const ballCenterY = posY + ballRadius;
+      
+      cages.forEach(cage => {
+        const cageRect = cage.getBoundingClientRect();
+        
+        // Vérifier si la balle touche une cage
+        if (ballCenterX + ballRadius > cageRect.left &&
+            ballCenterX - ballRadius < cageRect.right &&
+            ballCenterY + ballRadius > cageRect.top &&
+            ballCenterY - ballRadius < cageRect.bottom) {
+          
+          // Déterminer de quel côté la collision a eu lieu
+          const dx = ballCenterX - (cageRect.left + cageRect.width / 2);
+          const dy = ballCenterY - (cageRect.top + cageRect.height / 2);
+          
+          // Rebond en fonction de la direction de la collision
+          if (Math.abs(dx) > Math.abs(dy)) {
+            // Collision horizontale
+            velX *= -0.7;
+            if (dx > 0) {
+              // Collision à gauche
+              posX = cageRect.right;
+            } else {
+              // Collision à droite
+              posX = cageRect.left - ballSize;
+            }
+          } else {
+            // Collision verticale
+            velY *= -0.7;
+            if (dy > 0) {
+              // Collision en haut
+              posY = cageRect.bottom;
+            } else {
+              // Collision en bas
+              posY = cageRect.top - ballSize;
+            }
+          }
+        }
+      });
     }
 
     function startGyro() {
@@ -97,3 +142,8 @@ document.getElementById('erase-circles').addEventListener('click', function() {
     }
 
     startBtn.addEventListener("click", startGyro);
+    
+    // Ajuster la taille des cages lors du redimensionnement de la fenêtre
+    window.addEventListener('resize', () => {
+      // Vous pourriez ajuster les positions des cages ici si besoin
+    });

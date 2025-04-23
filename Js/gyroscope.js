@@ -29,7 +29,7 @@
     const friction = 0.98;
     
     // Réduction de la sensibilité (valeur originale: 0.3)
-    const accelerationFactor = 0.15;
+    const accelerationFactor = 0.01;
 
     function updateBallPosition() {
       posX += velX;

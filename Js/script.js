@@ -555,6 +555,7 @@ function acceptCGU() {
   chooseSpecialCircles();
   assignCircleNumbersAndCoords(); // Numéroter les cercles et attribuer des coordonnées au démarrage
   requestAnimationFrame(optimizeRendering);
+  document.getElementById('backgroundMusic').play();
 }
 
 function refuseCGU() {

@@ -469,58 +469,93 @@
       }
     }
     
+    // Configuration des animations
+    const cageAnimationConfig = {
+      minDuration: 3000,  // Durée minimum d'un cycle d'animation (ms)
+      maxDuration: 7000,  // Durée maximum d'un cycle d'animation (ms)
+      minSize: 0.7,       // Taille minimum (facteur de la taille d'origine)
+      maxSize: 1.3,       // Taille maximum (facteur de la taille d'origine)
+    };
+
+    // Stocker les dimensions originales des cages
+    const cageOriginalDimensions = {};
+
+    // Initialiser les animations des cages
+    function initCageAnimations() {
+      const cages = document.querySelectorAll('.cage');
+      cages.forEach((cage, index) => {
+        // Stocker les dimensions originales
+        const rect = cage.getBoundingClientRect();
+        cageOriginalDimensions[cage.id] = {
+          width: rect.width,
+          height: rect.height,
+          left: parseFloat(window.getComputedStyle(cage).left || "0"),
+          top: parseFloat(window.getComputedStyle(cage).top || "0"),
+          right: parseFloat(window.getComputedStyle(cage).right || "0"),
+          bottom: parseFloat(window.getComputedStyle(cage).bottom || "0")
+        };
+        // Démarrer l'animation
+        animateCage(cage);
+      });
+    }
+
+    // Animation d'une cage individuelle
+    function animateCage(cage) {
+      const original = cageOriginalDimensions[cage.id];
+      const isHorizontal = cage.classList.contains('cage-top') || cage.classList.contains('cage-bottom');
+      const isSideLeft = cage.classList.contains('cage-left');
+      const isSideRight = cage.classList.contains('cage-right');
+      const duration = Math.random() * 
+        (cageAnimationConfig.maxDuration - cageAnimationConfig.minDuration) + 
+        cageAnimationConfig.minDuration;
+      const sizeFactor = Math.random() * 
+        (cageAnimationConfig.maxSize - cageAnimationConfig.minSize) + 
+        cageAnimationConfig.minSize;
+
+      if (isHorizontal) {
+        // Pour les cages horizontales (haut/bas), on anime la largeur
+        const newWidth = original.width * sizeFactor;
+        cage.style.width = `${newWidth}px`;
+        // Les coins restent à leur place relative
+      } else if (isSideLeft || isSideRight) {
+        // Pour les cages verticales (gauche/droite), on anime la hauteur
+        const newHeight = original.height * sizeFactor;
+        cage.style.height = `${newHeight}px`;
+        // Ajuster la position pour garder le centre à la même position
+        const deltaHeight = newHeight - original.height;
+        const newTop = original.top - (deltaHeight / 2);
+        cage.style.top = `${newTop}px`;
+        // Les coins restent à leur place relative
+      }
+
+      setTimeout(() => {
+        animateCage(cage);
+      }, duration);
+    }
+
+    // Mise à jour de la fonction de détection de collision pour prendre en compte les nouvelles dimensions
     function checkCageCollisions() {
       const cages = document.querySelectorAll('.cage');
       const ballRadius = ballSize / 2;
       const ballCenterX = posX + ballRadius;
       const ballCenterY = posY + ballRadius;
       
+      let collisionDetected = false;
+      
       cages.forEach(cage => {
         const cageRect = cage.getBoundingClientRect();
-        
-        // Vérifier si la balle touche une cage
         if (ballCenterX + ballRadius > cageRect.left &&
             ballCenterX - ballRadius < cageRect.right &&
             ballCenterY + ballRadius > cageRect.top &&
             ballCenterY - ballRadius < cageRect.bottom) {
-          
-          // Déterminer de quel côté la collision a eu lieu
-          const dx = ballCenterX - (cageRect.left + cageRect.width / 2);
-          const dy = ballCenterY - (cageRect.top + cageRect.height / 2);
-          
-          // Rebond en fonction de la direction de la collision
-          if (Math.abs(dx) > Math.abs(dy)) {
-            // Collision horizontale
-            velX *= -0.7;
-            if (dx > 0) {
-              // Collision à gauche
-              posX = cageRect.right;
-            } else {
-              // Collision à droite
-              posX = cageRect.left - ballSize;
-            }
-          } else {
-            // Collision verticale
-            velY *= -0.7;
-            if (dy > 0) {
-              // Collision en haut
-              posY = cageRect.bottom;
-            } else {
-              // Collision en bas
-              posY = cageRect.top - ballSize;
-            }
-          }
-          
+          collisionDetected = true;
           // Comparer le gradient de la balle avec celui de la cage
           const computedStyle = window.getComputedStyle(cage);
           const cageGradient = computedStyle.backgroundImage;
           const cageColors = cageGradient.match(/(#[0-9A-Fa-f]{6}|rgb\([^)]+\))/gi);
-          
           const ballStyle = window.getComputedStyle(ball);
           const ballGradient = ballStyle.backgroundImage;
           const ballColors = ballGradient.match(/(#[0-9A-Fa-f]{6}|rgb\([^)]+\))/gi);
-          
-          // Créer un effet visuel pour montrer le changement de score
           const scoreEffect = document.createElement("div");
           scoreEffect.style.position = "absolute";
           scoreEffect.style.left = `${ballCenterX}px`;
@@ -530,43 +565,43 @@
           scoreEffect.style.fontWeight = "bold";
           scoreEffect.style.zIndex = "20";
           scoreEffect.style.transition = "transform 0.5s, opacity 0.5s";
-          
-          // Comparer les gradients en utilisant l'apparence visuelle (similaire)
           if (cageColors && ballColors && 
               areSimilarColors(cageColors[0], ballColors[0]) && 
               areSimilarColors(cageColors[1], ballColors[1])) {
-            // Même gradient, +1 point
             score += 1;
             scoreEffect.textContent = "+1";
             scoreEffect.style.color = "#00FF00";
           } else {
-            // Gradient différent, -1 point
             score -= 1;
             scoreEffect.textContent = "-1";
             scoreEffect.style.color = "#FF0000";
           }
-          
           document.body.appendChild(scoreEffect);
-          
-          // Animation de l'effet de score
           setTimeout(() => {
             scoreEffect.style.transform = "translateY(-30px)";
             scoreEffect.style.opacity = "0";
           }, 10);
-          
-          // Suppression de l'effet après l'animation
           setTimeout(() => {
             document.body.removeChild(scoreEffect);
           }, 600);
-          
-          // Mettre à jour l'affichage du score
           updateScoreDisplay();
-          
-          // Changer la couleur de la balle lors d'une collision
           changeBallColor();
         }
       });
+      return collisionDetected;
     }
+
+    // Fonction pour mettre à jour les positions des coins en fonction de l'animation des cages
+    function updateCageCorners() {
+      // Les coins restent positionnés en relatif, donc rien à faire ici pour l'instant
+    }
+
+    // Ajouter cette fonction pour actualiser les animations régulièrement
+    function updateAnimations() {
+      updateCageCorners();
+      requestAnimationFrame(updateAnimations);
+    }
+    updateAnimations();
 
     function startGyro() {
       if (typeof DeviceOrientationEvent.requestPermission === 'function') {
@@ -576,6 +611,7 @@
               enableGyro();
               startBtn.style.display = 'none';
               info.textContent = "Gyroscope activé ✔️";
+              initCageAnimations();
             } else {
               info.textContent = "Permission refusée ❌";
             }
@@ -585,6 +621,7 @@
         enableGyro();
         startBtn.style.display = 'none';
         info.textContent = "Gyroscope activé ✔️";
+        initCageAnimations();
       }
     }
 

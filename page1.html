@@ -414,7 +414,7 @@
     const friction = 0.98;
     
     // Réduction de la sensibilité
-    const accelerationFactor = 0.07; // Valeur réduite
+    const accelerationFactor = 0.15;
     
     // Variable pour suivre le dernier changement de couleur
     let lastColorChange = 0;
@@ -469,95 +469,90 @@
       }
     }
     
-    // Configuration des animations - plus rapides et plus dynamiques
+    // Configuration des animations améliorées
     const cageAnimationConfig = {
-      minDuration: 2000,
-      maxDuration: 4000,
-      minSize: 0.7,
-      maxSize: 1.3,
-      movementEnabled: true,
-      maxMovement: 20
+      minDuration: 5000,  // Durée minimum d'un cycle d'animation (ms) - plus long pour plus de fluidité
+      maxDuration: 9000,  // Durée maximum d'un cycle d'animation (ms)
+      minSize: 0.8,       // Taille minimum (facteur de la taille d'origine) - moins extrême
+      maxSize: 1.2,       // Taille maximum (facteur de la taille d'origine) - moins extrême
     };
 
-    // Stocker les dimensions et positions originales des cages
+    // Stocker les dimensions originales des cages
     const cageOriginalDimensions = {};
 
     // Variable pour suivre l'état des collisions
     const collisionCooldowns = {};
 
-    // Initialiser les animations des cages avec des transitions CSS plus rapides
+    // Initialiser les animations des cages avec des transitions CSS pour plus de fluidité
     function initCageAnimations() {
       const cages = document.querySelectorAll('.cage');
+      
       cages.forEach((cage, index) => {
-        cage.style.transition = "width 1s ease-in-out, height 1s ease-in-out, top 1s ease-in-out, left 1s ease-in-out, right 1s ease-in-out";
+        // Ajouter une transition CSS pour des animations fluides
+        cage.style.transition = "width 2s ease-in-out, height 2s ease-in-out, top 2s ease-in-out";
+        
+        // Stocker les dimensions originales
         const rect = cage.getBoundingClientRect();
         const style = window.getComputedStyle(cage);
+        
         cageOriginalDimensions[cage.id] = {
           width: rect.width,
           height: rect.height,
           left: parseFloat(style.left || "0"),
           top: parseFloat(style.top || "0"),
           right: parseFloat(style.right || "0"),
-          bottom: parseFloat(style.bottom || "0"),
-          isPositionedLeft: style.left !== "auto" && style.left !== "",
-          isPositionedRight: style.right !== "auto" && style.right !== "",
-          isPositionedTop: style.top !== "auto" && style.top !== "",
-          isPositionedBottom: style.bottom !== "auto" && style.bottom !== ""
+          bottom: parseFloat(style.bottom || "0")
         };
+        
+        // Initialiser le cooldown de collision
         collisionCooldowns[cage.id] = 0;
+        
+        // Démarrer l'animation avec un délai aléatoire pour désynchroniser
         setTimeout(() => {
           animateCage(cage);
-        }, Math.random() * 500);
+        }, Math.random() * 2000);
       });
     }
 
-    // Animation d'une cage individuelle - plus rapide et avec mouvement
+    // Animation d'une cage individuelle avec easing
     function animateCage(cage) {
       const original = cageOriginalDimensions[cage.id];
+      
+      // Déterminer si la cage est horizontale ou verticale
       const isHorizontal = cage.classList.contains('cage-top') || cage.classList.contains('cage-bottom');
       const isSideLeft = cage.classList.contains('cage-left');
       const isSideRight = cage.classList.contains('cage-right');
-      const duration = Math.random() * (cageAnimationConfig.maxDuration - cageAnimationConfig.minDuration) + cageAnimationConfig.minDuration;
-      const sizeFactor = Math.random() * (cageAnimationConfig.maxSize - cageAnimationConfig.minSize) + cageAnimationConfig.minSize;
-      let moveX = 0;
-      let moveY = 0;
-      if (cageAnimationConfig.movementEnabled) {
-        if (isHorizontal) {
-          moveX = (Math.random() * 2 - 1) * cageAnimationConfig.maxMovement;
-          moveY = (Math.random() * 2 - 1) * (cageAnimationConfig.maxMovement / 3);
-        } else {
-          moveX = (Math.random() * 2 - 1) * (cageAnimationConfig.maxMovement / 3);
-          moveY = (Math.random() * 2 - 1) * cageAnimationConfig.maxMovement;
-        }
-      }
+      
+      // Générer des valeurs aléatoires pour cette animation
+      const duration = Math.random() * 
+        (cageAnimationConfig.maxDuration - cageAnimationConfig.minDuration) + 
+        cageAnimationConfig.minDuration;
+      
+      const sizeFactor = Math.random() * 
+        (cageAnimationConfig.maxSize - cageAnimationConfig.minSize) + 
+        cageAnimationConfig.minSize;
+      
+      // Appliquer les nouvelles dimensions avec transition CSS
       if (isHorizontal) {
+        // Pour les cages horizontales (haut/bas), on anime la largeur
         const newWidth = original.width * sizeFactor;
         cage.style.width = `${newWidth}px`;
-        if (original.isPositionedLeft) {
-          cage.style.left = `${Math.max(0, original.left + moveX)}px`;
-        }
-        if (original.isPositionedTop) {
-          cage.style.top = `${Math.max(0, original.top + moveY)}px`;
-        }
-        if (original.isPositionedBottom) {
-          cage.style.bottom = `${Math.max(0, original.bottom - moveY)}px`;
-        }
+        // Les corners se déplacent automatiquement grâce au positionnement CSS
       } else if (isSideLeft || isSideRight) {
+        // Pour les cages verticales (gauche/droite), on anime la hauteur
         const newHeight = original.height * sizeFactor;
         cage.style.height = `${newHeight}px`;
-        if (original.isPositionedTop) {
-          cage.style.top = `${Math.max(0, original.top + moveY)}px`;
-        }
-        if (original.isPositionedLeft) {
-          cage.style.left = `${Math.max(0, original.left + moveX)}px`;
-        }
-        if (original.isPositionedRight) {
-          cage.style.right = `${Math.max(0, original.right - moveX)}px`;
-        }
+        // Ajuster la position pour garder le centre à la même position
+        const deltaHeight = newHeight - original.height;
+        cage.style.top = `${Math.max(0, original.top - (deltaHeight / 2))}px`;
       }
+      
+      // Mettre à jour les corners après la transition
       setTimeout(() => {
         updateCageCorners(cage);
       }, 100);
+      
+      // Planifier la prochaine animation
       setTimeout(() => {
         animateCage(cage);
       }, duration);
@@ -565,10 +560,7 @@
 
     // Fonction pour mettre à jour les positions des coins en fonction de l'animation des cages
     function updateCageCorners(cage) {
-      const corners = cage.querySelectorAll('.cage-corner');
-      corners.forEach(corner => {
-        // Les coins suivent automatiquement grâce au positionnement CSS relatif
-      });
+      // Les coins restent positionnés en relatif, donc rien à faire ici pour l'instant
     }
 
     // Mise à jour de la fonction de détection de collision avec période de grâce

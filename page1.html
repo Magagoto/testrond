@@ -283,6 +283,64 @@
     // Assigner des dégradés uniques aux cages
     assignUniqueGradients();
 
+    // Met à jour la couleur des coins selon le dégradé réel appliqué en CSS
+    function updateCornerColors() {
+      const cages = document.querySelectorAll('.cage');
+      cages.forEach(cage => {
+        // Récupérer le style de fond actuel de la cage
+        const computedStyle = window.getComputedStyle(cage);
+        const backgroundImage = computedStyle.backgroundImage;
+        
+        // Extraire les couleurs du gradient
+        let colorStart, colorEnd;
+        
+        // Extraire les couleurs depuis la propriété backgroundImage
+        const colors = backgroundImage.match(/(#[0-9A-Fa-f]{6}|rgb\([^)]+\))/gi);
+        if (colors && colors.length >= 2) {
+          colorStart = colors[0];
+          colorEnd = colors[1];
+        } else {
+          // Valeurs par défaut si on ne peut pas extraire les couleurs
+          colorStart = "#FFFFFF";
+          colorEnd = "#CCCCCC";
+        }
+
+        const corners = cage.querySelectorAll('.cage-corner');
+        corners.forEach(corner => {
+          // Cages du haut et du bas
+          if (cage.classList.contains('cage-top') || cage.classList.contains('cage-bottom')) {
+            if (corner.classList.contains('corner-left')) {
+              corner.style.background = colorStart;
+            }
+            if (corner.classList.contains('corner-right')) {
+              corner.style.background = colorEnd;
+            }
+          }
+          // Cages de gauche
+          else if (cage.classList.contains('cage-left')) {
+            if (corner.classList.contains('corner-top')) {
+              corner.style.background = colorStart;
+            }
+            if (corner.classList.contains('corner-bottom')) {
+              corner.style.background = colorEnd;
+            }
+          }
+          // Cages de droite
+          else if (cage.classList.contains('cage-right')) {
+            if (corner.classList.contains('corner-top')) {
+              corner.style.background = colorStart;
+            }
+            if (corner.classList.contains('corner-bottom')) {
+              corner.style.background = colorEnd;
+            }
+          }
+        });
+      });
+    }
+
+    // On doit appeler updateCornerColors APRÈS assignUniqueGradients
+    updateCornerColors();
+
     let posX = window.innerWidth / 2;
     let posY = window.innerHeight / 2;
     let velX = 0;

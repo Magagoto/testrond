@@ -19,7 +19,7 @@
       width: 80px;
       height: 80px;
       border-radius: 50%;
-      background: #00ffcc;
+      background: #0b03fc6e;
       background-size: 150% 150%;
       background-position: center;
       transition: background 0.3s ease;
@@ -177,6 +177,22 @@
       width: 180%; /* Allonger la largeur */
       height: 10px; /* Rectangle horizontal */
     }
+
+    @keyframes blink {
+        from { opacity: 1; }
+        to { opacity: 0.3; }
+    }
+
+    #timer-display {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+        font-family: sans-serif;
+        z-index: 10;
+    }
   </style>
 </head>
 <body>
@@ -232,6 +248,8 @@
     <div class="cage-corner corner-top"></div>
     <div class="cage-corner corner-bottom"></div>
   </div>
+
+  <div id="timer-display">02:30</div>
 
   <script>
     const ball = document.getElementById("ball");
@@ -700,27 +718,31 @@
     updateAnimations();
 
     function startGyro() {
-      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-          .then(permissionState => {
-            if (permissionState === 'granted') {
-              enableGyro();
-              startBtn.style.display = 'none';
-              info.textContent = "Gyroscope activé ✔️";
-              initCageAnimations();
-              backgroundMusic.play(); // Démarrer la musique de fond
-            } else {
-              info.textContent = "Permission refusée ❌";
-            }
-          })
-          .catch(console.error);
-      } else {
-        enableGyro();
-        startBtn.style.display = 'none';
-        info.textContent = "Gyroscope activé ✔️";
-        initCageAnimations();
-        backgroundMusic.play(); // Démarrer la musique de fond
-      }
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            DeviceOrientationEvent.requestPermission()
+                .then(permissionState => {
+                    if (permissionState === 'granted') {
+                        enableGyro();
+                        startBtn.style.display = 'none';
+                        info.textContent = "Gyroscope activé ✔️";
+                        initCageAnimations();
+                        backgroundMusic.play();
+                        gameActive = true;
+                        timerInterval = setInterval(updateTimer, 1000);
+                    } else {
+                        info.textContent = "Permission refusée ❌";
+                    }
+                })
+                .catch(console.error);
+        } else {
+            enableGyro();
+            startBtn.style.display = 'none';
+            info.textContent = "Gyroscope activé ✔️";
+            initCageAnimations();
+            backgroundMusic.play();
+            gameActive = true;
+            timerInterval = setInterval(updateTimer, 1000);
+        }
     }
 
     function enableGyro() {
@@ -736,6 +758,51 @@
     }
 
     startBtn.addEventListener("click", startGyro);
+
+    // À ajouter après les variables existantes
+    let gameActive = false;
+    let timerSeconds = 150; // 2 minutes 30 secondes
+    let timerInterval;
+
+    // Fonction pour mettre à jour le timer
+    function updateTimer() {
+        if (timerSeconds <= 0) {
+            endGame();
+            return;
+        }
+        
+        timerSeconds--;
+        const minutes = Math.floor(timerSeconds / 60);
+        const seconds = timerSeconds % 60;
+        timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (timerSeconds <= 30) {
+            timerDisplay.style.color = "#FF0000";
+            if (timerSeconds <= 10) {
+                timerDisplay.style.animation = "blink 0.5s infinite alternate";
+            }
+        }
+    }
+
+    // À ajouter après updateTimer()
+    function endGame() {
+        clearInterval(timerInterval);
+        gameActive = false;
+        
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+        
+        // Afficher le score final
+        alert(`Temps écoulé! Score final: ${score}`);
+        
+        // Réinitialiser le jeu
+        score = 0;
+        updateScoreDisplay();
+        timerSeconds = 150;
+        timerDisplay.textContent = "02:30";
+        timerDisplay.style.color = "white";
+        timerDisplay.style.animation = "none";
+    }
   </script>
 </body>
 </html>

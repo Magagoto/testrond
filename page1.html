@@ -200,10 +200,9 @@
   <div id="ball"></div>
   <div id="info"></div>
   
-  <!-- Ajout des éléments audio (corrigé sans espaces dans les noms de fichiers) -->
-  <audio id="pointSound" src="SONORE/1point+.mp3" preload="auto"></audio>
-  <audio id="backgroundMusic" src="SONORE/ambiancegyro.mp3" loop preload="auto"></audio>
-  <audio id="badSound" src="SONORE/mauvais_bip_ambiance_gyro.mp3" preload="auto"></audio>
+  <!-- Ajout des éléments audio -->
+  <audio id="pointSound" src="SONORE /1point+.mp3" preload="auto"></audio>
+  <audio id="backgroundMusic" src="SONORE /ambiancegyro.mp3" loop preload="auto"></audio>
   
   <!-- Cages rectangulaires -->
   <div id="cage-top-1" class="cage cage-top">
@@ -257,68 +256,7 @@
     const startBtn = document.getElementById("start-btn");
     const info = document.getElementById("info");
     const pointSound = document.getElementById("pointSound");
-    const backgroundMusic = document.getElementById("backgroundMusic");
-    const badSound = document.getElementById("badSound");
-
-    // Configuration des sons
-    backgroundMusic.volume = 0.5;
-    pointSound.volume = 0.8;
-    badSound.volume = 0.8;
-
-    // Précharger tous les sons
-    pointSound.load();
-    backgroundMusic.load();
-    badSound.load();
-
-    // Gestionnaire audio centralisé
-    const audioManager = {
-      playBackgroundMusic() {
-        backgroundMusic.currentTime = 0;
-        const playPromise = backgroundMusic.play();
-        if (playPromise !== undefined) {
-          playPromise.then(() => {
-            // Succès
-          }).catch(error => {
-            setTimeout(() => {
-              backgroundMusic.play().catch(() => {});
-            }, 1000);
-          });
-        }
-      },
-      playPointSound() {
-        const sound = pointSound.cloneNode();
-        sound.volume = pointSound.volume;
-        sound.play().catch(() => {});
-      },
-      playBadSound() {
-        const sound = badSound.cloneNode();
-        sound.volume = badSound.volume;
-        sound.play().catch(() => {});
-      },
-      stopBackgroundMusic() {
-        backgroundMusic.pause();
-        backgroundMusic.currentTime = 0;
-      }
-    };
-
-    // Bouton de secours pour activer le son
-    const soundButton = document.createElement("button");
-    soundButton.textContent = "🔊 Activer le son";
-    soundButton.style.position = "absolute";
-    soundButton.style.bottom = "20px";
-    soundButton.style.right = "20px";
-    soundButton.style.padding = "10px";
-    soundButton.style.backgroundColor = "#00ffcc";
-    soundButton.style.border = "none";
-    soundButton.style.borderRadius = "10px";
-    soundButton.style.cursor = "pointer";
-    soundButton.style.zIndex = "100";
-    soundButton.style.display = "none";
-    soundButton.addEventListener("click", () => {
-      audioManager.playBackgroundMusic();
-      soundButton.style.display = "none";
-    });
-    document.body.appendChild(soundButton);
+    const backgroundMusic = document.getElementById("backgroundMusic"); // Ajout de la référence à la musique
 
     // Dégradés cycliques prédéfinis
     const gradients = [
@@ -348,10 +286,8 @@
     scoreDisplay.style.zIndex = "10";
     document.body.appendChild(scoreDisplay);
 
+    // Variable pour stocker le score
     let score = 0;
-    let gameActive = false;
-    let timerSeconds = 150; // 2 minutes 30 secondes
-    let timerInterval;
     updateScoreDisplay();
 
     // Fonction pour mettre à jour l'affichage du score
@@ -737,13 +673,12 @@
             score += 1;
             scoreEffect.textContent = "+1";
             scoreEffect.style.color = "#00FF00";
-            audioManager.playPointSound();
+            pointSound.play(); // Jouer le son lors d'un point gagné
           } else {
             // Gradient différent, -1 point
             score -= 1;
             scoreEffect.textContent = "-1";
             scoreEffect.style.color = "#FF0000";
-            audioManager.playBadSound();
           }
 
           document.body.appendChild(scoreEffect);
@@ -798,27 +733,24 @@
         }
     }
 
+    // Ajouter cette nouvelle fonction pour initialiser le jeu
     function initGame() {
         enableGyro();
         startBtn.style.display = 'none';
         info.textContent = "Gyroscope activé ✔️";
+        
+        // Réinitialiser les variables de jeu
         gameActive = true;
         timerSeconds = 150;
         score = 0;
         updateScoreDisplay();
-        timerDisplay.textContent = "02:30";
-        timerDisplay.style.color = "white";
-        timerDisplay.style.animation = "none";
+        
+        // Démarrer le timer et les animations
         timerInterval = setInterval(updateTimer, 1000);
         initCageAnimations();
-        // Utiliser le gestionnaire audio pour démarrer la musique
-        audioManager.playBackgroundMusic();
-        // Afficher le bouton de son après un court délai si la musique ne démarre pas
-        setTimeout(() => {
-          if (backgroundMusic.paused) {
-            soundButton.style.display = "block";
-          }
-        }, 1000);
+        
+        // Démarrer la musique
+        backgroundMusic.play();
     }
 
     function enableGyro() {
@@ -855,18 +787,24 @@
         }
     }
 
+    // À ajouter après updateTimer()
     function endGame() {
         clearInterval(timerInterval);
         gameActive = false;
-        audioManager.stopBackgroundMusic();
+        
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+        
+        // Afficher le score final
         alert(`Temps écoulé! Score final: ${score}`);
+        
+        // Réinitialiser le jeu
         score = 0;
         updateScoreDisplay();
         timerSeconds = 150;
         timerDisplay.textContent = "02:30";
         timerDisplay.style.color = "white";
         timerDisplay.style.animation = "none";
-        startBtn.style.display = 'block';
     }
   </script>
 </body>

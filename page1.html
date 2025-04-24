@@ -201,8 +201,8 @@
   <div id="info"></div>
   
   <!-- Ajout des éléments audio -->
-  <audio id="pointSound" src="SONORE /1point+.mp3" preload="auto"></audio>
-  <audio id="backgroundMusic" src="SONORE /ambiancegyro.mp3" loop preload="auto"></audio>
+  <audio id="pointSound" src="SONORE/1point+.mp3" preload="auto"></audio>
+  <audio id="backgroundMusic" src="SONORE/ambiancegyro.mp3" loop preload="auto"></audio>
   
   <!-- Cages rectangulaires -->
   <div id="cage-top-1" class="cage cage-top">
@@ -286,8 +286,10 @@
     scoreDisplay.style.zIndex = "10";
     document.body.appendChild(scoreDisplay);
 
-    // Variable pour stocker le score
     let score = 0;
+    let gameActive = false;
+    let timerSeconds = 150; // 2 minutes 30 secondes
+    let timerInterval;
     updateScoreDisplay();
 
     // Fonction pour mettre à jour l'affichage du score

@@ -203,6 +203,7 @@
   <!-- Ajout des éléments audio -->
   <audio id="pointSound" src="SONORE /1point+.mp3" preload="auto"></audio>
   <audio id="backgroundMusic" src="SONORE /ambiancegyro.mp3" loop preload="auto"></audio>
+  <audio id="badSound" src="SONORE /mauvais bip ambiance gyro.mp3" preload="auto"></audio>
   
   <!-- Cages rectangulaires -->
   <div id="cage-top-1" class="cage cage-top">
@@ -257,6 +258,7 @@
     const info = document.getElementById("info");
     const pointSound = document.getElementById("pointSound");
     const backgroundMusic = document.getElementById("backgroundMusic"); // Ajout de la référence à la musique
+    const badSound = document.getElementById("badSound");
 
     // Dégradés cycliques prédéfinis
     const gradients = [
@@ -286,8 +288,10 @@
     scoreDisplay.style.zIndex = "10";
     document.body.appendChild(scoreDisplay);
 
-    // Variable pour stocker le score
     let score = 0;
+    let gameActive = false;
+    let timerSeconds = 150; // 2 minutes 30 secondes
+    let timerInterval;
     updateScoreDisplay();
 
     // Fonction pour mettre à jour l'affichage du score
@@ -679,6 +683,7 @@
             score -= 1;
             scoreEffect.textContent = "-1";
             scoreEffect.style.color = "#FF0000";
+            badSound.play(); // <-- joue le son mauvais
           }
 
           document.body.appendChild(scoreEffect);
@@ -733,23 +738,19 @@
         }
     }
 
-    // Ajouter cette nouvelle fonction pour initialiser le jeu
     function initGame() {
         enableGyro();
         startBtn.style.display = 'none';
         info.textContent = "Gyroscope activé ✔️";
-        
-        // Réinitialiser les variables de jeu
         gameActive = true;
         timerSeconds = 150;
         score = 0;
         updateScoreDisplay();
-        
-        // Démarrer le timer et les animations
+        timerDisplay.textContent = "02:30";
+        timerDisplay.style.color = "white";
+        timerDisplay.style.animation = "none";
         timerInterval = setInterval(updateTimer, 1000);
         initCageAnimations();
-        
-        // Démarrer la musique
         backgroundMusic.play();
     }
 
@@ -766,10 +767,6 @@
     }
 
     startBtn.addEventListener("click", startGyro);
-
-    let gameActive = false;
-    let timerSeconds = 150; // 2 minutes 30 secondes
-    let timerInterval;
 
     // Fonction pour mettre à jour le timer
     function updateTimer() {

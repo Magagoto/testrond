@@ -722,27 +722,35 @@
             DeviceOrientationEvent.requestPermission()
                 .then(permissionState => {
                     if (permissionState === 'granted') {
-                        enableGyro();
-                        startBtn.style.display = 'none';
-                        info.textContent = "Gyroscope activé ✔️";
-                        initCageAnimations();
-                        backgroundMusic.play();
-                        gameActive = true;
-                        timerInterval = setInterval(updateTimer, 1000);
+                        initGame();
                     } else {
                         info.textContent = "Permission refusée ❌";
                     }
                 })
                 .catch(console.error);
         } else {
-            enableGyro();
-            startBtn.style.display = 'none';
-            info.textContent = "Gyroscope activé ✔️";
-            initCageAnimations();
-            backgroundMusic.play();
-            gameActive = true;
-            timerInterval = setInterval(updateTimer, 1000);
+            initGame();
         }
+    }
+
+    // Ajouter cette nouvelle fonction pour initialiser le jeu
+    function initGame() {
+        enableGyro();
+        startBtn.style.display = 'none';
+        info.textContent = "Gyroscope activé ✔️";
+        
+        // Réinitialiser les variables de jeu
+        gameActive = true;
+        timerSeconds = 150;
+        score = 0;
+        updateScoreDisplay();
+        
+        // Démarrer le timer et les animations
+        timerInterval = setInterval(updateTimer, 1000);
+        initCageAnimations();
+        
+        // Démarrer la musique
+        backgroundMusic.play();
     }
 
     function enableGyro() {
@@ -759,7 +767,6 @@
 
     startBtn.addEventListener("click", startGyro);
 
-    // À ajouter après les variables existantes
     let gameActive = false;
     let timerSeconds = 150; // 2 minutes 30 secondes
     let timerInterval;

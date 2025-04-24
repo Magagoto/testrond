@@ -260,6 +260,8 @@
     const backgroundMusic = document.getElementById("backgroundMusic"); // Ajout de la référence à la musique
     const badSound = document.getElementById("badSound");
 
+    backgroundMusic.volume = 0.5; // ou 1.0 selon ton besoin
+
     // Dégradés cycliques prédéfinis
     const gradients = [
       ["#00A993", "#E68B4A"],
@@ -751,7 +753,10 @@
         timerDisplay.style.animation = "none";
         timerInterval = setInterval(updateTimer, 1000);
         initCageAnimations();
-        backgroundMusic.play();
+        backgroundMusic.play().catch(e => {
+          console.log("Erreur lecture musique de fond :", e);
+          info.textContent = "⚠️ Activez le son ou cliquez à nouveau pour la musique !";
+        });
     }
 
     function enableGyro() {

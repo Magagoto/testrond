@@ -554,23 +554,31 @@
         (cageAnimationConfig.maxDuration - cageAnimationConfig.minDuration) + 
         cageAnimationConfig.minDuration;
       
-      const sizeFactor = Math.random() * 
+      const sizeFactor1 = Math.random() * 
         (cageAnimationConfig.maxSize - cageAnimationConfig.minSize) + 
         cageAnimationConfig.minSize;
-      
+      const sizeFactor2 = Math.random() * 
+        (cageAnimationConfig.maxSize - cageAnimationConfig.minSize) + 
+        cageAnimationConfig.minSize;
+
       // Appliquer les nouvelles dimensions avec transition CSS
       if (isHorizontal) {
-        // Pour les cages horizontales (haut/bas), on anime la largeur
-        const newWidth = original.width * sizeFactor;
+        // Pour les cages horizontales (haut/bas), on anime largeur ET hauteur
+        const newWidth = original.width * sizeFactor1;
+        const newHeight = original.height * sizeFactor2;
         cage.style.width = `${newWidth}px`;
+        cage.style.height = `${newHeight}px`;
         // Ajouter un peu de mouvement horizontal aléatoire
         if (cage.classList.contains('cage-top-1') || cage.classList.contains('cage-bottom-1')) {
           const newLeft = original.left + (Math.random() * 20 - 10);
           cage.style.left = `${newLeft}px`;
         }
       } else if (isSideLeft || isSideRight) {
-        const newHeight = original.height * sizeFactor;
+        // Pour les cages verticales (gauche/droite), on anime hauteur ET largeur
+        const newHeight = original.height * sizeFactor1;
+        const newWidth = original.width * sizeFactor2;
         cage.style.height = `${newHeight}px`;
+        cage.style.width = `${newWidth}px`;
         // Ajuster la position pour garder le centre à la même position
         const deltaHeight = newHeight - original.height;
         const newTop = Math.max(0, original.top - (deltaHeight / 2) + (Math.random() * 20 - 10));
@@ -809,7 +817,7 @@
         // Réinitialiser le jeu
         score = 0;
         updateScoreDisplay();
-        timerSeconds = 5; // 150
+        timerSeconds = 70; // 150
         timerDisplay.textContent = "02:30";
         timerDisplay.style.color = "white";
         timerDisplay.style.animation = "none";

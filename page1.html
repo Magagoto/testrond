@@ -509,6 +509,14 @@
     // Variable pour suivre l'état des collisions
     const collisionCooldowns = {};
 
+    // Ajouter une transition sur les coins pour l'animation fluide (à faire une seule fois)
+    function addCornerTransitions() {
+      document.querySelectorAll('.cage-corner').forEach(corner => {
+        corner.style.transition = "width 0.7s, height 0.7s";
+      });
+    }
+    addCornerTransitions();
+
     // Initialiser les animations des cages avec des transitions CSS plus rapides
     function initCageAnimations() {
       const cages = document.querySelectorAll('.cage');
@@ -540,20 +548,19 @@
       });
     }
 
-    // Animation d'une cage individuelle avec easing et variations plus importantes
+    // Animation d'une cage individuelle avec possibilité d'animer uniquement les coins
     function animateCage(cage) {
       const original = cageOriginalDimensions[cage.id];
-      
-      // Déterminer si la cage est horizontale ou verticale
       const isHorizontal = cage.classList.contains('cage-top') || cage.classList.contains('cage-bottom');
       const isSideLeft = cage.classList.contains('cage-left');
       const isSideRight = cage.classList.contains('cage-right');
-      
+      const corners = cage.querySelectorAll('.cage-corner');
+
       // Générer des valeurs aléatoires pour cette animation
       const duration = Math.random() * 
         (cageAnimationConfig.maxDuration - cageAnimationConfig.minDuration) + 
         cageAnimationConfig.minDuration;
-      
+
       const sizeFactor1 = Math.random() * 
         (cageAnimationConfig.maxSize - cageAnimationConfig.minSize) + 
         cageAnimationConfig.minSize;
@@ -561,36 +568,67 @@
         (cageAnimationConfig.maxSize - cageAnimationConfig.minSize) + 
         cageAnimationConfig.minSize;
 
-      // Appliquer les nouvelles dimensions avec transition CSS
-      if (isHorizontal) {
-        // Pour les cages horizontales (haut/bas), on anime largeur ET hauteur
-        const newWidth = original.width * sizeFactor1;
-        const newHeight = original.height * sizeFactor2;
-        cage.style.width = `${newWidth}px`;
-        cage.style.height = `${newHeight}px`;
-        // Ajouter un peu de mouvement horizontal aléatoire
-        if (cage.classList.contains('cage-top-1') || cage.classList.contains('cage-bottom-1')) {
-          const newLeft = original.left + (Math.random() * 20 - 10);
-          cage.style.left = `${newLeft}px`;
+      // 30% de chance d'animer uniquement les coins
+      const onlyCorners = Math.random() < 0.3;
+
+      if (onlyCorners) {
+        // Remettre la cage principale à sa taille d'origine
+        if (isHorizontal) {
+          cage.style.width = `${original.width}px`;
+          cage.style.height = `${original.height}px`;
+        } else if (isSideLeft || isSideRight) {
+          cage.style.width = `${original.width}px`;
+          cage.style.height = `${original.height}px`;
         }
-      } else if (isSideLeft || isSideRight) {
-        // Pour les cages verticales (gauche/droite), on anime hauteur ET largeur
-        const newHeight = original.height * sizeFactor1;
-        const newWidth = original.width * sizeFactor2;
-        cage.style.height = `${newHeight}px`;
-        cage.style.width = `${newWidth}px`;
-        // Ajuster la position pour garder le centre à la même position
-        const deltaHeight = newHeight - original.height;
-        const newTop = Math.max(0, original.top - (deltaHeight / 2) + (Math.random() * 20 - 10));
-        cage.style.top = `${newTop}px`;
+
+        // Allonger fortement les coins
+        corners.forEach(corner => {
+          if (isHorizontal) {
+            // Coins verticaux : on allonge la hauteur
+            corner.style.height = `${original.height * 3.5}px`; // très allongé
+            corner.style.width = `10px`;
+          } else if (isSideLeft || isSideRight) {
+            // Coins horizontaux : on allonge la largeur
+            corner.style.width = `${original.width * 3.5}px`; // très allongé
+            corner.style.height = `10px`;
+          }
+        });
+      } else {
+        // Animation normale de la cage principale
+        if (isHorizontal) {
+          const newWidth = original.width * sizeFactor1;
+          const newHeight = original.height * sizeFactor2;
+          cage.style.width = `${newWidth}px`;
+          cage.style.height = `${newHeight}px`;
+          if (cage.classList.contains('cage-top-1') || cage.classList.contains('cage-bottom-1')) {
+            const newLeft = original.left + (Math.random() * 20 - 10);
+            cage.style.left = `${newLeft}px`;
+          }
+        } else if (isSideLeft || isSideRight) {
+          const newHeight = original.height * sizeFactor1;
+          const newWidth = original.width * sizeFactor2;
+          cage.style.height = `${newHeight}px`;
+          cage.style.width = `${newWidth}px`;
+          const deltaHeight = newHeight - original.height;
+          const newTop = Math.max(0, original.top - (deltaHeight / 2) + (Math.random() * 20 - 10));
+          cage.style.top = `${newTop}px`;
+        }
+        // Remettre les coins à leur taille normale
+        corners.forEach(corner => {
+          if (isHorizontal) {
+            corner.style.height = `180%`;
+            corner.style.width = `10px`;
+          } else if (isSideLeft || isSideRight) {
+            corner.style.width = `180%`;
+            corner.style.height = `10px`;
+          }
+        });
       }
-      
-      // Mettre à jour les corners après la transition
+
       setTimeout(() => {
         updateCageCorners(cage);
       }, 100);
-      
-      // Planifier la prochaine animation
+
       setTimeout(() => {
         animateCage(cage);
       }, duration);

@@ -8,7 +8,10 @@
       margin: 0;
       height: 100%;
       overflow: hidden;
+      /* Fond sombre mat avec motif SVG ronds plus grands */
       background: #111;
+      background-image: url('data:image/svg+xml;utf8,<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="30" r="16" fill="none" stroke="%23222" stroke-width="1.2"/></svg>');
+      font-family: sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -22,18 +25,58 @@
       background: #0b03fc6e;
       background-size: 150% 150%;
       background-position: center;
-      transition: background 0.3s ease;
+      transition: background 0.3s, box-shadow 0.3s;
+      /* Effet néon autour de la balle */
+      box-shadow:
+        0 0 24px 8px #00ffcc,
+        0 0 48px 16px #2a489988,
+        0 2px 16px #00ffcc44;
+    } /* Ajout d'un effet de vitesse (motion blur) via pseudo-élément */
+    #ball:hover {
+      box-shadow:
+        0 0 48px 16px #00ffcc,
+        0 0 48px 16px #00ffcc,
+        0 0 64px 24px #2a4899cc,
+        0 2px 24px #00ffcc88;
+    }
+    #ball::after {
+      content: "";
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 120px;
+      height: 32px;
+      pointer-events: none;
+      border-radius: 32px;
+      transform: translate(-50%, -50%) scaleX(var(--ball-blur, 0.1));
+      opacity: var(--ball-blur-opacity, 0);
+      background: linear-gradient(90deg, #00ffcc55 0%, #fff0 100%);
+      filter: blur(8px);
+      transition: opacity 0.15s, transform 0.08s;
+      z-index: 1;
     }
 
     #start-btn {
-      padding: 1em 2em;
-      font-size: 1.2em;
-      background: #00ffcc;
-      border: none;
-      border-radius: 10px;
+      padding: 1em 2.5em;
+      font-size: 1.1em;
+      background: rgba(0,255,204,0.13);
+      color: #00ffcc;
+      border: 2px solid #00ffcc;
+      border-radius: 12px;
       cursor: pointer;
       z-index: 2;
       margin-top: 80px;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      font-weight: 600;
+      box-shadow: 0 2px 16px #00ffcc22, 0 1px 8px #0004;
+      backdrop-filter: blur(2px);
+      letter-spacing: 1px;
+      transition: background 0.3s, color 0.3s, border 0.3s, box-shadow 0.3s;
+    }
+    #start-btn:hover {
+      background: #00ffcc;
+      color: #111;
+      border: 2px solid #00ffcc;
+      box-shadow: 0 0 24px #00ffcc88;
     }
 
     #info {
@@ -42,6 +85,7 @@
       color: white;
       font-family: sans-serif;
       font-size: 0.9em;
+      display: none; /* caché, le texte va dans la bannière */
     }
     
     /* Style pour les cages rectangulaires */
@@ -197,6 +241,7 @@
       justify-content: center;
       z-index: 100;
       box-shadow: 0 2px 8px #0008;
+      gap: 32px; /* espace entre les éléments */
     }
     #banner-content {
       width: 100%;
@@ -224,6 +269,22 @@
       z-index: 10;
       margin: 0 10px;
     }
+    #gyro-status {
+      color: #00ffcc;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      font-size: 1.1em;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-shadow: 0 0 8px #00ffcc, 0 0 2px #fff;
+      margin-left: 24px;
+      transition: opacity 0.3s;
+      opacity: 0;
+      animation: none;
+    }
+    #gyro-status.active {
+      opacity: 1;
+      animation: blink 1.2s infinite alternate;
+    }
   </style>
 </head>
 <body>
@@ -232,6 +293,7 @@
     <div id="banner-content">
       <span id="timer-display">02:30</span>
       <span id="score-display">Score: 0</span>
+      <span id="gyro-status"></span>
     </div>
   </div>
   <button id="start-btn">Activer le gyroscope</button>
@@ -293,6 +355,7 @@
     const info = document.getElementById("info");
     const pointSound = document.getElementById("pointSound");
     const backgroundMusic = document.getElementById("backgroundMusic"); // Ajout de la référence à la musique
+    const gyroStatus = document.getElementById("gyro-status");
 
     // Dégradés cycliques prédéfinis
     const gradients = [
@@ -491,19 +554,26 @@
         posY = window.innerHeight - ballSize;
         velY *= -0.7;
       }
-      
+
       // Collision avec les cages rectangulaires
       checkCageCollisions();
 
       velX *= friction;
       velY *= friction;
 
+      // Effet de vitesse (motion blur) selon la vitesse de la balle
+      const speed = Math.sqrt(velX * velX + velY * velY);
+      const blurScale = Math.min(1.5, speed * 0.7);
+      const blurOpacity = Math.min(0.55, speed * 0.18);
+      ball.style.setProperty('--ball-blur', blurScale.toFixed(2));
+      ball.style.setProperty('--ball-blur-opacity', blurOpacity.toFixed(2));
+
       ball.style.left = posX + "px";
       ball.style.top = posY + "px";
 
       requestAnimationFrame(updateBallPosition);
     }
-    
+
     function changeBallColor() {
       const now = Date.now();
       // Vérifier si on peut changer la couleur (pour éviter les changements trop rapides)
@@ -511,7 +581,7 @@
         // Choisir un nouvel index différent de l'actuel
         let newIndex;
         do {
-          newIndex = Math.floor(Math.random() * gradients.length);
+          newIndex = Math.floor(Math.random() * gradients.length);    
         } while (newIndex === currentBallGradientIndex);
         
         currentBallGradientIndex = newIndex;
@@ -549,7 +619,7 @@
       cages.forEach((cage, index) => {
         // Transition plus rapide pour des animations plus dynamiques
         cage.style.transition = "width 0.8s ease-in-out, height 0.8s ease-in-out, top 0.8s ease-in-out";
-        
+
         // Stocker les dimensions originales
         const rect = cage.getBoundingClientRect();
         const style = window.getComputedStyle(cage);
@@ -562,10 +632,10 @@
           right: parseFloat(style.right || "0"),
           bottom: parseFloat(style.bottom || "0")
         };
-        
+
         // Initialiser le cooldown de collision
         collisionCooldowns[cage.id] = 0;
-        
+
         // Démarrer l'animation avec un délai aléatoire pour désynchroniser
         setTimeout(() => {
           animateCage(cage);
@@ -585,7 +655,6 @@
       const duration = Math.random() * 
         (cageAnimationConfig.maxDuration - cageAnimationConfig.minDuration) + 
         cageAnimationConfig.minDuration;
-
       const sizeFactor1 = Math.random() * 
         (cageAnimationConfig.maxSize - cageAnimationConfig.minSize) + 
         cageAnimationConfig.minSize;
@@ -639,7 +708,7 @@
           if (cage.classList.contains('cage-top-1') || cage.classList.contains('cage-bottom-1')) {
             const newLeft = original.left + (Math.random() * 20 - 10);
             cage.style.left = `${newLeft}px`;
-          }
+          };
         } else if (isSideLeft || isSideRight) {
           const newHeight = original.height * sizeFactor1;
           const newWidth = original.width * sizeFactor2;
@@ -796,7 +865,6 @@
 
     // Ajouter cette fonction pour actualiser les animations régulièrement
     function updateAnimations() {
-      updateCageCorners();
       requestAnimationFrame(updateAnimations);
     }
     updateAnimations();
@@ -809,6 +877,9 @@
                         initGame();
                     } else {
                         info.textContent = "Permission refusée ❌";
+                        gyroStatus.textContent = "Permission refusée ❌";
+                        gyroStatus.classList.remove("active");
+                        gyroStatus.style.opacity = 1;
                     }
                 })
                 .catch(console.error);
@@ -821,23 +892,19 @@
     function initGame() {
         enableGyro();
         startBtn.style.display = 'none';
-        info.textContent = "Gyroscope activé ✔️";
-        
-        // Réinitialiser les variables de jeu
-        gameActive = true;
-        timerSeconds = 70; // 70 secondes pour chaque partie
-        score = 0;
-        updateScoreDisplay();
+        gyroStatus.textContent = "Gyroscope activé ✔️";
+        gyroStatus.classList.add("active");
 
         // Afficher le timer dès le début
         timerDisplay.textContent = "01:10";
         timerDisplay.style.color = "white";
         timerDisplay.style.animation = "none";
-        
+
         // Démarrer le timer et les animations
+        timerSeconds = 70; // 70 secondes pour chaque partie
         timerInterval = setInterval(updateTimer, 1000);
         initCageAnimations();
-        
+
         // Démarrer la musique
         backgroundMusic.play();
     }
@@ -862,13 +929,12 @@
             endGame();
             return;
         }
-        
+
         timerSeconds--;
         const minutes = Math.floor(timerSeconds / 60);
         const seconds = timerSeconds % 60;
-
         timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        
+
         if (timerSeconds <= 30) {
             timerDisplay.style.color = "#FF0000";
             if (timerSeconds <= 10) {

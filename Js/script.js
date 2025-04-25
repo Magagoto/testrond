@@ -69,31 +69,26 @@ setInterval(() => {
     
     if (page1Circle) {
       const { x, y } = page1Circle;
-      console.log("Trouvé cercle page1:", x, y);
       
       // Obtenir la couleur du cercle spécial
       const targetColor = colorGrid[y][x];
-      console.log("Couleur cible:", targetColor);
       
       if (targetColor) {
         // Créer un ensemble pour suivre les cercles déjà traités
         const processed = new Set();
         
-        // Fonction pour explorer récursivement les cercles connectés
+        // Explore récursivement les cercles connectés de même couleur
         function processConnectedCircles(cx, cy) {
           const key = `${cx},${cy}`;
           if (processed.has(key) || !colorGrid[cy] || colorGrid[cy][cx] !== targetColor) {
             return;
           }
-          
           processed.add(key);
-          
           // Ajouter à la liste des cercles à cacher
           if (!hiddenCircles.has(key)) {
             hiddenCircles.add(key);
             disappearing.push({ x: cx, y: cy, start: performance.now() });
           }
-          
           // Explorer les 8 directions
           for (let dy = -1; dy <= 1; dy++) {
             for (let dx = -1; dx <= 1; dx++) {
@@ -108,7 +103,7 @@ setInterval(() => {
         
         // Commencer l'exploration à partir du cercle spécial
         processConnectedCircles(x, y);
-        
+
         // Déclencher l'effet sonore
         try {
           sound.currentTime = 0;
@@ -126,8 +121,8 @@ setInterval(() => {
 
 // Fonction pour générer des coordonnées aléatoires d'Orléans
 function generateRandomOrleansCoords() {
-  const lat = orleansLimits.minLat + Math.random() * (orleansLimits.maxLat - orleansLimits.maxLat);
-  const long = orleansLimits.minLong + Math.random() * (orleansLimits.maxLong - orleansLimits.maxLong);
+  const lat = orleansLimits.minLat + Math.random() * (orleansLimits.maxLat - orleansLimits.minLat);
+  const long = orleansLimits.minLong + Math.random() * (orleansLimits.maxLong - orleansLimits.minLong);
   return {
     lat: parseFloat(lat.toFixed(6)),  // 6 décimales pour la précision
     long: parseFloat(long.toFixed(6))

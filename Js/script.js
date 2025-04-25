@@ -54,6 +54,49 @@ const specialLinks = ["page1.html", "page2.html", "page3.html", "page4.html"];
 
 let linearGradientZones = new Map();
 
+setInterval(() => {
+  // verifier si le jeu précedent est gagné
+
+  let gameState = localStorage.getItem("game-state");
+  console.log("gameState", gameState);
+
+  if (gameState == "finished") {
+    localStorage.setItem("game-state", "undifined");
+
+    const lastSpecialCircleClicked = localStorage.getItem("last-special-circle-clicked");
+    if (lastSpecialCircleClicked) {
+      const { x, y } = JSON.parse(lastSpecialCircleClicked);
+      const targetColor = colorGrid[y]?.[x];
+
+      if (targetColor) {
+        // 8 directions autour du cercle central
+        const neighbors = [
+          { nx: x - 1, ny: y },     // gauche
+          { nx: x + 1, ny: y },     // droite
+          { nx: x,     ny: y - 1 }, // haut
+          { nx: x,     ny: y + 1 }, // bas
+          { nx: x - 1, ny: y - 1 }, // haut-gauche
+          { nx: x - 1, ny: y + 1 }, // bas-gauche
+          { nx: x + 1, ny: y - 1 }, // haut-droite
+          { nx: x + 1, ny: y + 1 }  // bas-droite
+        ];
+        for (const { nx, ny } of neighbors) {
+          if (
+            ny >= 0 && ny < colorGrid.length &&
+            nx >= 0 && nx < colorGrid[0].length &&
+            colorGrid[ny][nx] === targetColor &&
+            !hiddenCircles.has(`${nx},${ny}`)
+          ) {
+            hideSimilarCircles(ny, nx);
+          }
+        }
+      }
+      localStorage.removeItem("last-special-circle-clicked");
+    }
+  }
+
+}, 100);
+
 // Fonction pour générer des coordonnées aléatoires d'Orléans
 function generateRandomOrleansCoords() {
   const lat = orleansLimits.minLat + Math.random() * (orleansLimits.maxLat - orleansLimits.maxLat);
@@ -418,8 +461,13 @@ function handleInteraction(e) {
     }
   }
 
+
+  
+  localStorage.setItem("last-special-circle-clicked", JSON.stringify({ x: col, y: row }));
+}
+
+function hideSimilarCircles(row, col) {
   const color = colorGrid[row]?.[col];
-  if (!color) return;
 
   const toHide = new Set();
   const visited = new Set();
@@ -427,6 +475,12 @@ function handleInteraction(e) {
 
   while (queue.length) {
     const [x, y] = queue.shift();
+    // Vérifier que x et y sont dans la grille
+    if (
+      y < 0 || y >= colorGrid.length ||
+      x < 0 || x >= colorGrid[0].length
+    ) continue;
+
     const key = `${x},${y}`;
     if (visited.has(key)) continue;
     visited.add(key);
@@ -435,7 +489,17 @@ function handleInteraction(e) {
       toHide.add(key);
       for (let dy = -1; dy <= 1; dy++) {
         for (let dx = -1; dx <= 1; dx++) {
-          if (dx !== 0 || dy !== 0) queue.push([x + dx, y + dy]);
+          if (dx !== 0 || dy !== 0) {
+            const nx = x + dx;
+            const ny = y + dy;
+            // N'ajouter à la queue que si dans la grille
+            if (
+              ny >= 0 && ny < colorGrid.length &&
+              nx >= 0 && nx < colorGrid[0].length
+            ) {
+              queue.push([nx, ny]);
+            }
+          }
         }
       }
     }
@@ -460,7 +524,7 @@ function handleInteraction(e) {
     setTimeout(() => {
       assignCircleNumbersAndCoords();
     }, 500);
-  }
+  }  
 }
 
 function showMobileInfo() {

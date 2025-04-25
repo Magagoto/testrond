@@ -288,7 +288,7 @@
 
     let score = 0;
     let gameActive = false;
-    let timerSeconds = 150; // 2 minutes 30 secondes
+    let timerSeconds = 5; // 2 minutes 30 secondes
     let timerInterval;
     updateScoreDisplay();
 
@@ -743,7 +743,7 @@
         
         // Réinitialiser les variables de jeu
         gameActive = true;
-        timerSeconds = 150;
+        timerSeconds = 5;
         score = 0;
         updateScoreDisplay();
         
@@ -769,6 +769,7 @@
 
     startBtn.addEventListener("click", startGyro);
 
+    let timerDisplay;
     // Fonction pour mettre à jour le timer
     function updateTimer() {
         if (timerSeconds <= 0) {
@@ -779,6 +780,11 @@
         timerSeconds--;
         const minutes = Math.floor(timerSeconds / 60);
         const seconds = timerSeconds % 60;
+
+        if(!timerDisplay){
+            timerDisplay = document.getElementById("timer-display");
+        }
+
         timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         
         if (timerSeconds <= 30) {
@@ -803,10 +809,13 @@
         // Réinitialiser le jeu
         score = 0;
         updateScoreDisplay();
-        timerSeconds = 150;
+        timerSeconds = 5; //150
         timerDisplay.textContent = "02:30";
         timerDisplay.style.color = "white";
         timerDisplay.style.animation = "none";
+
+        // localStorage.setItem("game1-score", "5");
+        localStorage.setItem("game-state", "finished");
     }
   </script>
 </body>

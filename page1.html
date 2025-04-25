@@ -8,9 +8,10 @@
       margin: 0;
       height: 100%;
       overflow: hidden;
-      /* Fond sombre mat avec motif SVG ronds plus grands */
+      /* Fond sombre mat avec motif SVG grille de ronds alignés */
       background: #111;
-      background-image: url('data:image/svg+xml;utf8,<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="30" r="16" fill="none" stroke="%23222" stroke-width="1.2"/></svg>');
+      /* SVG de fond : grille de ronds alignés + UNE SEULE ligne continue qui traverse la page de façon "aléatoire" */
+      background-image: url('data:image/svg+xml;utf8,<svg width="120" height="120" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="30" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><circle cx="90" cy="30" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><circle cx="30" cy="90" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><circle cx="90" cy="90" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><polyline points="90,0 90,30 30,30 30,90 90,90 90,120" fill="none" stroke="%23222" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/></svg>');
       font-family: sans-serif;
       display: flex;
       justify-content: center;
@@ -244,7 +245,7 @@
       min-width: 340px;
       max-width: 100vw;
       height: 68px; /* plus large */
-      background: rgba(20, 20, 40, 0.95);
+      background: linear-gradient(180deg, #182c4c 0%, #111 100%) !important; /* bleu plus foncé */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -256,9 +257,10 @@
       width: 100%;
       max-width: 900px;
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-start; /* aligner à gauche */
       align-items: center;
       padding: 0 30px;
+      gap: 32px; /* espace entre les éléments */
     }
     #timer-display {
       position: static;
@@ -268,14 +270,13 @@
       font-family: sans-serif;
       z-index: 10;
       margin: 0 10px;
+      margin-right: 12px; /* espace à droite du chrono */
     }
     #score-display {
       position: static;
       color: white;
       font-size: 24px;
       font-weight: bold;
-      font-family: sans-serif;
-      z-index: 10;
       margin: 0 10px;
     }
     #gyro-status {
@@ -302,6 +303,7 @@
         min-width: 100vw;
         padding-left: 0;
         padding-right: 0;
+        background: linear-gradient(180deg, #182c4c 0%, #111 100%) !important;
       }
       #banner-content {
         max-width: 100vw;
@@ -314,7 +316,7 @@
   <!-- Bannière du jeu -->
   <div id="game-banner">
     <div id="banner-content">
-      <span id="timer-display">02:30</span>
+      <span id="timer-display">01:10</span>
       <span id="score-display">Score: 0</span>
       <span id="gyro-status"></span>
     </div>
@@ -911,12 +913,19 @@
         }
     }
 
+    // Remplacer la flèche par une icône SVG plus élégante
+    function setGyroStatusActive() {
+      // Icône SVG "check" stylisée, couleur néon
+      const checkSvg = `<svg width="22" height="22" viewBox="0 0 22 22" style="vertical-align:middle; margin-left:4px;" xmlns="http://www.w3.org/2000/svg"><polyline points="5,12 10,17 17,6" fill="none" stroke="#00ffcc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      gyroStatus.innerHTML = `Gyroscope activé ${checkSvg}`;
+      gyroStatus.classList.add("active");
+    }
+
     // Ajouter cette nouvelle fonction pour initialiser le jeu
     function initGame() {
         enableGyro();
         startBtn.style.display = 'none';
-        gyroStatus.textContent = "Gyroscope activé ✔️";
-        gyroStatus.classList.add("active");
+        setGyroStatusActive();
 
         // Afficher le timer dès le début
         timerDisplay.textContent = "01:10";
@@ -988,7 +997,5 @@
         // Indiquer que c'est le jeu de la page 1 qui est terminé
         localStorage.setItem("game-page", "page1");
         localStorage.setItem("game-state", "finished");
-    }
-  </script>
-</body>
-</html>
+    }  </script>
+  </script></body></html>

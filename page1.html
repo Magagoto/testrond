@@ -67,7 +67,11 @@
       border-radius: 12px;
       cursor: pointer;
       z-index: 2;
-      margin-top: 80px;
+      position: absolute;
+      left: 50%;
+      top: 38%; /* au-dessus de la balle */
+      transform: translate(-50%, -100%);
+      margin-top: 0;
       font-family: 'Fira Mono', 'Consolas', monospace;
       font-weight: 600;
       box-shadow: 0 2px 16px #00ffcc22, 0 1px 8px #0004;
@@ -100,38 +104,38 @@
     
     /* Cages du haut */
     .cage-top {
-      top: 70px; /* Juste sous la bannière (60px de hauteur + 10px de marge) */
-      height: 30px;
-      width: 30%;
+      top: 70px;
+      height: 44px;    /* encore augmenté */
+      width: 37%;      /* encore augmenté */
     }
     
     #cage-top-1 {
-      left: 15%;
+      left: 12%;
     }
     
     #cage-top-2 {
-      right: 15%;
+      right: 12%;
     }
     
     /* Cages du bas */
     .cage-bottom {
       bottom: 10px;
-      height: 30px;
-      width: 30%;
+      height: 44px;    /* encore augmenté */
+      width: 37%;      /* encore augmenté */
     }
     
     #cage-bottom-1 {
-      left: 15%;
+      left: 12%;
     }
     
     #cage-bottom-2 {
-      right: 15%;
+      right: 12%;
     }
     
     /* Cages latérales (3 de chaque côté) */
     .cage-left, .cage-right {
-      width: 30px;
-      height: 15%;
+      width: 44px;     /* encore augmenté */
+      height: 20%;     /* encore augmenté */
     }
     
     #cage-left-1 {
@@ -237,7 +241,9 @@
       top: 0;
       left: 0;
       width: 100vw;
-      height: 60px;
+      min-width: 340px;
+      max-width: 100vw;
+      height: 68px; /* plus large */
       background: rgba(20, 20, 40, 0.95);
       display: flex;
       align-items: center;
@@ -287,6 +293,20 @@
     #gyro-status.active {
       opacity: 1;
       animation: blink 1.2s infinite alternate;
+    }
+
+    /* Responsive : bannière plus large sur mobile */
+    @media (max-width: 600px) {
+      #game-banner {
+        height: 80px;
+        min-width: 100vw;
+        padding-left: 0;
+        padding-right: 0;
+      }
+      #banner-content {
+        max-width: 100vw;
+        padding: 0 8px;
+      }
     }
   </style>
 </head>

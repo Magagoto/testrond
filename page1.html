@@ -33,6 +33,7 @@
       border-radius: 10px;
       cursor: pointer;
       z-index: 2;
+      margin-top: 80px;
     }
 
     #info {
@@ -52,7 +53,7 @@
     
     /* Cages du haut */
     .cage-top {
-      top: 10px;
+      top: 70px; /* Juste sous la bannière (60px de hauteur + 10px de marge) */
       height: 30px;
       width: 30%;
     }
@@ -183,19 +184,56 @@
         to { opacity: 0.3; }
     }
 
+    /* Bannière en haut */
+    #game-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 60px;
+      background: rgba(20, 20, 40, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      box-shadow: 0 2px 8px #0008;
+    }
+    #banner-content {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 30px;
+    }
     #timer-display {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        color: white;
-        font-size: 24px;
-        font-weight: bold;
-        font-family: sans-serif;
-        z-index: 10;
+      position: static;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      font-family: sans-serif;
+      z-index: 10;
+      margin: 0 10px;
+    }
+    #score-display {
+      position: static;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      font-family: sans-serif;
+      z-index: 10;
+      margin: 0 10px;
     }
   </style>
 </head>
 <body>
+  <!-- Bannière du jeu -->
+  <div id="game-banner">
+    <div id="banner-content">
+      <span id="timer-display">02:30</span>
+      <span id="score-display">Score: 0</span>
+    </div>
+  </div>
   <button id="start-btn">Activer le gyroscope</button>
   <div id="ball"></div>
   <div id="info"></div>
@@ -249,8 +287,6 @@
     <div class="cage-corner corner-bottom"></div>
   </div>
 
-  <div id="timer-display">02:30</div>
-
   <script>
     const ball = document.getElementById("ball");
     const startBtn = document.getElementById("start-btn");
@@ -272,19 +308,8 @@
       ["#2A4899", "#00A993"]
     ];
 
-    // Ajouter ces éléments au début du script après la déclaration des variables existantes
-    const scoreDisplay = document.createElement("div");
-    scoreDisplay.id = "score-display";
-    scoreDisplay.style.position = "absolute";
-    scoreDisplay.style.top = "20px";
-    scoreDisplay.style.left = "50%";
-    scoreDisplay.style.transform = "translateX(-50%)";
-    scoreDisplay.style.color = "white";
-    scoreDisplay.style.fontSize = "24px";
-    scoreDisplay.style.fontWeight = "bold";
-    scoreDisplay.style.fontFamily = "sans-serif";
-    scoreDisplay.style.zIndex = "10";
-    document.body.appendChild(scoreDisplay);
+    const scoreDisplay = document.getElementById("score-display");
+    const timerDisplay = document.getElementById("timer-display");
 
     let score = 0;
     let gameActive = false;
@@ -571,6 +596,9 @@
       // 30% de chance d'animer uniquement les coins
       const onlyCorners = Math.random() < 0.3;
 
+      // 20% de chance d'allonger ENCORE PLUS les coins (super allongement)
+      const superLongCorners = onlyCorners && Math.random() < 0.2;
+
       if (onlyCorners) {
         // Remettre la cage principale à sa taille d'origine
         if (isHorizontal) {
@@ -581,15 +609,23 @@
           cage.style.height = `${original.height}px`;
         }
 
-        // Allonger fortement les coins
+        // Allonger fortement les coins, ou ENCORE PLUS si superLongCorners
         corners.forEach(corner => {
           if (isHorizontal) {
             // Coins verticaux : on allonge la hauteur
-            corner.style.height = `${original.height * 3.5}px`; // très allongé
+            if (superLongCorners) {
+              corner.style.height = `${original.height * 7}px`; // super allongé
+            } else {
+              corner.style.height = `${original.height * 3.5}px`; // très allongé
+            }
             corner.style.width = `10px`;
           } else if (isSideLeft || isSideRight) {
             // Coins horizontaux : on allonge la largeur
-            corner.style.width = `${original.width * 3.5}px`; // très allongé
+            if (superLongCorners) {
+              corner.style.width = `${original.width * 7}px`; // super allongé
+            } else {
+              corner.style.width = `${original.width * 3.5}px`; // très allongé
+            }
             corner.style.height = `10px`;
           }
         });
@@ -794,9 +830,6 @@
         updateScoreDisplay();
 
         // Afficher le timer dès le début
-        if(!timerDisplay){
-            timerDisplay = document.getElementById("timer-display");
-        }
         timerDisplay.textContent = "01:10";
         timerDisplay.style.color = "white";
         timerDisplay.style.animation = "none";
@@ -823,7 +856,6 @@
 
     startBtn.addEventListener("click", startGyro);
 
-    let timerDisplay;
     // Fonction pour mettre à jour le timer
     function updateTimer() {
         if (timerSeconds <= 0) {
@@ -834,10 +866,6 @@
         timerSeconds--;
         const minutes = Math.floor(timerSeconds / 60);
         const seconds = timerSeconds % 60;
-
-        if(!timerDisplay){
-            timerDisplay = document.getElementById("timer-display");
-        }
 
         timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         

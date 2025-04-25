@@ -288,7 +288,7 @@
 
     let score = 0;
     let gameActive = false;
-    let timerSeconds = 5; // 2 minutes 30 secondes
+    let timerSeconds = 70; // Durée de la partie en secondes
     let timerInterval;
     updateScoreDisplay();
 
@@ -751,9 +751,17 @@
         
         // Réinitialiser les variables de jeu
         gameActive = true;
-        timerSeconds = 5;
+        timerSeconds = 70; // 70 secondes pour chaque partie
         score = 0;
         updateScoreDisplay();
+
+        // Afficher le timer dès le début
+        if(!timerDisplay){
+            timerDisplay = document.getElementById("timer-display");
+        }
+        timerDisplay.textContent = "01:10";
+        timerDisplay.style.color = "white";
+        timerDisplay.style.animation = "none";
         
         // Démarrer le timer et les animations
         timerInterval = setInterval(updateTimer, 1000);
@@ -817,8 +825,8 @@
         // Réinitialiser le jeu
         score = 0;
         updateScoreDisplay();
-        timerSeconds = 70; // 150
-        timerDisplay.textContent = "02:30";
+        timerSeconds = 70; // Remettre à 70 secondes pour la prochaine partie
+        timerDisplay.textContent = "01:10";
         timerDisplay.style.color = "white";
         timerDisplay.style.animation = "none";
         

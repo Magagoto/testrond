@@ -55,46 +55,73 @@ const specialLinks = ["page1.html", "page2.html", "page3.html", "page4.html"];
 let linearGradientZones = new Map();
 
 setInterval(() => {
-  // verifier si le jeu précedent est gagné
-
+  // Vérifier si le jeu du gyroscope (page1) est terminé
   let gameState = localStorage.getItem("game-state");
-  console.log("gameState", gameState);
-
-  if (gameState == "finished") {
-    localStorage.setItem("game-state", "undifined");
-
-    const lastSpecialCircleClicked = localStorage.getItem("last-special-circle-clicked");
-    if (lastSpecialCircleClicked) {
-      const { x, y } = JSON.parse(lastSpecialCircleClicked);
-      const targetColor = colorGrid[y]?.[x];
-
+  let gamePage = localStorage.getItem("game-page");
+  
+  if (gameState === "finished" && gamePage === "page1") {
+    // Réinitialiser immédiatement pour éviter les traitements multiples
+    localStorage.setItem("game-state", "undefined");
+    localStorage.removeItem("game-page");
+    
+    // Trouver le cercle spécial qui mène à la page 1
+    const page1Circle = specialCircles.find(circle => circle.link === "page1.html");
+    
+    if (page1Circle) {
+      const { x, y } = page1Circle;
+      console.log("Trouvé cercle page1:", x, y);
+      
+      // Obtenir la couleur du cercle spécial
+      const targetColor = colorGrid[y][x];
+      console.log("Couleur cible:", targetColor);
+      
       if (targetColor) {
-        // 8 directions autour du cercle central
-        const neighbors = [
-          { nx: x - 1, ny: y },     // gauche
-          { nx: x + 1, ny: y },     // droite
-          { nx: x,     ny: y - 1 }, // haut
-          { nx: x,     ny: y + 1 }, // bas
-          { nx: x - 1, ny: y - 1 }, // haut-gauche
-          { nx: x - 1, ny: y + 1 }, // bas-gauche
-          { nx: x + 1, ny: y - 1 }, // haut-droite
-          { nx: x + 1, ny: y + 1 }  // bas-droite
-        ];
-        for (const { nx, ny } of neighbors) {
-          if (
-            ny >= 0 && ny < colorGrid.length &&
-            nx >= 0 && nx < colorGrid[0].length &&
-            colorGrid[ny][nx] === targetColor &&
-            !hiddenCircles.has(`${nx},${ny}`)
-          ) {
-            hideSimilarCircles(ny, nx);
+        // Créer un ensemble pour suivre les cercles déjà traités
+        const processed = new Set();
+        
+        // Fonction pour explorer récursivement les cercles connectés
+        function processConnectedCircles(cx, cy) {
+          const key = `${cx},${cy}`;
+          if (processed.has(key) || !colorGrid[cy] || colorGrid[cy][cx] !== targetColor) {
+            return;
+          }
+          
+          processed.add(key);
+          
+          // Ajouter à la liste des cercles à cacher
+          if (!hiddenCircles.has(key)) {
+            hiddenCircles.add(key);
+            disappearing.push({ x: cx, y: cy, start: performance.now() });
+          }
+          
+          // Explorer les 8 directions
+          for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+              if (dx !== 0 || dy !== 0) {
+                const nx = cx + dx;
+                const ny = cy + dy;
+                processConnectedCircles(nx, ny);
+              }
+            }
           }
         }
+        
+        // Commencer l'exploration à partir du cercle spécial
+        processConnectedCircles(x, y);
+        
+        // Déclencher l'effet sonore
+        try {
+          sound.currentTime = 0;
+          sound.play().catch(err => console.log("Impossible de jouer le son:", err));
+        } catch (e) {
+          console.log("Erreur audio:", e);
+        }
+        
+        // Mettre à jour la numérotation des cercles après disparition
+        setTimeout(assignCircleNumbersAndCoords, 500);
       }
-      localStorage.removeItem("last-special-circle-clicked");
     }
   }
-
 }, 100);
 
 // Fonction pour générer des coordonnées aléatoires d'Orléans

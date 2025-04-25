@@ -69,57 +69,99 @@ setInterval(() => {
     
     if (page1Circle) {
       const { x, y } = page1Circle;
-      
-      // Obtenir la couleur du cercle spécial
-      const targetColor = colorGrid[y][x];
-      
-      if (targetColor) {
-        // Créer un ensemble pour suivre les cercles déjà traités
-        const processed = new Set();
-        
-        // Explore récursivement les cercles connectés de même couleur
-        function processConnectedCircles(cx, cy) {
-          const key = `${cx},${cy}`;
-          if (processed.has(key) || !colorGrid[cy] || colorGrid[cy][cx] !== targetColor) {
-            return;
-          }
-          processed.add(key);
-          // Ajouter à la liste des cercles à cacher
-          if (!hiddenCircles.has(key)) {
-            hiddenCircles.add(key);
-            disappearing.push({ x: cx, y: cy, start: performance.now() });
-          }
-          // Explorer les 8 directions
-          for (let dy = -1; dy <= 1; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-              if (dx !== 0 || dy !== 0) {
-                const nx = cx + dx;
-                const ny = cy + dy;
-                processConnectedCircles(nx, ny);
-              }
-            }
-          }
-        }
-        
-        // Commencer l'exploration à partir du cercle spécial
-        processConnectedCircles(x, y);
 
-        // Déclencher l'effet sonore
-        try {
-          sound.currentTime = 0;
-          sound.play().catch(err => console.log("Impossible de jouer le son:", err));
-        } catch (e) {
-          console.log("Erreur audio:", e);
+      // Récupérer les coordonnées des 9 cercles autour (y compris le centre)
+      const neighbors = [];
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx;
+          const ny = y + dy;
+          if (
+            ny >= 0 && ny < colorGrid.length &&
+            nx >= 0 && nx < colorGrid[0].length
+          ) {
+            neighbors.push({ x: nx, y: ny });
+          }
         }
-        
-        // Mettre à jour la numérotation des cercles après disparition
-        setTimeout(assignCircleNumbersAndCoords, 500);
       }
+
+      // Identifier toutes les couleurs distinctes autour
+      const colorsSet = new Set();
+      neighbors.forEach(({ x: nx, y: ny }) => {
+        const color = colorGrid[ny][nx];
+        if (color) colorsSet.add(color);
+      });
+
+      // Pour chaque couleur, effacer la zone connectée à chaque voisin de cette couleur
+      const processed = new Set();
+      colorsSet.forEach(targetColor => {
+        neighbors.forEach(({ x: nx, y: ny }) => {
+          if (colorGrid[ny][nx] === targetColor) {
+            // On utilise la version robuste de processConnectedCircles
+            processConnectedCircles(nx, ny, targetColor, processed);
+          }
+        });
+      });
+
+      // Logs pour debug
+      console.log(`Zones effacées pour ${colorsSet.size} couleurs autour du cercle spécial page1`);
+      console.log(`Cercles à cacher: ${hiddenCircles.size}`);
+      console.log(`Cercles disparaissant: ${disappearing.length}`);
+
+      // Déclencher l'effet sonore
+      try {
+        sound.currentTime = 0;
+        sound.play().catch(err => console.log("Impossible de jouer le son:", err));
+      } catch (e) {
+        console.log("Erreur audio:", e);
+      }
+      
+      // Mettre à jour la numérotation des cercles après disparition
+      setTimeout(assignCircleNumbersAndCoords, 500);
     }
   }
 }, 100);
 
-// Fonction pour générer des coordonnées aléatoires d'Orléans
+// Fonction robuste pour traiter les cercles connectés de même couleur.
+// Utilisable ailleurs dans le code si besoin.
+function processConnectedCircles(cx, cy, targetColor, processed) {
+  const key = `${cx},${cy}`;
+  // Vérifier si le cercle est déjà traité ou s'il n'existe pas ou s'il n'est pas de la même couleur
+  if (
+    processed.has(key) ||
+    !colorGrid[cy] ||
+    !colorGrid[cy][cx] ||
+    colorGrid[cy][cx] !== targetColor
+  ) {
+    return;
+  }
+  
+  processed.add(key);
+  // Ajouter à la liste des cercles à cacher
+  if (!hiddenCircles.has(key)) {
+    hiddenCircles.add(key);
+    disappearing.push({ x: cx, y: cy, start: performance.now() });
+  }
+  
+  // Explorer les 8 directions autour du cercle
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      if (dx === 0 && dy === 0) continue; // Sauter le cercle lui-même
+      
+      const nx = cx + dx;
+      const ny = cy + dy;
+      
+      // Vérifier que les coordonnées sont valides avant d'appeler récursivement
+      if (
+        ny >= 0 && ny < colorGrid.length &&
+        nx >= 0 && nx < colorGrid[0].length
+      ) {
+        processConnectedCircles(nx, ny, targetColor, processed);
+      }
+    }
+  }
+}
+
 function generateRandomOrleansCoords() {
   const lat = orleansLimits.minLat + Math.random() * (orleansLimits.maxLat - orleansLimits.minLat);
   const long = orleansLimits.minLong + Math.random() * (orleansLimits.maxLong - orleansLimits.minLong);

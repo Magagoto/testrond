@@ -8,7 +8,11 @@
       margin: 0;
       height: 100%;
       overflow: hidden;
+      /* Fond sombre mat avec motif SVG grille de ronds alignés */
       background: #111;
+      /* SVG de fond : grille de ronds alignés + UNE SEULE ligne continue qui traverse la page de façon "aléatoire" */
+      background-image: url('data:image/svg+xml;utf8,<svg width="120" height="120" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="30" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><circle cx="90" cy="30" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><circle cx="30" cy="90" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><circle cx="90" cy="90" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><polyline points="90,0 90,30 30,30 30,90 90,90 90,120" fill="none" stroke="%23222" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/></svg>');
+      font-family: sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -22,17 +26,65 @@
       background: #0b03fc6e;
       background-size: 150% 150%;
       background-position: center;
-      transition: background 0.3s ease;
+      transition: background 0.3s, box-shadow 0.3s;
+      /* Effet néon autour de la balle */
+      box-shadow:
+        0 0 24px 8px #00ffcc,
+        0 0 48px 16px #2a489988,
+        0 2px 16px #00ffcc44;
+      z-index: 10;
+      isolation: isolate;
+    }
+    #ball:hover {
+      box-shadow:
+        0 0 48px 16px #00ffcc,
+        0 0 64px 24px #2a4899cc,
+        0 2px 24px #00ffcc88;
+    }
+    #ball::after {
+      content: "";
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 220px;
+      height: 80px;
+      pointer-events: none;
+      border-radius: 50%;
+      /* Effet de halo/fumée dynamique */
+      transform: translate(-50%, -50%) scaleX(var(--ball-blur, 0.1));
+      opacity: var(--ball-blur-opacity, 0);
+      background: radial-gradient(ellipse at 60% 50%, #00ffcc55 0%, #2a4899cc 60%, #1110 100%);
+      filter: blur(18px);
+      transition: opacity 0.18s, transform 0.09s;
+      z-index: -1;
+      mix-blend-mode: lighten;
     }
 
     #start-btn {
-      padding: 1em 2em;
-      font-size: 1.2em;
-      background: #00ffcc;
-      border: none;
-      border-radius: 10px;
+      padding: 1em 2.5em;
+      font-size: 1.1em;
+      background: rgba(0,255,204,0.13);
+      color: #00ffcc;
+      border: 2px solid #00ffcc;
+      border-radius: 12px;
       cursor: pointer;
       z-index: 2;
+      position: absolute;
+      left: 50%;
+      top: 38%; /* au-dessus de la balle */
+      transform: translate(-50%, -100%);
+      margin-top: 0;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      font-weight: 600;
+      box-shadow: 0 2px 16px #00ffcc22, 0 1px 8px #0004;
+      backdrop-filter: blur(2px);
+      letter-spacing: 1px;
+      transition: background 0.3s, color 0.3s, border 0.3s, box-shadow 0.3s;
+    }
+    #start-btn:hover {
+      background: #00ffcc;
+      color: #111;
+      border: 2px solid #00ffcc;
+      box-shadow: 0 0 24px #00ffcc88;
     }
 
     #info {
@@ -41,6 +93,7 @@
       color: white;
       font-family: sans-serif;
       font-size: 0.9em;
+      display: none; /* caché, le texte va dans la bannière */
     }
     
     /* Style pour les cages rectangulaires */
@@ -52,38 +105,38 @@
     
     /* Cages du haut */
     .cage-top {
-      top: 10px;
-      height: 30px;
-      width: 30%;
+      top: 70px;
+      height: 44px;    /* encore augmenté */
+      width: 37%;      /* encore augmenté */
     }
     
     #cage-top-1 {
-      left: 15%;
+      left: 12%;
     }
     
     #cage-top-2 {
-      right: 15%;
+      right: 12%;
     }
     
     /* Cages du bas */
     .cage-bottom {
       bottom: 10px;
-      height: 30px;
-      width: 30%;
+      height: 44px;    /* encore augmenté */
+      width: 37%;      /* encore augmenté */
     }
     
     #cage-bottom-1 {
-      left: 15%;
+      left: 12%;
     }
     
     #cage-bottom-2 {
-      right: 15%;
+      right: 12%;
     }
     
     /* Cages latérales (3 de chaque côté) */
     .cage-left, .cage-right {
-      width: 30px;
-      height: 15%;
+      width: 44px;     /* encore augmenté */
+      height: 20%;     /* encore augmenté */
     }
     
     #cage-left-1 {
@@ -183,19 +236,91 @@
         to { opacity: 0.3; }
     }
 
+    /* Bannière en haut */
+    #game-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      min-width: 340px;
+      max-width: 100vw;
+      height: 68px; /* plus large */
+      background: linear-gradient(180deg, #182c4c 0%, #111 100%) !important; /* bleu plus foncé */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      box-shadow: 0 2px 8px #0008;
+      gap: 32px; /* espace entre les éléments */
+    }
+    #banner-content {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: flex-start; /* aligner à gauche */
+      align-items: center;
+      padding: 0 30px;
+      gap: 32px; /* espace entre les éléments */
+    }
     #timer-display {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        color: white;
-        font-size: 24px;
-        font-weight: bold;
-        font-family: sans-serif;
-        z-index: 10;
+      position: static;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      font-family: sans-serif;
+      z-index: 10;
+      margin: 0 10px;
+      margin-right: 12px; /* espace à droite du chrono */
+    }
+    #score-display {
+      position: static;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      margin: 0 10px;
+    }
+    #gyro-status {
+      color: #00ffcc;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      font-size: 1.1em;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-shadow: 0 0 8px #00ffcc, 0 0 2px #fff;
+      margin-left: 24px;
+      transition: opacity 0.3s;
+      opacity: 0;
+      animation: none;
+    }
+    #gyro-status.active {
+      opacity: 1;
+      animation: blink 1.2s infinite alternate;
+    }
+
+    /* Responsive : bannière plus large sur mobile */
+    @media (max-width: 600px) {
+      #game-banner {
+        height: 80px;
+        min-width: 100vw;
+        padding-left: 0;
+        padding-right: 0;
+        background: linear-gradient(180deg, #182c4c 0%, #111 100%) !important;
+      }
+      #banner-content {
+        max-width: 100vw;
+        padding: 0 8px;
+      }
     }
   </style>
 </head>
 <body>
+  <!-- Bannière du jeu -->
+  <div id="game-banner">
+    <div id="banner-content">
+      <span id="timer-display">01:10</span>
+      <span id="score-display">Score: 0</span>
+      <span id="gyro-status"></span>
+    </div>
+  </div>
   <button id="start-btn">Activer le gyroscope</button>
   <div id="ball"></div>
   <div id="info"></div>
@@ -249,14 +374,13 @@
     <div class="cage-corner corner-bottom"></div>
   </div>
 
-  <div id="timer-display">02:30</div>
-
   <script>
     const ball = document.getElementById("ball");
     const startBtn = document.getElementById("start-btn");
     const info = document.getElementById("info");
     const pointSound = document.getElementById("pointSound");
     const backgroundMusic = document.getElementById("backgroundMusic"); // Ajout de la référence à la musique
+    const gyroStatus = document.getElementById("gyro-status");
 
     // Dégradés cycliques prédéfinis
     const gradients = [
@@ -272,23 +396,12 @@
       ["#2A4899", "#00A993"]
     ];
 
-    // Ajouter ces éléments au début du script après la déclaration des variables existantes
-    const scoreDisplay = document.createElement("div");
-    scoreDisplay.id = "score-display";
-    scoreDisplay.style.position = "absolute";
-    scoreDisplay.style.top = "20px";
-    scoreDisplay.style.left = "50%";
-    scoreDisplay.style.transform = "translateX(-50%)";
-    scoreDisplay.style.color = "white";
-    scoreDisplay.style.fontSize = "24px";
-    scoreDisplay.style.fontWeight = "bold";
-    scoreDisplay.style.fontFamily = "sans-serif";
-    scoreDisplay.style.zIndex = "10";
-    document.body.appendChild(scoreDisplay);
+    const scoreDisplay = document.getElementById("score-display");
+    const timerDisplay = document.getElementById("timer-display");
 
     let score = 0;
     let gameActive = false;
-    let timerSeconds = 150; // 2 minutes 30 secondes
+    let timerSeconds = 70; // Durée de la partie en secondes
     let timerInterval;
     updateScoreDisplay();
 
@@ -466,19 +579,26 @@
         posY = window.innerHeight - ballSize;
         velY *= -0.7;
       }
-      
+
       // Collision avec les cages rectangulaires
       checkCageCollisions();
 
       velX *= friction;
-      velY *= friction;
+      velY *= friction; (1.2);
+
+      // Effet de vitesse (motion blur) selon la vitesse de la balle
+      const speed = Math.sqrt(velX * velX + velY * velY);
+      const blurScale = Math.min(1.5, speed * 0.7);
+      const blurOpacity = Math.min(0.55, speed * 0.18);
+      ball.style.setProperty('--ball-blur', blurScale.toFixed(2));
+      ball.style.setProperty('--ball-blur-opacity', blurOpacity.toFixed(2));
 
       ball.style.left = posX + "px";
       ball.style.top = posY + "px";
 
       requestAnimationFrame(updateBallPosition);
     }
-    
+
     function changeBallColor() {
       const now = Date.now();
       // Vérifier si on peut changer la couleur (pour éviter les changements trop rapides)
@@ -486,7 +606,7 @@
         // Choisir un nouvel index différent de l'actuel
         let newIndex;
         do {
-          newIndex = Math.floor(Math.random() * gradients.length);
+          newIndex = Math.floor(Math.random() * gradients.length);    
         } while (newIndex === currentBallGradientIndex);
         
         currentBallGradientIndex = newIndex;
@@ -509,6 +629,14 @@
     // Variable pour suivre l'état des collisions
     const collisionCooldowns = {};
 
+    // Ajouter une transition sur les coins pour l'animation fluide (à faire une seule fois)
+    function addCornerTransitions() {
+      document.querySelectorAll('.cage-corner').forEach(corner => {
+        corner.style.transition = "width 0.7s, height 0.7s";
+      });
+    }
+    addCornerTransitions();
+
     // Initialiser les animations des cages avec des transitions CSS plus rapides
     function initCageAnimations() {
       const cages = document.querySelectorAll('.cage');
@@ -516,7 +644,7 @@
       cages.forEach((cage, index) => {
         // Transition plus rapide pour des animations plus dynamiques
         cage.style.transition = "width 0.8s ease-in-out, height 0.8s ease-in-out, top 0.8s ease-in-out";
-        
+
         // Stocker les dimensions originales
         const rect = cage.getBoundingClientRect();
         const style = window.getComputedStyle(cage);
@@ -529,10 +657,10 @@
           right: parseFloat(style.right || "0"),
           bottom: parseFloat(style.bottom || "0")
         };
-        
+
         // Initialiser le cooldown de collision
         collisionCooldowns[cage.id] = 0;
-        
+
         // Démarrer l'animation avec un délai aléatoire pour désynchroniser
         setTimeout(() => {
           animateCage(cage);
@@ -540,49 +668,97 @@
       });
     }
 
-    // Animation d'une cage individuelle avec easing et variations plus importantes
+    // Animation d'une cage individuelle avec possibilité d'animer uniquement les coins
     function animateCage(cage) {
       const original = cageOriginalDimensions[cage.id];
-      
-      // Déterminer si la cage est horizontale ou verticale
       const isHorizontal = cage.classList.contains('cage-top') || cage.classList.contains('cage-bottom');
       const isSideLeft = cage.classList.contains('cage-left');
       const isSideRight = cage.classList.contains('cage-right');
-      
+      const corners = cage.querySelectorAll('.cage-corner');
+
       // Générer des valeurs aléatoires pour cette animation
       const duration = Math.random() * 
         (cageAnimationConfig.maxDuration - cageAnimationConfig.minDuration) + 
         cageAnimationConfig.minDuration;
-      
-      const sizeFactor = Math.random() * 
+      const sizeFactor1 = Math.random() * 
         (cageAnimationConfig.maxSize - cageAnimationConfig.minSize) + 
         cageAnimationConfig.minSize;
-      
-      // Appliquer les nouvelles dimensions avec transition CSS
-      if (isHorizontal) {
-        // Pour les cages horizontales (haut/bas), on anime la largeur
-        const newWidth = original.width * sizeFactor;
-        cage.style.width = `${newWidth}px`;
-        // Ajouter un peu de mouvement horizontal aléatoire
-        if (cage.classList.contains('cage-top-1') || cage.classList.contains('cage-bottom-1')) {
-          const newLeft = original.left + (Math.random() * 20 - 10);
-          cage.style.left = `${newLeft}px`;
+      const sizeFactor2 = Math.random() * 
+        (cageAnimationConfig.maxSize - cageAnimationConfig.minSize) + 
+        cageAnimationConfig.minSize;
+
+      // 30% de chance d'animer uniquement les coins
+      const onlyCorners = Math.random() < 0.3;
+
+      // 20% de chance d'allonger ENCORE PLUS les coins (super allongement)
+      const superLongCorners = onlyCorners && Math.random() < 0.2;
+
+      if (onlyCorners) {
+        // Remettre la cage principale à sa taille d'origine
+        if (isHorizontal) {
+          cage.style.width = `${original.width}px`;
+          cage.style.height = `${original.height}px`;
+        } else if (isSideLeft || isSideRight) {
+          cage.style.width = `${original.width}px`;
+          cage.style.height = `${original.height}px`;
         }
-      } else if (isSideLeft || isSideRight) {
-        const newHeight = original.height * sizeFactor;
-        cage.style.height = `${newHeight}px`;
-        // Ajuster la position pour garder le centre à la même position
-        const deltaHeight = newHeight - original.height;
-        const newTop = Math.max(0, original.top - (deltaHeight / 2) + (Math.random() * 20 - 10));
-        cage.style.top = `${newTop}px`;
+
+        // Allonger fortement les coins, ou ENCORE PLUS si superLongCorners
+        corners.forEach(corner => {
+          if (isHorizontal) {
+            // Coins verticaux : on allonge la hauteur
+            if (superLongCorners) {
+              corner.style.height = `${original.height * 7}px`; // super allongé
+            } else {
+              corner.style.height = `${original.height * 3.5}px`; // très allongé
+            }
+            corner.style.width = `10px`;
+          } else if (isSideLeft || isSideRight) {
+            // Coins horizontaux : on allonge la largeur
+            if (superLongCorners) {
+              corner.style.width = `${original.width * 7}px`; // super allongé
+            } else {
+              corner.style.width = `${original.width * 3.5}px`; // très allongé
+            }
+            corner.style.height = `10px`;
+          }
+        });
+      } else {
+        // Animation normale de la cage principale
+        if (isHorizontal) {
+          const newWidth = original.width * sizeFactor1;
+          const newHeight = original.height * sizeFactor2;
+          cage.style.width = `${newWidth}px`;
+          cage.style.height = `${newHeight}px`;
+          if (cage.classList.contains('cage-top-1') || cage.classList.contains('cage-bottom-1')) {
+            const newLeft = original.left + (Math.random() * 20 - 10);
+            cage.style.left = `${newLeft}px`;
+          };
+        } else if (isSideLeft || isSideRight) {
+          const newHeight = original.height * sizeFactor1;
+          const newWidth = original.width * sizeFactor2;
+          cage.style.height = `${newHeight}px`;
+          cage.style.width = `${newWidth}px`;
+          const deltaHeight = newHeight - original.height;
+          const newTop = Math.max(0, original.top - (deltaHeight / 2) + (Math.random() * 20 - 10));
+          cage.style.top = `${newTop}px`;
+        }
+        // Remettre les coins à leur taille normale
+        corners.forEach(corner => {
+          if (isHorizontal) {
+            corner.style.height = `180%`;
+            corner.style.width = `10px`;
+          } else if (isSideLeft || isSideRight) {
+            corner.style.width = `180%`;
+            corner.style.height = `10px`;
+          }
+        });
       }
-      
-      // Mettre à jour les corners après la transition
+
       setTimeout(() => {
         updateCageCorners(cage);
       }, 100);
-      
-      // Planifier la prochaine animation
+
       setTimeout(() => {
         animateCage(cage);
       }, duration);
@@ -714,7 +890,6 @@
 
     // Ajouter cette fonction pour actualiser les animations régulièrement
     function updateAnimations() {
-      updateCageCorners();
       requestAnimationFrame(updateAnimations);
     }
     updateAnimations();
@@ -727,6 +902,9 @@
                         initGame();
                     } else {
                         info.textContent = "Permission refusée ❌";
+                        gyroStatus.textContent = "Permission refusée ❌";
+                        gyroStatus.classList.remove("active");
+                        gyroStatus.style.opacity = 1;
                     }
                 })
                 .catch(console.error);
@@ -735,22 +913,30 @@
         }
     }
 
+    // Remplacer la flèche par une icône SVG plus élégante
+    function setGyroStatusActive() {
+      // Icône SVG "check" stylisée, couleur néon
+      const checkSvg = `<svg width="22" height="22" viewBox="0 0 22 22" style="vertical-align:middle; margin-left:4px;" xmlns="http://www.w3.org/2000/svg"><polyline points="5,12 10,17 17,6" fill="none" stroke="#00ffcc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      gyroStatus.innerHTML = `Gyroscope activé ${checkSvg}`;
+      gyroStatus.classList.add("active");
+    }
+
     // Ajouter cette nouvelle fonction pour initialiser le jeu
     function initGame() {
         enableGyro();
         startBtn.style.display = 'none';
-        info.textContent = "Gyroscope activé ✔️";
-        
-        // Réinitialiser les variables de jeu
-        gameActive = true;
-        timerSeconds = 150;
-        score = 0;
-        updateScoreDisplay();
-        
+        setGyroStatusActive();
+
+        // Afficher le timer dès le début
+        timerDisplay.textContent = "01:10";
+        timerDisplay.style.color = "white";
+        timerDisplay.style.animation = "none";
+
         // Démarrer le timer et les animations
+        timerSeconds = 70; // 70 secondes pour chaque partie
         timerInterval = setInterval(updateTimer, 1000);
         initCageAnimations();
-        
+
         // Démarrer la musique
         backgroundMusic.play();
     }
@@ -775,12 +961,12 @@
             endGame();
             return;
         }
-        
+
         timerSeconds--;
         const minutes = Math.floor(timerSeconds / 60);
         const seconds = timerSeconds % 60;
         timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        
+
         if (timerSeconds <= 30) {
             timerDisplay.style.color = "#FF0000";
             if (timerSeconds <= 10) {
@@ -803,11 +989,13 @@
         // Réinitialiser le jeu
         score = 0;
         updateScoreDisplay();
-        timerSeconds = 150;
-        timerDisplay.textContent = "02:30";
+        timerSeconds = 70; // Remettre à 70 secondes pour la prochaine partie
+        timerDisplay.textContent = "01:10";
         timerDisplay.style.color = "white";
         timerDisplay.style.animation = "none";
-    }
-  </script>
-</body>
-</html>
+        
+        // Indiquer que c'est le jeu de la page 1 qui est terminé
+        localStorage.setItem("game-page", "page1");
+        localStorage.setItem("game-state", "finished");
+    }  </script>
+  </script></body></html>

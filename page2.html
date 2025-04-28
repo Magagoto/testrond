@@ -2,42 +2,50 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Page 2</title>
+  <title>Détection d'accélération</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: sans-serif;
+      font-size: 2rem;
+      transition: background-color 0.5s;
+      background-color: white;
+    }
+  </style>
 </head>
-<body style="background-color: black; color: white;">
-  <h1>Bienvenue sur la Page 2</h1>
-  <button id="deleteCirclesButton" class="delete-circles-button">Retour</button>
+<body>
+  <div id="message">Bouge ton téléphone !</div>
+
   <script>
-    document.getElementById('deleteCirclesButton').addEventListener('click', function() {
-      // Retourner à la page précédente
-      history.back();
+    let lastSpeed = 0;
+
+    // Écoute les changements d'accélération
+    window.addEventListener('devicemotion', (event) => {
+      if (event.accelerationIncludingGravity) {
+        const acc = event.accelerationIncludingGravity;
+        const speed = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
+
+        const deltaSpeed = speed - lastSpeed;
+
+        const threshold = 1; // seuil pour éviter les petits changements naturels
+
+        if (deltaSpeed > threshold) {
+          // Accélération
+          document.body.style.backgroundColor = 'limegreen';
+          document.getElementById('message').textContent = 'Tu accélères ! 🚀';
+        } else if (deltaSpeed < -threshold) {
+          // Ralentissement
+          document.body.style.backgroundColor = 'tomato';
+          document.getElementById('message').textContent = 'Tu ralentis ! 🛑';
+        }
+
+        lastSpeed = speed;
+      }
     });
   </script>
 </body>
-<style>
-  .delete-circles-button {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 15px 30px;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s, transform 0.2s;
-  }
-
-  .delete-circles-button:hover {
-    background-color: #0056b3;
-  }
-
-  .delete-circles-button:active {
-    transform: translateX(-50%) scale(0.95);
-  }
-</style>
 </html>
-

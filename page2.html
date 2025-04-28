@@ -1,51 +1,116 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Détection d'accélération</title>
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: sans-serif;
-      font-size: 2rem;
-      transition: background-color 0.5s;
-      background-color: white;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Détection d'accélération</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: sans-serif;
+            font-size: 1.5rem;
+            transition: background-color 0.5s;
+            background-color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            margin-top: 20px;
+            border-radius: 8px;
+            background-color: #007aff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #values {
+            font-size: 1rem;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-  <div id="message">Bouge ton téléphone !</div>
+    <div id="message">Appuyez sur le bouton pour commencer</div>
+    <button id="startButton">Activer l'accéléromètre</button>
+    <div id="values"></div>
 
-  <script>
-    let lastSpeed = 0;
-
-    // Écoute les changements d'accélération
-    window.addEventListener('devicemotion', (event) => {
-      if (event.accelerationIncludingGravity) {
-        const acc = event.accelerationIncludingGravity;
-        const speed = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
-
-        const deltaSpeed = speed - lastSpeed;
-
-        const threshold = 1; // seuil pour éviter les petits changements naturels
-
-        if (deltaSpeed > threshold) {
-          // Accélération
-          document.body.style.backgroundColor = 'limegreen';
-          document.getElementById('message').textContent = 'Tu accélères ! 🚀';
-        } else if (deltaSpeed < -threshold) {
-          // Ralentissement
-          document.body.style.backgroundColor = 'tomato';
-          document.getElementById('message').textContent = 'Tu ralentis ! 🛑';
+    <script>
+        let lastSpeed = 0;
+        let isRunning = false;
+        const valuesElement = document.getElementById('values');
+        const messageElement = document.getElementById('message');
+        const startButton = document.getElementById('startButton');
+        
+        // Fonction qui démarre la détection
+        function startDetection() {
+            if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                // iOS 13+ nécessite une permission explicite
+                DeviceMotionEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            initAccelerometer();
+                            messageElement.textContent = "Bouge ton téléphone !";
+                            startButton.style.display = 'none';
+                        } else {
+                            messageElement.textContent = "Permission refusée pour l'accéléromètre";
+                        }
+                    })
+                    .catch(error => {
+                        messageElement.textContent = "Erreur: " + error.message;
+                    });
+            } else {
+                // Pour les appareils qui n'ont pas besoin de permission
+                initAccelerometer();
+                messageElement.textContent = "Bouge ton téléphone !";
+                startButton.style.display = 'none';
+            }
         }
-
-        lastSpeed = speed;
-      }
-    });
-  </script>
+        
+        // Initialise l'accéléromètre
+        function initAccelerometer() {
+            isRunning = true;
+            
+            window.addEventListener('devicemotion', handleMotion);
+        }
+        
+        // Gère les événements de mouvement
+        function handleMotion(event) {
+            if (!isRunning) return;
+            
+            if (event.accelerationIncludingGravity) {
+                const acc = event.accelerationIncludingGravity;
+                
+                // Afficher les valeurs brutes pour debug
+                valuesElement.textContent = `x: ${acc.x.toFixed(2)}, y: ${acc.y.toFixed(2)}, z: ${acc.z.toFixed(2)}`;
+                
+                const speed = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
+                const deltaSpeed = speed - lastSpeed;
+                const threshold = 3; // seuil augmenté pour iOS
+                
+                if (Math.abs(deltaSpeed) > threshold) {
+                    if (deltaSpeed > 0) {
+                        // Accélération
+                        document.body.style.backgroundColor = 'limegreen';
+                        messageElement.textContent = 'Tu accélères ! 🚀';
+                    } else {
+                        // Ralentissement
+                        document.body.style.backgroundColor = 'tomato';
+                        messageElement.textContent = 'Tu ralentis ! 🛑';
+                    }
+                }
+                
+                lastSpeed = speed;
+            }
+        }
+        
+        // Attache l'événement au bouton
+        startButton.addEventListener('click', startDetection);
+    </script>
 </body>
 </html>

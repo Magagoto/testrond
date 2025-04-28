@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Détection d'accélération</title>
+    <title>Détection de vitesse de marche</title>
     <style>
         body {
             margin: 0;
@@ -13,11 +13,9 @@
             justify-content: center;
             align-items: center;
             font-family: sans-serif;
-            font-size: 1.5rem;
-            transition: background-color 0.5s;
-            background-color: white;
             text-align: center;
             padding: 20px;
+            background-color: #f8f9fa;
         }
         button {
             padding: 15px 30px;
@@ -29,60 +27,93 @@
             border: none;
             cursor: pointer;
         }
-        #values {
-            font-size: 1rem;
-            margin-top: 20px;
-        }
-        #sensitivity {
-            margin-top: 15px;
+        .speed-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 15px;
+            background-color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             width: 80%;
-            max-width: 300px;
+            max-width: 320px;
         }
-        .control-panel {
-            margin-top: 20px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .speed-value {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #333;
+            margin: 10px 0;
         }
-        .control-label {
+        .speed-unit {
+            font-size: 1.2rem;
+            color: #666;
+        }
+        .status {
+            margin-top: 15px;
+            font-size: 1.2rem;
+            color: #555;
+        }
+        .calibration {
+            margin-top: 10px;
             font-size: 0.9rem;
-            margin-bottom: 5px;
+            color: #888;
+        }
+        #calibrateBtn {
+            background-color: #4CAF50;
+            margin-top: 10px;
+            padding: 8px 16px;
+            font-size: 1rem;
+        }
+        #resetBtn {
+            background-color: #f44336;
+            margin-top: 10px;
+            padding: 8px 16px;
+            font-size: 1rem;
+        }
+        #debug {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 20px;
+            max-width: 320px;
         }
     </style>
 </head>
 <body>
+    <h1>Vitesse de marche</h1>
     <div id="message">Appuyez sur le bouton pour commencer</div>
-    <button id="startButton">Activer l'accéléromètre</button>
+    <button id="startButton">Activer le suivi</button>
     
-    <div class="control-panel" id="controls" style="display: none;">
-        <div class="control-label">Sensibilité: <span id="sensitivityValue">5.0</span></div>
-        <input type="range" id="sensitivity" min="1" max="10" step="0.5" value="5">
+    <div class="speed-container" id="speedContainer" style="display: none;">
+        <div class="speed-value" id="speedValue">0.0</div>
+        <div class="speed-unit">km/h</div>
+        <div class="status" id="status">Immobile</div>
+        <div class="calibration" id="calibration">Pour plus de précision, calibrez quand vous êtes immobile</div>
+        <button id="calibrateBtn">Calibrer</button>
+        <button id="resetBtn">Réinitialiser</button>
     </div>
     
-    <div id="values"></div>
+    <div id="debug"></div>
 
     <script>
-        let lastSpeed = 0;
+        // Variables principales
         let isRunning = false;
-        let movementHistory = [];
-        let stagnantTimer = null;
-        let sensitivityValue = 5.0;
+        let accelerationReadings = [];
+        let noiseThreshold = 0.2;
+        let lastTimestamp = 0;
+        let currentSpeed = 0;
+        let stepCount = 0;
+        let stepTimestamps = [];
+        let strideLength = 0.75; // Longueur de pas moyenne en mètres (ajustable)
         
-        const valuesElement = document.getElementById('values');
+        // Éléments du DOM
         const messageElement = document.getElementById('message');
         const startButton = document.getElementById('startButton');
-        const controlsDiv = document.getElementById('controls');
-        const sensitivitySlider = document.getElementById('sensitivity');
-        const sensitivityDisplay = document.getElementById('sensitivityValue');
+        const speedContainer = document.getElementById('speedContainer');
+        const speedValue = document.getElementById('speedValue');
+        const statusElement = document.getElementById('status');
+        const calibrateBtn = document.getElementById('calibrateBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const debugElement = document.getElementById('debug');
         
-        // Met à jour l'affichage de la sensibilité
-        sensitivitySlider.addEventListener('input', function() {
-            sensitivityValue = parseFloat(this.value);
-            sensitivityDisplay.textContent = sensitivityValue.toFixed(1);
-        });
-        
-        // Fonction qui démarre la détection
+        // Démarre la détection
         function startDetection() {
             if (typeof DeviceMotionEvent.requestPermission === 'function') {
                 // iOS 13+ nécessite une permission explicite
@@ -90,10 +121,9 @@
                     .then(permissionState => {
                         if (permissionState === 'granted') {
                             initAccelerometer();
-                            messageElement.textContent = "Position stagnante";
+                            messageElement.textContent = "Suivi actif";
                             startButton.style.display = 'none';
-                            controlsDiv.style.display = 'flex';
-                            document.body.style.backgroundColor = '#f0f0f0'; // couleur neutre pour stagnant
+                            speedContainer.style.display = 'block';
                         } else {
                             messageElement.textContent = "Permission refusée pour l'accéléromètre";
                         }
@@ -104,90 +134,170 @@
             } else {
                 // Pour les appareils qui n'ont pas besoin de permission
                 initAccelerometer();
-                messageElement.textContent = "Position stagnante";
+                messageElement.textContent = "Suivi actif";
                 startButton.style.display = 'none';
-                controlsDiv.style.display = 'flex';
-                document.body.style.backgroundColor = '#f0f0f0';
+                speedContainer.style.display = 'block';
             }
         }
         
-        // Initialise l'accéléromètre
+        // Initialise l'accéléromètre et les capteurs
         function initAccelerometer() {
             isRunning = true;
             
-            // Première mesure de référence pour éviter une détection fausse au démarrage
-            window.addEventListener('devicemotion', function initialMeasurement(event) {
-                if (event.accelerationIncludingGravity) {
-                    const acc = event.accelerationIncludingGravity;
-                    lastSpeed = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
-                    
-                    // Maintenant qu'on a une mesure de référence, on peut démarrer la détection continue
-                    window.removeEventListener('devicemotion', initialMeasurement);
-                    setTimeout(() => {
-                        window.addEventListener('devicemotion', handleMotion);
-                    }, 500); // Un petit délai pour stabiliser
-                }
-            }, { once: true });
+            // Initialiser le calibrage
+            calibrateAccelerometer();
+            
+            // Écouter les mouvements
+            window.addEventListener('devicemotion', handleMotion);
         }
         
-        // Gère les événements de mouvement
+        // Calibre l'accéléromètre pour déterminer le bruit de base
+        function calibrateAccelerometer() {
+            let calibrationReadings = [];
+            
+            statusElement.textContent = "Calibrage en cours...";
+            
+            const calibrationHandler = (event) => {
+                if (event.acceleration && event.acceleration.x !== null) {
+                    const acc = event.acceleration;
+                    calibrationReadings.push(Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z));
+                    
+                    if (calibrationReadings.length >= 30) {
+                        window.removeEventListener('devicemotion', calibrationHandler);
+                        
+                        // Calculer le seuil de bruit comme 2x l'écart-type des lectures
+                        const avg = calibrationReadings.reduce((sum, val) => sum + val, 0) / calibrationReadings.length;
+                        const variance = calibrationReadings.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / calibrationReadings.length;
+                        noiseThreshold = Math.max(0.2, Math.sqrt(variance) * 2);
+                        
+                        statusElement.textContent = "Calibré - Prêt à détecter";
+                        debugElement.textContent = `Seuil de bruit: ${noiseThreshold.toFixed(3)}`;
+                    }
+                }
+            };
+            
+            window.addEventListener('devicemotion', calibrationHandler);
+        }
+        
+        // Gère les événements de mouvement pour estimer la vitesse
         function handleMotion(event) {
             if (!isRunning) return;
             
-            if (event.accelerationIncludingGravity) {
-                const acc = event.accelerationIncludingGravity;
+            const timestamp = new Date().getTime();
+            
+            // Utiliser acceleration plutôt que accelerationIncludingGravity pour ignorer la gravité
+            if (event.acceleration && event.acceleration.x !== null) {
+                const acc = event.acceleration;
+                const totalAcc = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
                 
-                // Afficher les valeurs brutes pour debug
-                valuesElement.textContent = `x: ${acc.x.toFixed(2)}, y: ${acc.y.toFixed(2)}, z: ${acc.z.toFixed(2)}`;
+                // Ajouter à l'historique pour analyse
+                accelerationReadings.push({time: timestamp, value: totalAcc});
                 
-                const speed = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
-                const deltaSpeed = speed - lastSpeed;
-                
-                // Utilise la sensibilité du slider pour ajuster le seuil
-                const threshold = 10 / sensitivityValue;
-                
-                // Garde un historique des mouvements récents
-                movementHistory.push(Math.abs(deltaSpeed));
-                if (movementHistory.length > 5) {
-                    movementHistory.shift();
+                // Limiter la taille de l'historique
+                if (accelerationReadings.length > 30) {
+                    accelerationReadings.shift();
                 }
                 
-                // Calcule la moyenne de mouvement récent
-                const avgMovement = movementHistory.reduce((sum, val) => sum + val, 0) / movementHistory.length;
+                // Détecter les pas en analysant les pics d'accélération
+                detectSteps(totalAcc, timestamp);
                 
-                // Détection des états
-                if (avgMovement < threshold / 3) {
-                    // Si peu de mouvement, considérer comme stagnant après un court délai
-                    if (stagnantTimer === null) {
-                        stagnantTimer = setTimeout(() => {
-                            document.body.style.backgroundColor = '#f0f0f0';
-                            messageElement.textContent = 'Position stagnante';
-                        }, 700);
-                    }
-                } else {
-                    // Annuler le timer de stagnation s'il y a du mouvement
-                    if (stagnantTimer !== null) {
-                        clearTimeout(stagnantTimer);
-                        stagnantTimer = null;
-                    }
-                    
-                    if (deltaSpeed > threshold) {
-                        // Accélération
-                        document.body.style.backgroundColor = 'limegreen';
-                        messageElement.textContent = 'Tu accélères ! 🚀';
-                    } else if (deltaSpeed < -threshold) {
-                        // Ralentissement
-                        document.body.style.backgroundColor = 'tomato';
-                        messageElement.textContent = 'Tu ralentis ! 🛑';
-                    }
-                }
+                // Mise à jour de la vitesse basée sur la fréquence des pas
+                updateSpeed(timestamp);
                 
-                lastSpeed = speed;
+                // Debug
+                debugElement.textContent = `Acc: ${totalAcc.toFixed(2)}, Seuil: ${noiseThreshold.toFixed(2)}, Pas: ${stepCount}`;
             }
         }
         
-        // Attache l'événement au bouton
+        // Détecte les pas en analysant les pics d'accélération
+        function detectSteps(acceleration, timestamp) {
+            // Il faut au moins 3 lectures pour détecter un pic
+            if (accelerationReadings.length < 3) return;
+            
+            const prevReading = accelerationReadings[accelerationReadings.length - 2].value;
+            const prevPrevReading = accelerationReadings[accelerationReadings.length - 3].value;
+            
+            // Un pas est détecté quand il y a un pic d'accélération qui dépasse le seuil de bruit
+            if (prevReading > acceleration && 
+                prevReading > prevPrevReading && 
+                prevReading > noiseThreshold * 1.8) {
+                
+                // Éviter les doubles détections en imposant un délai minimum entre les pas
+                const minStepInterval = 250; // en ms, correspond à une cadence max de 240 pas/minute
+                const lastStepTime = stepTimestamps.length > 0 ? stepTimestamps[stepTimestamps.length - 1] : 0;
+                
+                if (timestamp - lastStepTime > minStepInterval) {
+                    stepCount++;
+                    stepTimestamps.push(timestamp);
+                    
+                    // Limiter l'historique des pas
+                    if (stepTimestamps.length > 10) {
+                        stepTimestamps.shift();
+                    }
+                }
+            }
+        }
+        
+        // Met à jour la vitesse estimée en fonction de la cadence de pas
+        function updateSpeed(timestamp) {
+            // Besoin d'au moins 2 pas pour calculer une cadence
+            if (stepTimestamps.length < 2) {
+                currentSpeed = 0;
+                speedValue.textContent = "0.0";
+                statusElement.textContent = "Immobile";
+                return;
+            }
+            
+            // Calculer la cadence en pas par minute
+            const timeWindow = (stepTimestamps[stepTimestamps.length - 1] - stepTimestamps[0]) / 1000; // en secondes
+            const stepsInWindow = stepTimestamps.length;
+            
+            if (timeWindow > 0) {
+                const cadence = (stepsInWindow / timeWindow) * 60; // pas par minute
+                
+                // Vérifier si l'utilisateur est en mouvement
+                const isMoving = timestamp - stepTimestamps[stepTimestamps.length - 1] < 2000; // immobile si pas de pas depuis 2s
+                
+                if (isMoving) {
+                    // Convertir la cadence en vitesse en km/h en utilisant la longueur de pas
+                    // Vitesse = cadence * longueur de pas * 60 / 1000 (pour convertir m/min en km/h)
+                    currentSpeed = cadence * strideLength * 0.06;
+                    
+                    // Mise à jour de l'affichage
+                    speedValue.textContent = currentSpeed.toFixed(1);
+                    
+                    // Mise à jour du statut
+                    if (currentSpeed < 2) {
+                        statusElement.textContent = "Marche lente";
+                    } else if (currentSpeed < 4) {
+                        statusElement.textContent = "Marche normale";
+                    } else if (currentSpeed < 6) {
+                        statusElement.textContent = "Marche rapide";
+                    } else {
+                        statusElement.textContent = "Course";
+                    }
+                } else {
+                    // Réduire progressivement la vitesse si pas de pas détectés récemment
+                    currentSpeed = 0;
+                    speedValue.textContent = "0.0";
+                    statusElement.textContent = "Immobile";
+                }
+            }
+        }
+        
+        // Réinitialise les compteurs
+        function resetCounters() {
+            stepCount = 0;
+            stepTimestamps = [];
+            currentSpeed = 0;
+            speedValue.textContent = "0.0";
+            statusElement.textContent = "Immobile";
+        }
+        
+        // Attache les événements aux boutons
         startButton.addEventListener('click', startDetection);
+        calibrateBtn.addEventListener('click', calibrateAccelerometer);
+        resetBtn.addEventListener('click', resetCounters);
     </script>
 </body>
 </html>

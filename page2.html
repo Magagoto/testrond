@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Détection de vitesse de marche</title>
+    <title>Détection de vitesse - Améliorée</title>
     <style>
         body {
             margin: 0;
@@ -16,78 +16,163 @@
             text-align: center;
             padding: 20px;
             background-color: #f8f9fa;
+            color: #333;
         }
         button {
             padding: 15px 30px;
             font-size: 1.2rem;
-            margin-top: 20px;
+            margin-top: 15px;
             border-radius: 8px;
             background-color: #007aff;
             color: white;
             border: none;
             cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
         }
         .speed-container {
             margin-top: 30px;
-            padding: 20px;
+            padding: 25px;
             border-radius: 15px;
             background-color: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            width: 80%;
-            max-width: 320px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            width: 85%;
+            max-width: 350px;
+            transition: all 0.5s ease;
         }
         .speed-value {
-            font-size: 3rem;
+            font-size: 4rem;
             font-weight: bold;
             color: #333;
             margin: 10px 0;
+            transition: all 0.3s ease;
         }
         .speed-unit {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             color: #666;
+            margin-bottom: 15px;
         }
         .status {
             margin-top: 15px;
-            font-size: 1.2rem;
+            font-size: 1.4rem;
+            font-weight: 600;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .status-immobile {
+            background-color: #e0e0e0;
             color: #555;
         }
+        .status-marche-lente {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        .status-marche-normale {
+            background-color: #b3e5fc;
+            color: #0277bd;
+        }
+        .status-marche-rapide {
+            background-color: #ffecb3;
+            color: #ff8f00;
+        }
+        .status-course {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
         .calibration {
-            margin-top: 10px;
+            margin-top: 15px;
             font-size: 0.9rem;
             color: #888;
         }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
         #calibrateBtn {
             background-color: #4CAF50;
-            margin-top: 10px;
-            padding: 8px 16px;
-            font-size: 1rem;
         }
         #resetBtn {
             background-color: #f44336;
-            margin-top: 10px;
-            padding: 8px 16px;
+        }
+        #settings {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            width: 85%;
+            max-width: 350px;
+        }
+        #heightInput {
+            padding: 8px;
+            width: 70px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
             font-size: 1rem;
         }
-        #debug {
-            font-size: 0.8rem;
-            color: #999;
+        .graph-container {
             margin-top: 20px;
-            max-width: 320px;
+            width: 85%;
+            max-width: 350px;
+            height: 100px;
+            background-color: rgba(255,255,255,0.8);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        #accelerationGraph {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        .graph-line {
+            position: absolute;
+            bottom: 0;
+            width: 3px;
+            background-color: #007aff;
+            transition: height 0.1s ease;
+        }
+        #debug {
+            font-size: 0.75rem;
+            color: #999;
+            margin-top: 15px;
+            max-width: 350px;
         }
     </style>
 </head>
 <body>
-    <h1>Vitesse de marche</h1>
+    <h1>Vitesse de marche/course</h1>
     <div id="message">Appuyez sur le bouton pour commencer</div>
     <button id="startButton">Activer le suivi</button>
     
     <div class="speed-container" id="speedContainer" style="display: none;">
         <div class="speed-value" id="speedValue">0.0</div>
         <div class="speed-unit">km/h</div>
-        <div class="status" id="status">Immobile</div>
+        <div class="status status-immobile" id="status">Immobile</div>
+        
+        <div class="graph-container">
+            <div id="accelerationGraph"></div>
+        </div>
+        
         <div class="calibration" id="calibration">Pour plus de précision, calibrez quand vous êtes immobile</div>
-        <button id="calibrateBtn">Calibrer</button>
-        <button id="resetBtn">Réinitialiser</button>
+        <div class="controls">
+            <button id="calibrateBtn">Calibrer</button>
+            <button id="resetBtn">Réinitialiser</button>
+        </div>
+    </div>
+    
+    <div id="settings" style="display: none;">
+        <div>
+            <label for="heightInput">Votre taille (cm): </label>
+            <input type="number" id="heightInput" value="170" min="100" max="220">
+            <button id="saveHeight">OK</button>
+        </div>
+        <div id="strideInfo" style="margin-top: 10px;">Longueur de pas estimée: 0.79m</div>
     </div>
     
     <div id="debug"></div>
@@ -96,12 +181,15 @@
         // Variables principales
         let isRunning = false;
         let accelerationReadings = [];
-        let noiseThreshold = 0.2;
+        let noiseThreshold = 0.3;
         let lastTimestamp = 0;
         let currentSpeed = 0;
         let stepCount = 0;
         let stepTimestamps = [];
-        let strideLength = 0.75; // Longueur de pas moyenne en mètres (ajustable)
+        let stepIntensities = [];
+        let strideLength = 0.79; // Longueur de pas moyenne en mètres (ajustable)
+        let userHeight = 170; // Taille de l'utilisateur en cm
+        let graphData = Array(30).fill(0);
         
         // Éléments du DOM
         const messageElement = document.getElementById('message');
@@ -112,6 +200,59 @@
         const calibrateBtn = document.getElementById('calibrateBtn');
         const resetBtn = document.getElementById('resetBtn');
         const debugElement = document.getElementById('debug');
+        const settings = document.getElementById('settings');
+        const heightInput = document.getElementById('heightInput');
+        const saveHeightBtn = document.getElementById('saveHeight');
+        const strideInfo = document.getElementById('strideInfo');
+        const graphContainer = document.getElementById('accelerationGraph');
+        
+        // Initialiser le graphique
+        function initGraph() {
+            graphContainer.innerHTML = '';
+            const width = graphContainer.clientWidth;
+            
+            for (let i = 0; i < 30; i++) {
+                const line = document.createElement('div');
+                line.className = 'graph-line';
+                line.style.left = (i * (width / 30)) + 'px';
+                line.style.height = '0px';
+                graphContainer.appendChild(line);
+            }
+        }
+        
+        // Mettre à jour le graphique
+        function updateGraph(value) {
+            graphData.push(value);
+            graphData.shift();
+            
+            const lines = graphContainer.querySelectorAll('.graph-line');
+            const maxValue = Math.max(...graphData, 1);
+            
+            for (let i = 0; i < lines.length; i++) {
+                const height = (graphData[i] / maxValue) * 100;
+                lines[i].style.height = height + '%';
+                
+                // Colorer en fonction du seuil
+                if (graphData[i] > noiseThreshold * 1.8) {
+                    lines[i].style.backgroundColor = '#f44336';
+                } else {
+                    lines[i].style.backgroundColor = '#007aff';
+                }
+            }
+        }
+        
+        // Calculer la longueur de pas en fonction de la taille
+        function calculateStrideLength(height) {
+            // Formule simple: environ 45% de la taille pour la marche
+            return (height * 0.45) / 100;
+        }
+        
+        // Mettre à jour la longueur de pas
+        function updateStrideLength() {
+            userHeight = parseInt(heightInput.value);
+            strideLength = calculateStrideLength(userHeight);
+            strideInfo.textContent = `Longueur de pas estimée: ${strideLength.toFixed(2)}m`;
+        }
         
         // Démarre la détection
         function startDetection() {
@@ -120,10 +261,7 @@
                 DeviceMotionEvent.requestPermission()
                     .then(permissionState => {
                         if (permissionState === 'granted') {
-                            initAccelerometer();
-                            messageElement.textContent = "Suivi actif";
-                            startButton.style.display = 'none';
-                            speedContainer.style.display = 'block';
+                            afterPermissionGranted();
                         } else {
                             messageElement.textContent = "Permission refusée pour l'accéléromètre";
                         }
@@ -133,11 +271,17 @@
                     });
             } else {
                 // Pour les appareils qui n'ont pas besoin de permission
-                initAccelerometer();
-                messageElement.textContent = "Suivi actif";
-                startButton.style.display = 'none';
-                speedContainer.style.display = 'block';
+                afterPermissionGranted();
             }
+        }
+        
+        function afterPermissionGranted() {
+            initAccelerometer();
+            messageElement.textContent = "Suivi actif";
+            startButton.style.display = 'none';
+            speedContainer.style.display = 'block';
+            settings.style.display = 'block';
+            initGraph();
         }
         
         // Initialise l'accéléromètre et les capteurs
@@ -146,6 +290,9 @@
             
             // Initialiser le calibrage
             calibrateAccelerometer();
+            
+            // Calculer la longueur de pas
+            updateStrideLength();
             
             // Écouter les mouvements
             window.addEventListener('devicemotion', handleMotion);
@@ -156,11 +303,16 @@
             let calibrationReadings = [];
             
             statusElement.textContent = "Calibrage en cours...";
+            statusElement.className = "status status-immobile";
             
             const calibrationHandler = (event) => {
                 if (event.acceleration && event.acceleration.x !== null) {
                     const acc = event.acceleration;
-                    calibrationReadings.push(Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z));
+                    const totalAcc = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
+                    calibrationReadings.push(totalAcc);
+                    
+                    // Mettre à jour le graphique pendant le calibrage
+                    updateGraph(totalAcc);
                     
                     if (calibrationReadings.length >= 30) {
                         window.removeEventListener('devicemotion', calibrationHandler);
@@ -168,10 +320,15 @@
                         // Calculer le seuil de bruit comme 2x l'écart-type des lectures
                         const avg = calibrationReadings.reduce((sum, val) => sum + val, 0) / calibrationReadings.length;
                         const variance = calibrationReadings.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / calibrationReadings.length;
-                        noiseThreshold = Math.max(0.2, Math.sqrt(variance) * 2);
+                        noiseThreshold = Math.max(0.3, Math.sqrt(variance) * 2);
                         
-                        statusElement.textContent = "Calibré - Prêt à détecter";
-                        debugElement.textContent = `Seuil de bruit: ${noiseThreshold.toFixed(3)}`;
+                        statusElement.textContent = "Immobile";
+                        statusElement.className = "status status-immobile";
+                        
+                        debugElement.textContent = `Calibré - Seuil: ${noiseThreshold.toFixed(3)}`;
+                        
+                        // Réinitialiser les compteurs après calibrage
+                        resetCounters();
                     }
                 }
             };
@@ -190,6 +347,9 @@
                 const acc = event.acceleration;
                 const totalAcc = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
                 
+                // Mettre à jour le graphique
+                updateGraph(totalAcc);
+                
                 // Ajouter à l'historique pour analyse
                 accelerationReadings.push({time: timestamp, value: totalAcc});
                 
@@ -201,11 +361,11 @@
                 // Détecter les pas en analysant les pics d'accélération
                 detectSteps(totalAcc, timestamp);
                 
-                // Mise à jour de la vitesse basée sur la fréquence des pas
+                // Mise à jour de la vitesse basée sur la fréquence des pas et leur intensité
                 updateSpeed(timestamp);
                 
                 // Debug
-                debugElement.textContent = `Acc: ${totalAcc.toFixed(2)}, Seuil: ${noiseThreshold.toFixed(2)}, Pas: ${stepCount}`;
+                debugElement.textContent = `Acc: ${totalAcc.toFixed(2)}, Pas: ${stepCount}, Vitesse: ${currentSpeed.toFixed(1)} km/h`;
             }
         }
         
@@ -223,28 +383,32 @@
                 prevReading > noiseThreshold * 1.8) {
                 
                 // Éviter les doubles détections en imposant un délai minimum entre les pas
-                const minStepInterval = 250; // en ms, correspond à une cadence max de 240 pas/minute
+                const minStepInterval = 200; // en ms, correspond à une cadence max de 300 pas/minute
                 const lastStepTime = stepTimestamps.length > 0 ? stepTimestamps[stepTimestamps.length - 1] : 0;
                 
                 if (timestamp - lastStepTime > minStepInterval) {
                     stepCount++;
                     stepTimestamps.push(timestamp);
                     
-                    // Limiter l'historique des pas
-                    if (stepTimestamps.length > 10) {
+                    // Enregistrer l'intensité du pas (amplitude de l'accélération)
+                    stepIntensities.push(prevReading);
+                    
+                    // Limiter l'historique
+                    if (stepTimestamps.length > 12) {
                         stepTimestamps.shift();
+                        stepIntensities.shift();
                     }
                 }
             }
         }
         
-        // Met à jour la vitesse estimée en fonction de la cadence de pas
+        // Met à jour la vitesse estimée en fonction de la cadence et de l'intensité des pas
         function updateSpeed(timestamp) {
             // Besoin d'au moins 2 pas pour calculer une cadence
             if (stepTimestamps.length < 2) {
                 currentSpeed = 0;
                 speedValue.textContent = "0.0";
-                statusElement.textContent = "Immobile";
+                updateSpeedDisplay(0);
                 return;
             }
             
@@ -256,32 +420,64 @@
                 const cadence = (stepsInWindow / timeWindow) * 60; // pas par minute
                 
                 // Vérifier si l'utilisateur est en mouvement
-                const isMoving = timestamp - stepTimestamps[stepTimestamps.length - 1] < 2000; // immobile si pas de pas depuis 2s
+                const isMoving = timestamp - stepTimestamps[stepTimestamps.length - 1] < 1500; // immobile si pas de pas depuis 1.5s
                 
                 if (isMoving) {
-                    // Convertir la cadence en vitesse en km/h en utilisant la longueur de pas
-                    // Vitesse = cadence * longueur de pas * 60 / 1000 (pour convertir m/min en km/h)
-                    currentSpeed = cadence * strideLength * 0.06;
+                    // Calculer l'intensité moyenne des pas (facteur de course)
+                    const avgIntensity = stepIntensities.reduce((sum, val) => sum + val, 0) / stepIntensities.length;
+                    const intensityFactor = Math.min(2.0, 1.0 + (avgIntensity / (noiseThreshold * 5)));
+                    
+                    // Ajuster la longueur de pas en fonction de l'intensité
+                    // La course a typiquement une longueur de pas 20-50% plus grande que la marche
+                    const adjustedStrideLength = strideLength * intensityFactor;
+                    
+                    // Convertir la cadence en vitesse en km/h
+                    currentSpeed = cadence * adjustedStrideLength * 0.06;
+                    
+                    // Limiter les variations extrêmes (lissage)
+                    currentSpeed = Math.min(30, Math.max(0, currentSpeed));
                     
                     // Mise à jour de l'affichage
-                    speedValue.textContent = currentSpeed.toFixed(1);
-                    
-                    // Mise à jour du statut
-                    if (currentSpeed < 2) {
-                        statusElement.textContent = "Marche lente";
-                    } else if (currentSpeed < 4) {
-                        statusElement.textContent = "Marche normale";
-                    } else if (currentSpeed < 6) {
-                        statusElement.textContent = "Marche rapide";
-                    } else {
-                        statusElement.textContent = "Course";
-                    }
+                    updateSpeedDisplay(currentSpeed);
                 } else {
                     // Réduire progressivement la vitesse si pas de pas détectés récemment
                     currentSpeed = 0;
-                    speedValue.textContent = "0.0";
-                    statusElement.textContent = "Immobile";
+                    updateSpeedDisplay(0);
                 }
+            }
+        }
+        
+        // Met à jour l'affichage de la vitesse et du statut
+        function updateSpeedDisplay(speed) {
+            speedValue.textContent = speed.toFixed(1);
+            
+            // Style et texte du statut en fonction de la vitesse
+            if (speed < 0.5) {
+                statusElement.textContent = "Immobile";
+                statusElement.className = "status status-immobile";
+            } else if (speed < 3) {
+                statusElement.textContent = "Marche lente";
+                statusElement.className = "status status-marche-lente";
+            } else if (speed < 5) {
+                statusElement.textContent = "Marche normale";
+                statusElement.className = "status status-marche-normale";
+            } else if (speed < 8) {
+                statusElement.textContent = "Marche rapide";
+                statusElement.className = "status status-marche-rapide";
+            } else {
+                statusElement.textContent = "Course";
+                statusElement.className = "status status-course";
+            }
+            
+            // Changer la couleur de la vitesse
+            if (speed < 0.5) {
+                speedValue.style.color = "#555";
+            } else if (speed < 5) {
+                speedValue.style.color = "#2e7d32";
+            } else if (speed < 8) {
+                speedValue.style.color = "#0277bd";
+            } else {
+                speedValue.style.color = "#c62828";
             }
         }
         
@@ -289,15 +485,19 @@
         function resetCounters() {
             stepCount = 0;
             stepTimestamps = [];
+            stepIntensities = [];
             currentSpeed = 0;
             speedValue.textContent = "0.0";
             statusElement.textContent = "Immobile";
+            statusElement.className = "status status-immobile";
+            speedValue.style.color = "#555";
         }
         
         // Attache les événements aux boutons
         startButton.addEventListener('click', startDetection);
         calibrateBtn.addEventListener('click', calibrateAccelerometer);
         resetBtn.addEventListener('click', resetCounters);
+        saveHeightBtn.addEventListener('click', updateStrideLength);
     </script>
 </body>
 </html>

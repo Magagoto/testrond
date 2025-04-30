@@ -1,43 +1,221 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Page 2</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détecteur de Marche</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+            transition: background-color 0.5s ease;
+        }
+        
+        .container {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        #status {
+            font-size: 24px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        #icon {
+            font-size: 72px;
+            margin: 20px 0;
+        }
+        
+        #stats {
+            margin: 20px 0;
+            text-align: left;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .walking {
+            background-color: #e3f2fd;
+        }
+        
+        .standing {
+            background-color: #f5f5f5;
+        }
+        
+        .error {
+            color: red;
+            margin: 10px 0;
+        }
+    </style>
 </head>
-<body style="background-color: black; color: white;">
-  <h1>Bienvenue sur la Page 2</h1>
-  <button id="deleteCirclesButton" class="delete-circles-button">Retour</button>
-  <script>
-    document.getElementById('deleteCirclesButton').addEventListener('click', function() {
-      // Retourner à la page précédente
-      history.back();
-    });
-  </script>
+<body>
+    <div class="container">
+        <h1>Détecteur de Marche</h1>
+        <div id="icon">🧍</div>
+        <div id="status">Statut: En attente de permission</div>
+        <div id="stats">
+            <p>Accélération X: <span id="accelX">0</span> m/s²</p>
+            <p>Accélération Y: <span id="accelY">0</span> m/s²</p>
+            <p>Accélération Z: <span id="accelZ">0</span> m/s²</p>
+            <p>Magnitude: <span id="magnitude">0</span> m/s²</p>
+            <p>Seuil actuel: <span id="threshold">2</span> m/s²</p>
+        </div>
+        <button id="startBtn">Commencer la détection</button>
+        <div id="errorMsg" class="error"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const startBtn = document.getElementById('startBtn');
+            const statusEl = document.getElementById('status');
+            const iconEl = document.getElementById('icon');
+            const errorMsgEl = document.getElementById('errorMsg');
+            const accelXEl = document.getElementById('accelX');
+            const accelYEl = document.getElementById('accelY');
+            const accelZEl = document.getElementById('accelZ');
+            const magnitudeEl = document.getElementById('magnitude');
+            const thresholdEl = document.getElementById('threshold');
+            
+            let threshold = 2.0; // Seuil d'accélération pour détecter la marche (m/s²)
+            let isWalking = false;
+            let detectionActive = false;
+            let accelerometer = null;
+            
+            startBtn.addEventListener('click', startDetection);
+            
+            function startDetection() {
+                if (detectionActive) return;
+                
+                errorMsgEl.textContent = '';
+                
+                if ('DeviceMotionEvent' in window) {
+                    // Vérifier si nous avons besoin de demander la permission (iOS 13+)
+                    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                        DeviceMotionEvent.requestPermission()
+                            .then(response => {
+                                if (response === 'granted') {
+                                    setupMotionDetection();
+                                } else {
+                                    errorMsgEl.textContent = 'Permission refusée pour accéder à l\'accéléromètre.';
+                                }
+                            })
+                            .catch(error => {
+                                errorMsgEl.textContent = `Erreur: ${error.message}`;
+                            });
+                    } else {
+                        // Pas besoin de permission sur Android et d'autres plateformes
+                        setupMotionDetection();
+                    }
+                } else if ('Accelerometer' in window) {
+                    try {
+                        accelerometer = new Accelerometer({ frequency: 60 });
+                        accelerometer.addEventListener('reading', handleAccelerometerReading);
+                        accelerometer.start();
+                        detectionActive = true;
+                        startBtn.textContent = 'Détection en cours...';
+                        statusEl.textContent = 'Statut: À l\'arrêt';
+                    } catch (error) {
+                        errorMsgEl.textContent = `Erreur: ${error.message}`;
+                    }
+                } else {
+                    errorMsgEl.textContent = 'Désolé, votre appareil ne prend pas en charge la détection de mouvement.';
+                }
+            }
+            
+            function setupMotionDetection() {
+                window.addEventListener('devicemotion', handleMotionEvent);
+                detectionActive = true;
+                startBtn.textContent = 'Détection en cours...';
+                statusEl.textContent = 'Statut: À l\'arrêt';
+            }
+            
+            function handleMotionEvent(event) {
+                const acceleration = event.acceleration || { x: 0, y: 0, z: 0 };
+                const x = acceleration.x || 0;
+                const y = acceleration.y || 0;
+                const z = acceleration.z || 0;
+                
+                processAcceleration(x, y, z);
+            }
+            
+            function handleAccelerometerReading() {
+                processAcceleration(accelerometer.x, accelerometer.y, accelerometer.z);
+            }
+            
+            function processAcceleration(x, y, z) {
+                // Mise à jour des valeurs affichées
+                accelXEl.textContent = x.toFixed(2);
+                accelYEl.textContent = y.toFixed(2);
+                accelZEl.textContent = z.toFixed(2);
+                
+                // Calculer la magnitude (intensité) de l'accélération
+                const magnitude = Math.sqrt(x*x + y*y + z*z);
+                magnitudeEl.textContent = magnitude.toFixed(2);
+                
+                // Mettre à jour le seuil si nécessaire
+                thresholdEl.textContent = threshold.toFixed(2);
+                
+                // Détecter la marche basée sur la magnitude de l'accélération
+                const wasWalking = isWalking;
+                isWalking = magnitude > threshold;
+                
+                // Si le statut a changé
+                if (wasWalking !== isWalking) {
+                    updateUI();
+                }
+            }
+            
+            function updateUI() {
+                if (isWalking) {
+                    document.body.classList.remove('standing');
+                    document.body.classList.add('walking');
+                    statusEl.textContent = 'Statut: En marche';
+                    iconEl.textContent = '🚶';
+                } else {
+                    document.body.classList.remove('walking');
+                    document.body.classList.add('standing');
+                    statusEl.textContent = 'Statut: À l\'arrêt';
+                    iconEl.textContent = '🧍';
+                }
+            }
+        });
+    </script>
 </body>
-<style>
-  .delete-circles-button {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 15px 30px;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s, transform 0.2s;
-  }
-
-  .delete-circles-button:hover {
-    background-color: #0056b3;
-  }
-
-  .delete-circles-button:active {
-    transform: translateX(-50%) scale(0.95);
-  }
-</style>
 </html>
-

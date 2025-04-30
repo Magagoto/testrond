@@ -11,10 +11,9 @@ body {
   margin: 0;
   background-color: #0b042d;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
   height: 100vh;
-  flex-direction: column;
   font-family: sans-serif;
 }
 model-viewer {
@@ -23,45 +22,50 @@ model-viewer {
   height: 600px;
   background: transparent;
 }
+/* Grille 2x2 pour les rectangles, tout le temps */
 .info-row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
   gap: 24px;
   margin-bottom: 32px;
   width: 100%;
-  max-width: 800px;
+  max-width: 500px;
+  margin-top: 48px; /* Ajouté pour baisser les rectangles */
 }
 .info-rect {
-  flex: 1 1 0;
+  /* Style inspiré du bouton gyroscope page 1 */
   min-width: 120px;
-  background: rgba(255,255,255,0.13);
-  color: #f5f6fa;
-  border-radius: 18px;
-  padding: 20px 14px;
-  font-size: 1.13rem;
+  background: rgba(0,255,204,0.13);
+  color: #00ffcc;
+  border-radius: 12px;
+  padding: 1em 0.5em;
+  font-size: 1.08em;
+  font-family: 'Fira Mono', 'Consolas', monospace;
   font-weight: 600;
   text-align: center;
-  box-shadow: 0 4px 18px rgba(11,4,45,0.10), 0 1.5px 6px rgba(0,0,0,0.09);
-  border: 1.5px solid rgba(255,255,255,0.18);
+  border: 2px solid #00ffcc;
+  box-shadow: 0 2px 16px #00ffcc22, 0 1px 8px #0004;
+  letter-spacing: 1px;
+  transition: background 0.3s, color 0.3s, border 0.3s, box-shadow 0.3s;
+  backdrop-filter: blur(2px);
   min-height: 54px;
   display: flex;
   align-items: center;
   justify-content: center;
-  letter-spacing: 0.01em;
-  transition: background 0.2s, box-shadow 0.2s, color 0.2s;
-  backdrop-filter: blur(2px);
 }
 .info-rect:not(:empty):hover {
-  background: rgba(255,255,255,0.22);
-  color: #0b042d;
-  box-shadow: 0 6px 24px rgba(11,4,45,0.18);
+  background: #00ffcc;
+  color: #111;
+  border: 2px solid #00ffcc;
+  box-shadow: 0 0 24px #00ffcc88;
   cursor: pointer;
 }
 .info-rect:empty {
   background: rgba(255,255,255,0.07);
   border-style: dashed;
-  border-color: rgba(255,255,255,0.13);
+  border-color: rgba(0,255,204,0.13);
+  color: #00ffcc44;
   cursor: default;
   pointer-events: none;
 }

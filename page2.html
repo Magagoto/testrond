@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Podomètre Web</title>
+  <title>Podomètre Précis</title>
   <style>
     body {
       font-family: sans-serif;
@@ -30,13 +30,15 @@
 
   <script>
     let stepCount = 0;
+    let lastStepTime = 0;
     let lastMagnitude = 0;
-    let threshold = 1.2; // seuil de détection de pas (ajustable)
-    let listening = false;
+    let alpha = 0.9; // filtre passe-bas
+    let filteredMagnitude = 0;
+    let threshold = 1.2; // seuil ajusté
+    let minStepInterval = 300; // délai min entre deux pas en ms
 
     document.getElementById('start').addEventListener('click', () => {
       if (typeof DeviceMotionEvent.requestPermission === 'function') {
-        // iOS
         DeviceMotionEvent.requestPermission()
           .then(permissionState => {
             if (permissionState === 'granted') {
@@ -44,28 +46,31 @@
             }
           }).catch(console.error);
       } else {
-        // Android
         startListening();
       }
     });
 
     function startListening() {
-      if (listening) return;
-      listening = true;
-
       window.addEventListener("devicemotion", (event) => {
-        let acc = event.accelerationIncludingGravity;
+        const acc = event.accelerationIncludingGravity;
         if (!acc.x || !acc.y || !acc.z) return;
 
-        let magnitude = Math.sqrt(acc.x ** 2 + acc.y ** 2 + acc.z ** 2);
-        let delta = Math.abs(magnitude - lastMagnitude);
+        const magnitude = Math.sqrt(acc.x ** 2 + acc.y ** 2 + acc.z ** 2);
 
-        if (delta > threshold) {
+        // Appliquer un filtre passe-bas pour lisser le bruit
+        filteredMagnitude = alpha * filteredMagnitude + (1 - alpha) * magnitude;
+
+        const now = Date.now();
+        const delta = Math.abs(filteredMagnitude - lastMagnitude);
+
+        // Détecter un pas si variation suffisante ET délai suffisant depuis le dernier
+        if (delta > threshold && now - lastStepTime > minStepInterval) {
           stepCount++;
           document.getElementById("steps").innerText = stepCount;
+          lastStepTime = now;
         }
 
-        lastMagnitude = magnitude;
+        lastMagnitude = filteredMagnitude;
       });
     }
   </script>

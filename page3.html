@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Modèle 3D sans fond</title>
+<title>Modèle 3D réactif au mouvement</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- Import de la librairie <model-viewer> -->
 <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
@@ -64,14 +64,22 @@ model-viewer {
   cursor: default;
   pointer-events: none;
 }
+.instructions {
+  color: #f5f6fa;
+  font-size: 1rem;
+  text-align: center;
+  margin-top: 20px;
+  max-width: 600px;
+  padding: 0 20px;
+}
 </style>
 </head>
 <body>
 <div class="info-row">
-  <div class="info-rect" id="distanceInfo">marche en cours: 0km</div>
-  <div class="info-rect" id="timeInfo">temps restant: 0 minutes</div>
-  <div class="info-rect" id="speedInfo">vitesse: 0 km/h</div>
-  <div class="info-rect" id="statusInfo">en attente...</div>
+  <div class="info-rect" id="distanceInfo">marche en cours: 8km</div>
+  <div class="info-rect" id="timeInfo">temps restant: 9 minutes</div>
+  <div class="info-rect" id="activityInfo">intensité: 0</div>
+  <div class="info-rect" id="statusInfo">inactive</div>
 </div>
 <!-- Modèle 3D sans fond blanc -->
 <model-viewer
@@ -83,52 +91,38 @@ model-viewer {
   disable-zoom>
 </model-viewer>
 
+<p class="instructions">Bougez votre appareil pour faire tourner le modèle. Plus vous bougez rapidement, plus le modèle tourne vite.</p>
+
 <script>
   // Éléments d'interface
   const modelViewer = document.getElementById('modelViewer');
   const distanceInfo = document.getElementById('distanceInfo');
   const timeInfo = document.getElementById('timeInfo');
-  const speedInfo = document.getElementById('speedInfo');
+  const activityInfo = document.getElementById('activityInfo');
   const statusInfo = document.getElementById('statusInfo');
   
-  // Variables pour suivre la position et le mouvement
-  let watchId;
-  let startPosition = null;
-  let lastPosition = null;
-  let totalDistance = 0;
-  let currentSpeed = 0;
+  // Variables pour le suivi du mouvement
   let isTracking = false;
-  let startTime = null;
-  let estimatedTime = 9; // Temps estimé en minutes (par défaut)
-  const targetDistance = 8; // Distance cible en km
+  let lastUpdateTime = 0;
+  let movementBuffer = [];
+  let movementIntensity = 0;
   
   // Constantes pour le contrôle de la rotation
-  const MIN_ROTATION_SPEED = 0.1; // Vitesse minimale de rotation (tours par minute)
-  const MAX_ROTATION_SPEED = 2.0; // Vitesse maximale de rotation (tours par minute)
-  const MIN_WALKING_SPEED = 0.5; // Vitesse de marche minimale (km/h)
-  const MAX_WALKING_SPEED = 8.0; // Vitesse de marche maximale (km/h)
+  const MIN_ROTATION_SPEED = 0.5;  // Vitesse minimale de rotation (tours par minute)
+  const MAX_ROTATION_SPEED = 4.0;  // Vitesse maximale de rotation (tours par minute)
+  const BUFFER_SIZE = 10;          // Taille du buffer pour lisser les mouvements
+  const THRESHOLD = 0.8;           // Seuil de détection du mouvement
+  const UPDATE_INTERVAL = 100;     // Intervalle de mise à jour (ms)
   
-  // Fonction pour calculer la distance entre deux points GPS
-  function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // Rayon de la Terre en km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  }
+  // Configurer la rotation par défaut
+  modelViewer.setAttribute('auto-rotate', true);
+  modelViewer.setAttribute('rotation-per-second', `${MIN_ROTATION_SPEED * 360 / 60}deg`);
   
-  // Ajuster la vitesse de rotation du modèle en fonction de la vitesse de marche
-  function updateModelRotation(speed) {
-    // Limiter la vitesse entre les valeurs min et max
-    const limitedSpeed = Math.max(MIN_WALKING_SPEED, Math.min(MAX_WALKING_SPEED, speed));
-    
-    // Calculer la vitesse de rotation proportionnelle
-    const factor = (limitedSpeed - MIN_WALKING_SPEED) / (MAX_WALKING_SPEED - MIN_WALKING_SPEED);
-    const rotationSpeed = MIN_ROTATION_SPEED + factor * (MAX_ROTATION_SPEED - MIN_ROTATION_SPEED);
+  // Fonction qui met à jour la rotation du modèle
+  function updateModelRotation(intensity) {
+    // Calculer la vitesse de rotation proportionnelle à l'intensité
+    const scaledIntensity = Math.min(intensity, 10) / 10; // Limiter à 10 pour éviter les rotations trop rapides
+    const rotationSpeed = MIN_ROTATION_SPEED + scaledIntensity * (MAX_ROTATION_SPEED - MIN_ROTATION_SPEED);
     
     // Convertir tours par minute en degrés par seconde
     const rotationDegPerSec = rotationSpeed * 360 / 60;
@@ -136,130 +130,106 @@ model-viewer {
     // Appliquer la rotation au modèle 3D
     modelViewer.setAttribute('rotation-per-second', `${rotationDegPerSec}deg`);
     
-    // Mise à jour de l'affichage de la vitesse
-    speedInfo.textContent = `vitesse: ${speed.toFixed(1)} km/h`;
-  }
-  
-  // Mise à jour de l'interface
-  function updateUI() {
-    distanceInfo.textContent = `marche en cours: ${totalDistance.toFixed(2)}km`;
+    // Mise à jour de l'affichage
+    activityInfo.textContent = `intensité: ${intensity.toFixed(1)}`;
     
-    // Calcul du temps restant estimé
-    if (currentSpeed > 0) {
-      const remainingDistance = targetDistance - totalDistance;
-      if (remainingDistance > 0) {
-        const remainingTimeHours = remainingDistance / currentSpeed;
-        const remainingTimeMinutes = Math.ceil(remainingTimeHours * 60);
-        timeInfo.textContent = `temps restant: ${remainingTimeMinutes} minutes`;
-        estimatedTime = remainingTimeMinutes;
-      } else {
-        timeInfo.textContent = `temps restant: 0 minutes`;
-      }
-    } else {
-      timeInfo.textContent = `temps restant: ${estimatedTime} minutes`;
+    // Simuler le changement de distance et temps restant
+    if (intensity > 0.5) {
+      // Secouer plus fort diminue le temps restant
+      const remainingTime = Math.max(1, 9 - intensity);
+      timeInfo.textContent = `temps restant: ${remainingTime.toFixed(0)} minutes`;
     }
   }
   
-  // Gestionnaire de position GPS
-  function handlePosition(position) {
-    const { latitude, longitude } = position.coords;
-    const currentTime = new Date().getTime();
+  // Fonction de traitement des données de l'accéléromètre
+  function processMotion(event) {
+    const now = Date.now();
     
-    if (!startPosition) {
-      startPosition = { latitude, longitude };
-      lastPosition = { latitude, longitude };
-      startTime = currentTime;
-      statusInfo.textContent = "en mouvement";
+    // Limiter la fréquence des mises à jour
+    if (now - lastUpdateTime < UPDATE_INTERVAL) {
+      return;
+    }
+    lastUpdateTime = now;
+    
+    // Extraire les données d'accélération
+    const { x, y, z } = event.acceleration;
+    
+    // Calculer l'intensité du mouvement (magnitude de l'accélération)
+    const acceleration = Math.sqrt(x*x + y*y + z*z);
+    
+    // Ignorer les mouvements trop faibles
+    if (acceleration < THRESHOLD) {
       return;
     }
     
-    // Calcul de la distance entre la dernière position et la position actuelle
-    const segmentDistance = calculateDistance(
-      lastPosition.latitude, lastPosition.longitude,
-      latitude, longitude
-    );
-    
-    // Filtrer les mises à jour trop petites (réduire les erreurs GPS)
-    if (segmentDistance < 0.001) {
-      return;
+    // Ajouter au buffer et maintenir la taille du buffer
+    movementBuffer.push(acceleration);
+    if (movementBuffer.length > BUFFER_SIZE) {
+      movementBuffer.shift();
     }
     
-    // Mise à jour de la distance totale
-    totalDistance += segmentDistance;
+    // Calculer l'intensité moyenne du mouvement
+    const sum = movementBuffer.reduce((acc, val) => acc + val, 0);
+    movementIntensity = sum / movementBuffer.length;
     
-    // Calcul de la vitesse (km/h)
-    if (lastPosition && lastPosition.time) {
-      const timeDiff = (currentTime - lastPosition.time) / 1000 / 3600; // en heures
-      if (timeDiff > 0) {
-        currentSpeed = segmentDistance / timeDiff;
-        updateModelRotation(currentSpeed);
-      }
-    }
+    // Mettre à jour la rotation du modèle
+    updateModelRotation(movementIntensity);
     
-    // Mise à jour de la dernière position
-    lastPosition = { latitude, longitude, time: currentTime };
-    
-    // Mise à jour de l'interface
-    updateUI();
+    // Mettre à jour le statut
+    statusInfo.textContent = movementIntensity > 2 ? "haute activité" : 
+                             movementIntensity > 1 ? "activité modérée" : "activité légère";
   }
   
-  // Gérer les erreurs de géolocalisation
-  function handleError(error) {
-    switch(error.code) {
-      case error.PERMISSION_DENIED:
-        statusInfo.textContent = "Accès GPS refusé";
-        break;
-      case error.POSITION_UNAVAILABLE:
-        statusInfo.textContent = "Position indisponible";
-        break;
-      case error.TIMEOUT:
-        statusInfo.textContent = "Délai expiré";
-        break;
-      default:
-        statusInfo.textContent = "Erreur inconnue";
-    }
-  }
-  
-  // Démarrer le suivi de position
+  // Fonction pour démarrer le suivi
   function startTracking() {
-    if (!isTracking && navigator.geolocation) {
-      // Options pour la géolocalisation
-      const options = {
-        enableHighAccuracy: true, // Haute précision pour une meilleure mesure
-        maximumAge: 0,            // Ne pas utiliser de cache
-        timeout: 5000             // Délai d'attente en ms
-      };
-      
-      // Démarrer le suivi GPS
-      watchId = navigator.geolocation.watchPosition(handlePosition, handleError, options);
+    if (window.DeviceMotionEvent) {
+      window.addEventListener('devicemotion', processMotion, false);
       isTracking = true;
-      statusInfo.textContent = "démarrage...";
+      statusInfo.textContent = "actif";
       
-      // Définir une rotation par défaut en attendant le mouvement
-      modelViewer.setAttribute('auto-rotate', true);
-      modelViewer.setAttribute('rotation-per-second', `${MIN_ROTATION_SPEED * 360 / 60}deg`);
+      // Demander l'autorisation pour l'accéléromètre sur iOS 13+
+      if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        DeviceMotionEvent.requestPermission()
+          .then(permissionState => {
+            if (permissionState === 'granted') {
+              window.addEventListener('devicemotion', processMotion, false);
+            } else {
+              statusInfo.textContent = "refusé";
+            }
+          })
+          .catch(console.error);
+      }
     } else {
-      statusInfo.textContent = "GPS non disponible";
+      statusInfo.textContent = "non supporté";
     }
   }
   
-  // Arrêter le suivi de position
+  // Fonction pour arrêter le suivi
   function stopTracking() {
     if (isTracking) {
-      navigator.geolocation.clearWatch(watchId);
+      window.removeEventListener('devicemotion', processMotion);
       isTracking = false;
-      statusInfo.textContent = "arrêté";
+      statusInfo.textContent = "inactive";
     }
   }
   
   // Démarrer le suivi au chargement de la page
   document.addEventListener('DOMContentLoaded', startTracking);
   
-  // Ajouter des événements pour les rectangles d'info
+  // Ajouter un événement pour basculer le suivi
   statusInfo.addEventListener('click', function() {
     if (isTracking) {
       stopTracking();
     } else {
+      startTracking();
+    }
+  });
+  
+  // Gérer le cas où la page est en arrière-plan
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      stopTracking();
+    } else if (!isTracking) {
       startTracking();
     }
   });

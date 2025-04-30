@@ -1,488 +1,73 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Détecteur de Marche Amélioré</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #f5f5f5;
-            transition: background-color 0.8s ease;
-        }
-        
-        .container {
-            text-align: center;
-            padding: 20px;
-            border-radius: 12px;
-            background-color: white;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-            width: 90%;
-            max-width: 500px;
-        }
-        
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        
-        #status {
-            font-size: 28px;
-            margin: 20px 0;
-            font-weight: bold;
-            transition: color 0.5s ease;
-        }
-        
-        #icon {
-            font-size: 72px;
-            margin: 20px 0;
-            transition: transform 0.5s ease;
-        }
-        
-        .walking #icon {
-            animation: bounce 0.7s infinite alternate;
-        }
-        
-        @keyframes bounce {
-            from { transform: translateY(0px); }
-            to { transform: translateY(-10px); }
-        }
-        
-        #stats {
-            margin: 20px 0;
-            text-align: left;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 8px;
-        }
-        
-        #sensitivity-container {
-            margin: 15px 0;
-            text-align: center;
-        }
-        
-        #sensitivity {
-            width: 80%;
-            margin: 0 auto;
-        }
-        
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 15px 2px;
-            cursor: pointer;
-            border-radius: 50px;
-            transition: all 0.3s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        
-        button:hover {
-            background-color: #45a049;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        
-        button:active {
-            transform: translateY(1px);
-        }
-        
-        .walking {
-            background-color: #e3f2fd;
-        }
-        
-        .standing {
-            background-color: #f5f5f5;
-        }
-        
-        .error {
-            color: red;
-            margin: 10px 0;
-        }
-        
-        #debug {
-            font-size: 12px;
-            margin-top: 10px;
-            max-height: 100px;
-            overflow-y: auto;
-            background-color: #f0f0f0;
-            padding: 5px;
-            border-radius: 5px;
-            display: none;
-        }
-        
-        #confidence-meter {
-            width: 100%;
-            height: 20px;
-            background-color: #ddd;
-            border-radius: 10px;
-            margin: 10px 0;
-            overflow: hidden;
-        }
-        
-        #confidence-bar {
-            height: 100%;
-            width: 0%;
-            background-color: #4CAF50;
-            border-radius: 10px;
-            transition: width 0.3s;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Podomètre Web</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2em;
+    }
+    h1 {
+      font-size: 2em;
+    }
+    #steps {
+      font-size: 4em;
+      color: #2c3e50;
+    }
+    button {
+      padding: 1em 2em;
+      font-size: 1em;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Détecteur de Marche Amélioré</h1>
-        <div id="icon">🧍</div>
-        <div id="status">Statut: En attente de permission</div>
-        
-        <div id="confidence-meter">
-            <div id="confidence-bar"></div>
-        </div>
-        
-        <div id="stats">
-            <p>Accélération X: <span id="accelX">0</span> m/s²</p>
-            <p>Accélération Y: <span id="accelY">0</span> m/s²</p>
-            <p>Accélération Z: <span id="accelZ">0</span> m/s²</p>
-            <p>Magnitude: <span id="magnitude">0</span> m/s²</p>
-            <p>Steps détectés: <span id="steps">0</span></p>
-            <p>Variance: <span id="variance">0</span></p>
-        </div>
-        
-        <div id="sensitivity-container">
-            <label for="sensitivity">Sensibilité:</label>
-            <input type="range" id="sensitivity" min="1" max="20" value="10">
-            <span id="sensitivity-value">10</span>
-        </div>
-        
-        <button id="startBtn">Commencer la détection</button>
-        <button id="calibrateBtn" style="display: none; background-color: #2196F3;">Calibrer</button>
-        <div id="errorMsg" class="error"></div>
-        <div id="debug"></div>
-    </div>
+  <h1>Nombre de pas</h1>
+  <div id="steps">0</div>
+  <button id="start">Démarrer</button>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const startBtn = document.getElementById('startBtn');
-            const calibrateBtn = document.getElementById('calibrateBtn');
-            const statusEl = document.getElementById('status');
-            const iconEl = document.getElementById('icon');
-            const errorMsgEl = document.getElementById('errorMsg');
-            const accelXEl = document.getElementById('accelX');
-            const accelYEl = document.getElementById('accelY');
-            const accelZEl = document.getElementById('accelZ');
-            const magnitudeEl = document.getElementById('magnitude');
-            const stepsEl = document.getElementById('steps');
-            const varianceEl = document.getElementById('variance');
-            const debugEl = document.getElementById('debug');
-            const sensitivityEl = document.getElementById('sensitivity');
-            const sensitivityValueEl = document.getElementById('sensitivity-value');
-            const confidenceBarEl = document.getElementById('confidence-bar');
-            
-            // Paramètres ajustables
-            let sensitivity = 10; // Sensibilité (1-20)
-            sensitivityEl.value = sensitivity;
-            sensitivityValueEl.textContent = sensitivity;
-            
-            // Variables pour la détection
-            let isWalking = false;
-            let detectionActive = false;
-            let accelerometer = null;
-            let stepCount = 0;
-            let lastStepTime = 0;
-            
-            // Fenêtre glissante pour les mesures d'accélération
-            const windowSize = 20;
-            let accelerationWindow = Array(windowSize).fill(0);
-            let windowIndex = 0;
-            
-            // Variables pour le suivi des modèles de marche
-            let lastMagnitudes = [];
-            const patternSize = 30; // Taille du modèle à analyser
-            let walkingConfidence = 0;
-            let standingCounter = 0;
-            let walkingCounter = 0;
-            
-            // Variables pour la calibration
-            let isCalibrating = false;
-            let standingThreshold = 0.5;
-            let walkingThreshold = 1.8;
-            let calibrationData = {
-                standing: [],
-                walking: []
-            };
-            
-            sensitivityEl.addEventListener('input', function() {
-                sensitivity = parseInt(this.value);
-                sensitivityValueEl.textContent = sensitivity;
-            });
-            
-            startBtn.addEventListener('click', startDetection);
-            calibrateBtn.addEventListener('click', startCalibration);
-            
-            function startDetection() {
-                if (detectionActive) return;
-                
-                errorMsgEl.textContent = '';
-                
-                if ('DeviceMotionEvent' in window) {
-                    // Vérifier si nous avons besoin de demander la permission (iOS 13+)
-                    if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                        DeviceMotionEvent.requestPermission()
-                            .then(response => {
-                                if (response === 'granted') {
-                                    setupMotionDetection();
-                                } else {
-                                    errorMsgEl.textContent = 'Permission refusée pour accéder à l\'accéléromètre.';
-                                }
-                            })
-                            .catch(error => {
-                                errorMsgEl.textContent = `Erreur: ${error.message}`;
-                            });
-                    } else {
-                        // Pas besoin de permission sur Android et d'autres plateformes
-                        setupMotionDetection();
-                    }
-                } else if ('Accelerometer' in window) {
-                    try {
-                        accelerometer = new Accelerometer({ frequency: 60 });
-                        accelerometer.addEventListener('reading', handleAccelerometerReading);
-                        accelerometer.start();
-                        detectionActive = true;
-                        updateUIForDetectionStart();
-                    } catch (error) {
-                        errorMsgEl.textContent = `Erreur: ${error.message}`;
-                    }
-                } else {
-                    errorMsgEl.textContent = 'Désolé, votre appareil ne prend pas en charge la détection de mouvement.';
-                }
+  <script>
+    let stepCount = 0;
+    let lastMagnitude = 0;
+    let threshold = 1.2; // seuil de détection de pas (ajustable)
+    let listening = false;
+
+    document.getElementById('start').addEventListener('click', () => {
+      if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        // iOS
+        DeviceMotionEvent.requestPermission()
+          .then(permissionState => {
+            if (permissionState === 'granted') {
+              startListening();
             }
-            
-            function setupMotionDetection() {
-                window.addEventListener('devicemotion', handleMotionEvent);
-                detectionActive = true;
-                updateUIForDetectionStart();
-            }
-            
-            function updateUIForDetectionStart() {
-                startBtn.textContent = 'Détection en cours...';
-                startBtn.disabled = true;
-                calibrateBtn.style.display = 'inline-block';
-                statusEl.textContent = 'Statut: À l\'arrêt';
-                document.body.classList.add('standing');
-            }
-            
-            function handleMotionEvent(event) {
-                const acceleration = event.acceleration || { x: 0, y: 0, z: 0 };
-                let x = acceleration.x || 0;
-                let y = acceleration.y || 0;
-                let z = acceleration.z || 0;
-                
-                // Si accelerationIncludingGravity est disponible mais pas acceleration
-                if ((x === 0 && y === 0 && z === 0) && event.accelerationIncludingGravity) {
-                    const gravity = event.accelerationIncludingGravity;
-                    // On essaie de soustraire approximativement la gravité (pas idéal mais mieux que rien)
-                    x = gravity.x - 0;
-                    y = gravity.y - 9.8; // Approx. de la gravité
-                    z = gravity.z - 0;
-                }
-                
-                processAcceleration(x, y, z);
-            }
-            
-            function handleAccelerometerReading() {
-                processAcceleration(accelerometer.x, accelerometer.y, accelerometer.z);
-            }
-            
-            function processAcceleration(x, y, z) {
-                // Mise à jour des valeurs affichées
-                accelXEl.textContent = x.toFixed(2);
-                accelYEl.textContent = y.toFixed(2);
-                accelZEl.textContent = z.toFixed(2);
-                
-                // Calculer la magnitude (intensité) de l'accélération
-                const magnitude = Math.sqrt(x*x + y*y + z*z);
-                magnitudeEl.textContent = magnitude.toFixed(2);
-                
-                // Ajouter à la fenêtre glissante
-                accelerationWindow[windowIndex] = magnitude;
-                windowIndex = (windowIndex + 1) % windowSize;
-                
-                // Ajouter à notre modèle de détection
-                lastMagnitudes.push(magnitude);
-                if (lastMagnitudes.length > patternSize) {
-                    lastMagnitudes.shift();
-                }
-                
-                // Mode calibration
-                if (isCalibrating) {
-                    handleCalibrationData(magnitude);
-                    return;
-                }
-                
-                // Calcul de variance pour détecter la marche
-                const variance = calculateVariance(accelerationWindow);
-                varianceEl.textContent = variance.toFixed(4);
-                
-                // Utiliser un algorithme plus sophistiqué pour détecter la marche
-                detectWalking(magnitude, variance);
-            }
-            
-            function detectWalking(magnitude, variance) {
-                // Algorithme basé sur la variance et les pics d'accélération
-                const varThreshold = 0.05 * (sensitivity / 10);
-                const magThreshold = 1.2 * (sensitivity / 10);
-                
-                // Détection basée sur la variance (mesure de régularité)
-                if (variance > varThreshold) {
-                    walkingCounter++;
-                    standingCounter = 0;
-                } else {
-                    standingCounter++;
-                    walkingCounter = Math.max(0, walkingCounter - 1);
-                }
-                
-                // Détection de pas basée sur les pics d'accélération
-                if (magnitude > magThreshold) {
-                    const now = Date.now();
-                    // S'assurer qu'il y a au moins 250ms entre les pas (pour éviter les doublons)
-                    if (now - lastStepTime > 250) {
-                        stepCount++;
-                        stepsEl.textContent = stepCount;
-                        lastStepTime = now;
-                        walkingCounter += 2; // Augmenter la confiance
-                    }
-                }
-                
-                // Déterminer l'état de marche avec hystérésis pour éviter les fluctuations
-                const walkingConfidenceThreshold = 10;
-                const standingConfidenceThreshold = 15;
-                
-                // Limiter les compteurs
-                walkingCounter = Math.min(walkingCounter, 30);
-                standingCounter = Math.min(standingCounter, 30);
-                
-                // Mettre à jour la confiance
-                walkingConfidence = (walkingCounter - standingCounter/2);
-                
-                // Mettre à jour l'indicateur de confiance
-                let confidencePercent = Math.max(0, Math.min(100, (walkingConfidence / walkingConfidenceThreshold) * 100));
-                confidenceBarEl.style.width = `${confidencePercent}%`;
-                confidenceBarEl.style.backgroundColor = walkingConfidence > 0 ? '#4CAF50' : '#F44336';
-                
-                // Changer d'état avec hystérésis pour éviter les fluctuations
-                const wasWalking = isWalking;
-                if (!isWalking && walkingConfidence > walkingConfidenceThreshold) {
-                    isWalking = true;
-                } else if (isWalking && walkingConfidence < -standingConfidenceThreshold) {
-                    isWalking = false;
-                }
-                
-                // Si le statut a changé
-                if (wasWalking !== isWalking) {
-                    updateUI();
-                }
-                
-                // Debug info
-                // debugEl.innerHTML = `Walking Counter: ${walkingCounter}, Standing Counter: ${standingCounter}, Confidence: ${walkingConfidence.toFixed(2)}`;
-            }
-            
-            function updateUI() {
-                if (isWalking) {
-                    document.body.classList.remove('standing');
-                    document.body.classList.add('walking');
-                    statusEl.textContent = 'Statut: En marche';
-                    statusEl.style.color = '#388E3C';
-                    iconEl.textContent = '🚶';
-                } else {
-                    document.body.classList.remove('walking');
-                    document.body.classList.add('standing');
-                    statusEl.textContent = 'Statut: À l\'arrêt';
-                    statusEl.style.color = '#333';
-                    iconEl.textContent = '🧍';
-                }
-            }
-            
-            function calculateVariance(array) {
-                if (array.length === 0) return 0;
-                
-                // Calculer la moyenne
-                const mean = array.reduce((sum, value) => sum + value, 0) / array.length;
-                
-                // Calculer la somme des carrés des écarts
-                const squaredDifferences = array.map(value => {
-                    const diff = value - mean;
-                    return diff * diff;
-                });
-                
-                // Calculer la variance
-                return squaredDifferences.reduce((sum, value) => sum + value, 0) / array.length;
-            }
-            
-            function startCalibration() {
-                if (isCalibrating) return;
-                
-                isCalibrating = true;
-                calibrationData = {
-                    standing: [],
-                    walking: []
-                };
-                
-                calibrateBtn.textContent = 'Restez immobile (5s)...';
-                calibrateBtn.disabled = true;
-                
-                // Première phase: calibrer l'immobilité
-                setTimeout(() => {
-                    calibrateBtn.textContent = 'Maintenant marchez (5s)...';
-                    
-                    // Deuxième phase: calibrer la marche
-                    setTimeout(() => {
-                        finishCalibration();
-                    }, 5000);
-                }, 5000);
-            }
-            
-            function handleCalibrationData(magnitude) {
-                if (calibrateBtn.textContent.includes('immobile')) {
-                    calibrationData.standing.push(magnitude);
-                } else if (calibrateBtn.textContent.includes('marchez')) {
-                    calibrationData.walking.push(magnitude);
-                }
-            }
-            
-            function finishCalibration() {
-                isCalibrating = false;
-                calibrateBtn.textContent = 'Calibrer';
-                calibrateBtn.disabled = false;
-                
-                // Calculer les seuils basés sur les données collectées
-                if (calibrationData.standing.length > 0) {
-                    const standingAvg = calibrationData.standing.reduce((a, b) => a + b, 0) / calibrationData.standing.length;
-                    const standingVar = calculateVariance(calibrationData.standing);
-                    standingThreshold = standingAvg + standingVar * 2;
-                }
-                
-                if (calibrationData.walking.length > 0) {
-                    const walkingAvg = calibrationData.walking.reduce((a, b) => a + b, 0) / calibrationData.walking.length;
-                    const walkingVar = calculateVariance(calibrationData.walking);
-                    walkingThreshold = walkingAvg - walkingVar;
-                }
-                
-                debugEl.innerHTML += `<p>Calibration terminée! Seuil immobile: ${standingThreshold.toFixed(2)}, Seuil marche: ${walkingThreshold.toFixed(2)}</p>`;
-                debugEl.style.display = 'block';
-            }
-        });
-    </script>
+          }).catch(console.error);
+      } else {
+        // Android
+        startListening();
+      }
+    });
+
+    function startListening() {
+      if (listening) return;
+      listening = true;
+
+      window.addEventListener("devicemotion", (event) => {
+        let acc = event.accelerationIncludingGravity;
+        if (!acc.x || !acc.y || !acc.z) return;
+
+        let magnitude = Math.sqrt(acc.x ** 2 + acc.y ** 2 + acc.z ** 2);
+        let delta = Math.abs(magnitude - lastMagnitude);
+
+        if (delta > threshold) {
+          stepCount++;
+          document.getElementById("steps").innerText = stepCount;
+        }
+
+        lastMagnitude = magnitude;
+      });
+    }
+  </script>
 </body>
 </html>

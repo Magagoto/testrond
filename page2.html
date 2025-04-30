@@ -32,10 +32,10 @@
     let stepCount = 0;
     let lastStepTime = 0;
     let lastMagnitude = 0;
-    let alpha = 0.9; // filtre passe-bas
-    let filteredMagnitude = 0;
-    let threshold = 1.2; // seuil ajusté
-    let minStepInterval = 300; // délai min entre deux pas en ms
+    let filteredMagnitude = null; // <--- null = non initialisé
+    const alpha = 0.9;
+    const threshold = 1.2;
+    const minStepInterval = 300;
 
     document.getElementById('start').addEventListener('click', () => {
       if (typeof DeviceMotionEvent.requestPermission === 'function') {
@@ -57,13 +57,18 @@
 
         const magnitude = Math.sqrt(acc.x ** 2 + acc.y ** 2 + acc.z ** 2);
 
-        // Appliquer un filtre passe-bas pour lisser le bruit
+        if (filteredMagnitude === null) {
+          // Initialisation à la première lecture
+          filteredMagnitude = magnitude;
+          lastMagnitude = magnitude;
+          return;
+        }
+
+        // Filtrage passe-bas
         filteredMagnitude = alpha * filteredMagnitude + (1 - alpha) * magnitude;
-
-        const now = Date.now();
         const delta = Math.abs(filteredMagnitude - lastMagnitude);
+        const now = Date.now();
 
-        // Détecter un pas si variation suffisante ET délai suffisant depuis le dernier
         if (delta > threshold && now - lastStepTime > minStepInterval) {
           stepCount++;
           document.getElementById("steps").innerText = stepCount;

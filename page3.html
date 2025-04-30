@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Modèle 3D réactif au mouvement</title>
+<title>Modèle 3D réactif à la marche</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- Import de la librairie <model-viewer> -->
 <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
@@ -15,6 +15,7 @@ body {
   align-items: center;
   height: 100vh;
   flex-direction: column;
+  font-family: sans-serif;
 }
 model-viewer {
   width: 100%;
@@ -72,14 +73,27 @@ model-viewer {
   max-width: 600px;
   padding: 0 20px;
 }
+.debug-info {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  color: rgba(255,255,255,0.6);
+  font-size: 0.8rem;
+  font-family: monospace;
+  background: rgba(0,0,0,0.3);
+  padding: 5px;
+  border-radius: 5px;
+  max-width: 300px;
+  display: none; /* Masqué par défaut */
+}
 </style>
 </head>
 <body>
 <div class="info-row">
   <div class="info-rect" id="distanceInfo">marche en cours: 8km</div>
   <div class="info-rect" id="timeInfo">temps restant: 9 minutes</div>
-  <div class="info-rect" id="activityInfo">intensité: 0</div>
-  <div class="info-rect" id="statusInfo">inactive</div>
+  <div class="info-rect" id="stepsInfo">pas: 0</div>
+  <div class="info-rect" id="statusInfo">Toucher pour démarrer</div>
 </div>
 <!-- Modèle 3D sans fond blanc -->
 <model-viewer
@@ -91,38 +105,100 @@ model-viewer {
   disable-zoom>
 </model-viewer>
 
-<p class="instructions">Bougez votre appareil pour faire tourner le modèle. Plus vous bougez rapidement, plus le modèle tourne vite.</p>
+<p class="instructions">Marchez avec votre appareil. La vitesse de rotation du modèle s'adaptera à votre allure.</p>
+
+<div class="debug-info" id="debugInfo"></div>
 
 <script>
   // Éléments d'interface
   const modelViewer = document.getElementById('modelViewer');
   const distanceInfo = document.getElementById('distanceInfo');
   const timeInfo = document.getElementById('timeInfo');
-  const activityInfo = document.getElementById('activityInfo');
+  const stepsInfo = document.getElementById('stepsInfo');
   const statusInfo = document.getElementById('statusInfo');
+  const debugInfo = document.getElementById('debugInfo');
   
-  // Variables pour le suivi du mouvement
+  // Variables pour la détection de la marche
   let isTracking = false;
-  let lastUpdateTime = 0;
-  let movementBuffer = [];
-  let movementIntensity = 0;
+  let walkingSpeed = 0;
+  let stepCount = 0;
+  let lastStepTime = 0;
+  let inStep = false;
+  
+  // Tableau pour stocker les dernières valeurs d'accélération
+  let accelerationValues = [];
+  const MAX_ACCELERATION_VALUES = 30;
+  
+  // Variables pour la détection des pas
+  let lastAcceleration = 0;
+  let peakDetected = false;
+  let valleyDetected = false;
+  let lastPeakTime = 0;
   
   // Constantes pour le contrôle de la rotation
-  const MIN_ROTATION_SPEED = 0.5;  // Vitesse minimale de rotation (tours par minute)
-  const MAX_ROTATION_SPEED = 4.0;  // Vitesse maximale de rotation (tours par minute)
-  const BUFFER_SIZE = 10;          // Taille du buffer pour lisser les mouvements
-  const THRESHOLD = 0.8;           // Seuil de détection du mouvement
-  const UPDATE_INTERVAL = 100;     // Intervalle de mise à jour (ms)
+  const MIN_ROTATION_SPEED = 0.2;  // Vitesse minimale de rotation (tours par minute)
+  const MAX_ROTATION_SPEED = 3.0;  // Vitesse maximale de rotation (tours par minute)
   
-  // Configurer la rotation par défaut
-  modelViewer.setAttribute('auto-rotate', true);
+  // Valeurs ajustables pour la détection de la marche
+  const STEP_THRESHOLD = 1.3;      // Seuil pour détecter un pas
+  const MIN_STEP_INTERVAL = 200;   // Intervalle minimum entre les pas (ms)
+  const WALKING_TIMEOUT = 2000;    // Temps après lequel on considère que la marche est arrêtée (ms)
+  
+  // Rotation initiale lente
   modelViewer.setAttribute('rotation-per-second', `${MIN_ROTATION_SPEED * 360 / 60}deg`);
+
+  // Fonction pour gérer les pas détectés
+  function handleStep() {
+    const now = Date.now();
+    
+    // Éviter les faux positifs en vérifiant l'intervalle entre les pas
+    if (now - lastStepTime < MIN_STEP_INTERVAL) {
+      return;
+    }
+    
+    // Incrémenter le compteur de pas
+    stepCount++;
+    lastStepTime = now;
+    
+    // Calculer la vitesse de marche (pas par minute)
+    const stepInterval = now - lastStepTime;
+    if (stepInterval > 0) {
+      // Calculer approximativement les pas par minute
+      walkingSpeed = 60000 / stepInterval;
+    }
+    
+    // Mise à jour de l'interface
+    stepsInfo.textContent = `pas: ${stepCount}`;
+    updateModel();
+  }
   
   // Fonction qui met à jour la rotation du modèle
-  function updateModelRotation(intensity) {
-    // Calculer la vitesse de rotation proportionnelle à l'intensité
-    const scaledIntensity = Math.min(intensity, 10) / 10; // Limiter à 10 pour éviter les rotations trop rapides
-    const rotationSpeed = MIN_ROTATION_SPEED + scaledIntensity * (MAX_ROTATION_SPEED - MIN_ROTATION_SPEED);
+  function updateModel() {
+    // Obtenir le temps actuel
+    const now = Date.now();
+    
+    // Vérifier si la personne est toujours en train de marcher
+    if (now - lastStepTime > WALKING_TIMEOUT) {
+      walkingSpeed = 0;
+      statusInfo.textContent = "Inactif";
+    } else {
+      statusInfo.textContent = "Marche détectée";
+    }
+    
+    // Calculer la vitesse de rotation en fonction de la vitesse de marche
+    let rotationSpeed;
+    
+    if (walkingSpeed > 0) {
+      // Limiter la vitesse de marche entre 30 et 180 pas par minute
+      const normalizedSpeed = Math.min(Math.max(walkingSpeed, 30), 180);
+      
+      // Calculer la vitesse de rotation proportionnelle
+      const factor = (normalizedSpeed - 30) / (180 - 30);
+      rotationSpeed = MIN_ROTATION_SPEED + factor * (MAX_ROTATION_SPEED - MIN_ROTATION_SPEED);
+    } else {
+      // Rotation lente quand pas de mouvement
+      rotationSpeed = MIN_ROTATION_SPEED;
+    }
     
     // Convertir tours par minute en degrés par seconde
     const rotationDegPerSec = rotationSpeed * 360 / 60;
@@ -130,77 +206,109 @@ model-viewer {
     // Appliquer la rotation au modèle 3D
     modelViewer.setAttribute('rotation-per-second', `${rotationDegPerSec}deg`);
     
-    // Mise à jour de l'affichage
-    activityInfo.textContent = `intensité: ${intensity.toFixed(1)}`;
-    
-    // Simuler le changement de distance et temps restant
-    if (intensity > 0.5) {
-      // Secouer plus fort diminue le temps restant
-      const remainingTime = Math.max(1, 9 - intensity);
-      timeInfo.textContent = `temps restant: ${remainingTime.toFixed(0)} minutes`;
+    // Simuler la progression de la marche
+    if (walkingSpeed > 0) {
+      // Calculer distance approximative parcourue
+      const distancePerStep = 0.0007; // environ 0.7m par pas
+      const distanceKm = (stepCount * distancePerStep).toFixed(2);
+      distanceInfo.textContent = `marche en cours: ${distanceKm}km`;
+      
+      // Estimer le temps restant
+      const remainingDistance = 8 - distanceKm;
+      if (remainingDistance > 0 && walkingSpeed > 0) {
+        // Conversion pas par minute en km/h approximatif
+        const kmPerHour = walkingSpeed * 0.042; // conversion approximative
+        const remainingHours = remainingDistance / kmPerHour;
+        const remainingMinutes = Math.ceil(remainingHours * 60);
+        timeInfo.textContent = `temps restant: ${remainingMinutes} minutes`;
+      }
     }
   }
   
   // Fonction de traitement des données de l'accéléromètre
   function processMotion(event) {
-    const now = Date.now();
+    if (!isTracking) return;
     
-    // Limiter la fréquence des mises à jour
-    if (now - lastUpdateTime < UPDATE_INTERVAL) {
-      return;
-    }
-    lastUpdateTime = now;
+    // Obtenir les données d'accélération
+    const acceleration = event.accelerationIncludingGravity || event.acceleration;
     
-    // Extraire les données d'accélération
-    const { x, y, z } = event.acceleration;
-    
-    // Calculer l'intensité du mouvement (magnitude de l'accélération)
-    const acceleration = Math.sqrt(x*x + y*y + z*z);
-    
-    // Ignorer les mouvements trop faibles
-    if (acceleration < THRESHOLD) {
+    if (!acceleration) {
+      debugInfo.textContent = "Pas de données d'accélération disponibles";
       return;
     }
     
-    // Ajouter au buffer et maintenir la taille du buffer
-    movementBuffer.push(acceleration);
-    if (movementBuffer.length > BUFFER_SIZE) {
-      movementBuffer.shift();
+    // Calculer la magnitude de l'accélération
+    const magnitude = Math.sqrt(
+      acceleration.x * acceleration.x + 
+      acceleration.y * acceleration.y + 
+      acceleration.z * acceleration.z
+    );
+    
+    // Ajouter la nouvelle valeur au tableau
+    accelerationValues.push(magnitude);
+    
+    // Limiter la taille du tableau
+    if (accelerationValues.length > MAX_ACCELERATION_VALUES) {
+      accelerationValues.shift();
     }
     
-    // Calculer l'intensité moyenne du mouvement
-    const sum = movementBuffer.reduce((acc, val) => acc + val, 0);
-    movementIntensity = sum / movementBuffer.length;
+    // Si nous avons assez de valeurs, analyser le motif pour détecter les pas
+    if (accelerationValues.length > 5) {
+      const currentAcceleration = magnitude;
+      
+      // Détection des pics et vallées pour les pas
+      if (currentAcceleration > lastAcceleration && currentAcceleration > STEP_THRESHOLD) {
+        // Potentiel pic détecté
+        peakDetected = true;
+        valleyDetected = false;
+      } else if (currentAcceleration < lastAcceleration && peakDetected) {
+        // Potentielle vallée après un pic
+        valleyDetected = true;
+      }
+      
+      // Un pas est détecté lorsqu'on a un pic suivi d'une vallée
+      if (peakDetected && valleyDetected) {
+        handleStep();
+        peakDetected = false;
+        valleyDetected = false;
+      }
+      
+      lastAcceleration = currentAcceleration;
+    }
     
-    // Mettre à jour la rotation du modèle
-    updateModelRotation(movementIntensity);
-    
-    // Mettre à jour le statut
-    statusInfo.textContent = movementIntensity > 2 ? "haute activité" : 
-                             movementIntensity > 1 ? "activité modérée" : "activité légère";
+    // Debug: afficher les données d'accélération
+    debugInfo.textContent = `Acc: ${magnitude.toFixed(2)}, Seuil: ${STEP_THRESHOLD}, Vitesse: ${walkingSpeed.toFixed(1)} pas/min`;
   }
   
   // Fonction pour démarrer le suivi
   function startTracking() {
-    if (window.DeviceMotionEvent) {
-      window.addEventListener('devicemotion', processMotion, false);
-      isTracking = true;
-      statusInfo.textContent = "actif";
+    if (window.DeviceMotionEvent !== undefined) {
+      // Afficher les informations de débogage
+      debugInfo.style.display = "block";
       
-      // Demander l'autorisation pour l'accéléromètre sur iOS 13+
+      // Vérifier si l'API nécessite une autorisation (iOS 13+)
       if (typeof DeviceMotionEvent.requestPermission === 'function') {
         DeviceMotionEvent.requestPermission()
           .then(permissionState => {
             if (permissionState === 'granted') {
-              window.addEventListener('devicemotion', processMotion, false);
+              window.addEventListener('devicemotion', processMotion);
+              isTracking = true;
+              statusInfo.textContent = "Actif (iOS)";
             } else {
-              statusInfo.textContent = "refusé";
+              statusInfo.textContent = "Permission refusée";
             }
           })
-          .catch(console.error);
+          .catch(error => {
+            statusInfo.textContent = "Erreur: " + error;
+          });
+      } else {
+        // Pour Android et autres
+        window.addEventListener('devicemotion', processMotion);
+        isTracking = true;
+        statusInfo.textContent = "Actif";
       }
     } else {
-      statusInfo.textContent = "non supporté";
+      statusInfo.textContent = "Non supporté";
     }
   }
   
@@ -209,12 +317,10 @@ model-viewer {
     if (isTracking) {
       window.removeEventListener('devicemotion', processMotion);
       isTracking = false;
-      statusInfo.textContent = "inactive";
+      statusInfo.textContent = "Toucher pour démarrer";
+      debugInfo.style.display = "none";
     }
   }
-  
-  // Démarrer le suivi au chargement de la page
-  document.addEventListener('DOMContentLoaded', startTracking);
   
   // Ajouter un événement pour basculer le suivi
   statusInfo.addEventListener('click', function() {
@@ -225,12 +331,18 @@ model-viewer {
     }
   });
   
+  // Mise à jour de l'interface à intervalles réguliers
+  setInterval(updateModel, 1000);
+  
+  // Ajouter un événement pour activer le mode débogage
+  modelViewer.addEventListener('click', function() {
+    debugInfo.style.display = debugInfo.style.display === "none" ? "block" : "none";
+  });
+  
   // Gérer le cas où la page est en arrière-plan
   document.addEventListener('visibilitychange', function() {
-    if (document.hidden) {
+    if (document.hidden && isTracking) {
       stopTracking();
-    } else if (!isTracking) {
-      startTracking();
     }
   });
 </script>

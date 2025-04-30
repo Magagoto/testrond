@@ -173,7 +173,8 @@ model-viewer {
   disable-zoom>
 </model-viewer>
 
-<p class="instructions">Marchez avec votre appareil. La vitesse de rotation du modèle s'adaptera à votre allure.</p>
+<p class="instructions">Marchez avec votre appareil. La vitesse de rotation du modèle s'adaptera à votre allure.<br>
+Sur ordinateur: utilisez la barre d'espace pour simuler des pas, et la touche 'R' pour réinitialiser.</p>
 
 <div class="debug-info" id="debugInfo"></div>
 
@@ -209,13 +210,22 @@ model-viewer {
   const MAX_STEP_TIMES = 5; // Utiliser les 5 derniers pas pour calculer la vitesse moyenne
   
   // Constantes pour le contrôle de la rotation
-  const MIN_ROTATION_SPEED = 0.2;  // Vitesse minimale de rotation (tours par minute)
-  const MAX_ROTATION_SPEED = 3.0;  // Vitesse maximale de rotation (tours par minute)
+  const MIN_ROTATION_SPEED = 0.2;   // Vitesse minimale de rotation (tours par minute)
+  const MAX_ROTATION_SPEED = 40.0;  // Vitesse maximale de rotation (tours par minute) -- ultra sensible
   
   // Valeurs ajustables pour la détection de la marche
-  const STEP_THRESHOLD = 1.3;      // Seuil pour détecter un pas
-  const MIN_STEP_INTERVAL = 200;   // Intervalle minimum entre les pas (ms)
-  const WALKING_TIMEOUT = 2000;    // Temps après lequel on considère que la marche est arrêtée (ms)
+  const STEP_THRESHOLD = 2.0;      // Seuil pour détecter un pas (augmenté pour éviter les fausses détections)
+  const MIN_STEP_INTERVAL = 300;   // Intervalle minimum entre les pas (ms) (augmenté pour éviter les détections rapprochées)
+  const WALKING_TIMEOUT = 1500;    // Temps après lequel on considère que la marche est arrêtée (ms)
+  
+  // Variables pour le filtrage des accélérations
+  let filteredAcceleration = 0;
+  const FILTER_ALPHA = 0.3;       // Facteur de lissage pour filtrer les valeurs d'accélération
+  
+  // Variables pour la détection de mouvement significatif
+  let isMoving = false;
+  let movementEnergy = 0;
+  const MOVEMENT_THRESHOLD = 0.8; // Seuil pour détecter un vrai mouvement de marche
   
   // Rotation initiale lente
   modelViewer.setAttribute('rotation-per-second', `${MIN_ROTATION_SPEED * 360 / 60}deg`);
@@ -224,7 +234,7 @@ model-viewer {
   function handleStep() {
     const now = Date.now();
     
-    // Éviter les faux positifs en vérifiant l'intervalle entre les pas
+    // Vérification supplémentaire pour éviter les faux positifs
     if (now - lastStepTime < MIN_STEP_INTERVAL) {
       return;
     }
@@ -244,7 +254,10 @@ model-viewer {
       const stepsInSpan = lastStepTimes.length - 1;
       if (timeSpan > 0 && stepsInSpan > 0) {
         // Calculer les pas par minute
-        walkingSpeed = (stepsInSpan / timeSpan) * 60000;
+        const newSpeed = (stepsInSpan / timeSpan) * 60000;
+        
+        // Lisser les changements de vitesse pour éviter les sauts brusques
+        walkingSpeed = walkingSpeed * 0.7 + newSpeed * 0.3;
       }
     }
     
@@ -263,15 +276,13 @@ model-viewer {
     // Calculer la vitesse de rotation en fonction de la vitesse de marche
     let rotationSpeed;
     
-    if (walkingSpeed > 0) {
-      // Limiter la vitesse de marche entre 30 et 180 pas par minute
-      const normalizedSpeed = Math.min(Math.max(walkingSpeed, 30), 180);
-      
-      // Calculer la vitesse de rotation proportionnelle
-      const factor = (normalizedSpeed - 30) / (180 - 30);
+    if (walkingSpeed > 0.1) {  // seuil très bas
+      // Limiter la vitesse de marche entre 2 et 180 pas par minute
+      const normalizedSpeed = Math.min(Math.max(walkingSpeed, 2), 180);
+      // Calculer la vitesse de rotation proportionnelle (ultra sensible)
+      const factor = (normalizedSpeed - 2) / (180 - 2);
       rotationSpeed = MIN_ROTATION_SPEED + factor * (MAX_ROTATION_SPEED - MIN_ROTATION_SPEED);
     } else {
-      // Rotation lente quand pas de mouvement
       rotationSpeed = MIN_ROTATION_SPEED;
     }
     
@@ -280,9 +291,6 @@ model-viewer {
     
     // Appliquer la rotation au modèle 3D
     modelViewer.setAttribute('rotation-per-second', `${rotationDegPerSec}deg`);
-    
-    // Debug
-    debugInfo.textContent = `Rotation: ${rotationSpeed.toFixed(2)} tr/min (${rotationDegPerSec.toFixed(2)} deg/s), Vitesse: ${walkingSpeed.toFixed(1)} pas/min`;
   }
   
   // Fonction qui met à jour les informations d'interface
@@ -330,54 +338,94 @@ model-viewer {
       return;
     }
     
-    // Calculer la magnitude de l'accélération
-    const magnitude = Math.sqrt(
-      acceleration.x * acceleration.x + 
-      acceleration.y * acceleration.y + 
-      acceleration.z * acceleration.z
-    );
+    const now = Date.now();
     
-    // Ajouter la nouvelle valeur au tableau
-    accelerationValues.push(magnitude);
+    // Calculer la magnitude de l'accélération (sans la gravité si possible)
+    let magnitude;
+    if (event.acceleration) {
+      // Si on a l'accélération sans gravité, utiliser celle-ci
+      magnitude = Math.sqrt(
+        acceleration.x * acceleration.x + 
+        acceleration.y * acceleration.y + 
+        acceleration.z * acceleration.z
+      );
+    } else {
+      // Sinon utiliser l'accélération avec gravité, mais extraire principalement les changements d'axes y
+      // Ce qui est plus typique pour la marche (axe vertical)
+      magnitude = Math.abs(acceleration.y - 9.8); // Soustraire la gravité approximative pour l'axe y
+    }
+    
+    // Filtrer l'accélération pour réduire le bruit (filtre passe-bas)
+    filteredAcceleration = FILTER_ALPHA * magnitude + (1 - FILTER_ALPHA) * filteredAcceleration;
+    
+    // Calculer l'énergie du mouvement sur une fenêtre glissante
+    movementEnergy = movementEnergy * 0.95 + filteredAcceleration * 0.05;
+    
+    // Déterminer si on est en mouvement
+    isMoving = movementEnergy > MOVEMENT_THRESHOLD;
+    
+    // Ajouter la nouvelle valeur filtrée au tableau
+    accelerationValues.push(filteredAcceleration);
     
     // Limiter la taille du tableau
     if (accelerationValues.length > MAX_ACCELERATION_VALUES) {
       accelerationValues.shift();
     }
     
-    // Si nous avons assez de valeurs, analyser le motif pour détecter les pas
-    if (accelerationValues.length > 5) {
-      const currentAcceleration = magnitude;
-      const now = Date.now();
-      
+    // Si nous avons assez de valeurs ET que nous sommes en mouvement, analyser le motif pour les pas
+    if (accelerationValues.length > 5 && isMoving) {
       // Détection des pics et vallées pour les pas
-      if (currentAcceleration > lastAcceleration && currentAcceleration > STEP_THRESHOLD && !peakDetected) {
+      if (filteredAcceleration > lastAcceleration && 
+          filteredAcceleration > STEP_THRESHOLD && 
+          !peakDetected && 
+          (now - lastStepTime) > MIN_STEP_INTERVAL) {
+        
         // Pic détecté
         peakDetected = true;
         lastPeakTime = now;
-      } else if (currentAcceleration < lastAcceleration && peakDetected && !valleyDetected && (now - lastPeakTime) < 500) {
-        // Vallée détectée après un pic récent
+        
+      } else if (filteredAcceleration < lastAcceleration && 
+                 peakDetected && 
+                 !valleyDetected && 
+                 (now - lastPeakTime) < 400 && 
+                 (now - lastPeakTime) > 100) {
+        
+        // Vallée détectée après un pic récent avec des contraintes de temps plus strictes
         valleyDetected = true;
       }
       
       // Un pas est détecté lorsqu'on a un pic suivi d'une vallée
       if (peakDetected && valleyDetected) {
-        handleStep();
+        // Vérifier que la différence entre pic et vallée est significative
+        const peakValleyRatio = filteredAcceleration / STEP_THRESHOLD;
+        if (peakValleyRatio < 0.7) {  // La vallée doit être significativement plus basse que le pic
+          handleStep();
+        }
+        
         peakDetected = false;
         valleyDetected = false;
       }
       
       // Réinitialiser la détection si trop de temps s'est écoulé depuis le dernier pic
-      if (peakDetected && (now - lastPeakTime) > 500) {
+      if (peakDetected && (now - lastPeakTime) > 400) {
         peakDetected = false;
       }
+    } else if (!isMoving && walkingSpeed > 0) {
+      // Si nous ne sommes plus en mouvement mais avons encore une vitesse, réduire progressivement
+      walkingSpeed *= 0.95;
+      if (walkingSpeed < 1) walkingSpeed = 0;
       
-      lastAcceleration = currentAcceleration;
+      // Mettre à jour l'affichage si la vitesse change
+      speedInfo.textContent = `vitesse: ${Math.round(walkingSpeed)} pas/min`;
+      updateModelRotation();
     }
     
-    // Debug: afficher les données d'accélération
-    debugInfo.innerHTML = `Acc: ${magnitude.toFixed(2)}, Seuil: ${STEP_THRESHOLD}<br>` + 
-                         `Vitesse: ${walkingSpeed.toFixed(1)} pas/min, Pas: ${stepCount}`;
+    lastAcceleration = filteredAcceleration;
+    
+    // Debug: afficher les données plus détaillées
+    debugInfo.innerHTML = `Acc brute: ${magnitude.toFixed(2)}, Acc filtrée: ${filteredAcceleration.toFixed(2)}<br>` + 
+                         `Seuil pas: ${STEP_THRESHOLD.toFixed(1)}, Énergie: ${movementEnergy.toFixed(2)}<br>` + 
+                         `En mouvement: ${isMoving ? 'OUI' : 'NON'}, Vitesse: ${walkingSpeed.toFixed(1)} pas/min`;
   }
   
   // Fonction pour démarrer le suivi
@@ -457,15 +505,31 @@ model-viewer {
     if (event.code === 'Space' && isTracking) {
       // Simuler un pas lorsqu'on appuie sur la barre d'espace
       const simulatedAcceleration = STEP_THRESHOLD + 0.5;
+      filteredAcceleration = simulatedAcceleration;
       accelerationValues.push(simulatedAcceleration);
       peakDetected = true;
+      isMoving = true;
+      movementEnergy = MOVEMENT_THRESHOLD + 0.2;
       setTimeout(() => {
-        accelerationValues.push(STEP_THRESHOLD - 0.5);
+        filteredAcceleration = STEP_THRESHOLD - 0.6;
+        accelerationValues.push(filteredAcceleration);
         valleyDetected = true;
         handleStep();
         peakDetected = false;
         valleyDetected = false;
       }, 100);
+    } else if (event.code === 'KeyR' && isTracking) {
+      // Touche R pour réinitialiser les compteurs
+      stepCount = 0;
+      walkingSpeed = 0;
+      lastStepTimes = [];
+      isMoving = false;
+      movementEnergy = 0;
+      speedInfo.textContent = "vitesse: 0 pas/min";
+      statusInfo.textContent = "Réinitialisé";
+      distanceInfo.textContent = "marche en cours: 0.00km";
+      timeInfo.textContent = "temps restant: -- minutes";
+      updateModelRotation();
     }
   });
 </script>

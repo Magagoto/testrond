@@ -2,35 +2,34 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Modèle 3D sans fond</title>
+  <title>Modèle 3D transparent</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Import de la librairie <model-viewer> -->
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
-    body {
+    html, body {
       margin: 0;
-      background-color: #010e2f; /* Tu peux le changer ou mettre transparent */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      padding: 0;
+      height: 100%;
+      background: transparent;
     }
     model-viewer {
       width: 100%;
-      max-width: 800px;
-      height: 600px;
+      height: 100vh;
       background: transparent;
     }
   </style>
 </head>
 <body>
 
-  <!-- Modèle 3D sans fond blanc -->
-  <model-viewer 
-    src="final.glb" 
+  <model-viewer
+    src="final.glb"
     alt="Modèle 3D interactif"
-    auto-rotate 
+    auto-rotatex
     camera-controls
+    style="--poster-color: transparent;"
+    exposure="1"
+    shadow-intensity="1"
+    environment-image="neutral"
     disable-zoom>
   </model-viewer>
 

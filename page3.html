@@ -90,9 +90,72 @@ model-viewer {
   max-width: 300px;
   display: none; /* Masqué par défaut */
 }
+/* Loader overlay */
+#loader-overlay {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  background: rgba(11,4,45,0.97);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.4s;
+}
+#loader-text {
+  color: #00ffcc;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  font-size: 1.2em;
+  margin-bottom: 36px;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px #00ffcc44;
+}
+.loader-spinner {
+  display: flex;
+  gap: 12px;
+}
+.loader-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  opacity: 0.7;
+  animation: loader-spin 1.2s linear infinite;
+  /* Le background sera surchargé ci-dessous */
+  background: #00ffcc;
+}
+.loader-dot:nth-child(1)  { animation-delay: 0s;     background: radial-gradient(circle at 60% 40%, #00A993 60%, #E68B4A 100%);}
+.loader-dot:nth-child(2)  { animation-delay: 0.12s;  background: radial-gradient(circle at 60% 40%, #E68B4A 60%, #7A1619 100%);}
+.loader-dot:nth-child(3)  { animation-delay: 0.24s;  background: radial-gradient(circle at 60% 40%, #7A1619 60%, #362777 100%);}
+.loader-dot:nth-child(4)  { animation-delay: 0.36s;  background: radial-gradient(circle at 60% 40%, #362777 60%, #EB7AAE 100%);}
+.loader-dot:nth-child(5)  { animation-delay: 0.48s;  background: radial-gradient(circle at 60% 40%, #EB7AAE 60%, #0069AA 100%);}
+.loader-dot:nth-child(6)  { animation-delay: 0.60s;  background: radial-gradient(circle at 60% 40%, #0069AA 60%, #DC0C15 100%);}
+.loader-dot:nth-child(7)  { animation-delay: 0.72s;  background: radial-gradient(circle at 60% 40%, #DC0C15 60%, #E03A8D 100%);}
+.loader-dot:nth-child(8)  { animation-delay: 0.84s;  background: radial-gradient(circle at 60% 40%, #E03A8D 60%, #FFFFFF 100%);}
+.loader-dot:nth-child(9)  { animation-delay: 0.96s;  background: radial-gradient(circle at 60% 40%, #FFFFFF 60%, #2A4899 100%);}
+.loader-dot:nth-child(10) { animation-delay: 1.08s;  background: radial-gradient(circle at 60% 40%, #2A4899 60%, #00A993 100%);}
+@keyframes loader-spin {
+  0%   { transform: scale(1) translateY(0); opacity: 0.7; }
+  50%  { transform: scale(1.3) translateY(-12px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 0.7; }
+}
 </style>
 </head>
 <body>
+<div id="loader-overlay">
+  <div id="loader-text">Veuillez patienter...</div>
+  <div class="loader-spinner">
+    <div class="loader-dot"></div>
+    <div class="loader-dot"></div>
+    <div class="loader-dot"></div>
+    <div class="loader-dot"></div>
+    <div class="loader-dot"></div>
+    <div class="loader-dot"></div>
+    <div class="loader-dot"></div>
+    <div class="loader-dot"></div>
+    <div class="loader-dot"></div>
+    <div class="loader-dot"></div>
+  </div>
+</div>
 <div class="info-row">
   <div class="info-rect" id="distanceInfo">marche en cours: 8km</div>
   <div class="info-rect" id="timeInfo">temps restant: 9 minutes</div>
@@ -120,6 +183,7 @@ model-viewer {
   const stepsInfo = document.getElementById('stepsInfo');
   const statusInfo = document.getElementById('statusInfo');
   const debugInfo = document.getElementById('debugInfo');
+  const loaderOverlay = document.getElementById('loader-overlay');
   
   // Variables pour la détection de la marche
   let isTracking = false;
@@ -347,6 +411,12 @@ model-viewer {
     if (document.hidden && isTracking) {
       stopTracking();
     }
+  });
+
+  // Loader overlay gestion
+  modelViewer.addEventListener('load', function() {
+    loaderOverlay.style.opacity = '0';
+    setTimeout(() => loaderOverlay.style.display = 'none', 400);
   });
 </script>
 </body>

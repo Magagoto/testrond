@@ -161,7 +161,7 @@ model-viewer {
 <div class="info-row">
   <div class="info-rect" id="distanceInfo">marche en cours: 8km</div>
   <div class="info-rect" id="timeInfo">temps restant: 9 minutes</div>
-  <div class="info-rect" id="stepsInfo">pas: 0</div>
+  <div class="info-rect" id="speedInfo">vitesse: 0 pas/min</div>
   <div class="info-rect" id="statusInfo">Toucher pour démarrer</div>
 </div>
 <!-- Modèle 3D contrôlé uniquement par l'accéléromètre -->
@@ -182,7 +182,7 @@ model-viewer {
   const modelViewer = document.getElementById('modelViewer');
   const distanceInfo = document.getElementById('distanceInfo');
   const timeInfo = document.getElementById('timeInfo');
-  const stepsInfo = document.getElementById('stepsInfo');
+  const speedInfo = document.getElementById('speedInfo');
   const statusInfo = document.getElementById('statusInfo');
   const debugInfo = document.getElementById('debugInfo');
   const loaderOverlay = document.getElementById('loader-overlay');
@@ -203,6 +203,10 @@ model-viewer {
   let peakDetected = false;
   let valleyDetected = false;
   let lastPeakTime = 0;
+  
+  // Variables pour le calcul de la vitesse de marche
+  let lastStepTimes = [];
+  const MAX_STEP_TIMES = 5; // Utiliser les 5 derniers pas pour calculer la vitesse moyenne
   
   // Constantes pour le contrôle de la rotation
   const MIN_ROTATION_SPEED = 0.2;  // Vitesse minimale de rotation (tours par minute)
@@ -227,33 +231,35 @@ model-viewer {
     
     // Incrémenter le compteur de pas
     stepCount++;
-    lastStepTime = now;
     
-    // Calculer la vitesse de marche (pas par minute)
-    const stepInterval = now - lastStepTime;
-    if (stepInterval > 0) {
-      // Calculer approximativement les pas par minute
-      walkingSpeed = 60000 / stepInterval;
+    // Ajouter le temps actuel à notre tableau des temps de pas
+    lastStepTimes.push(now);
+    if (lastStepTimes.length > MAX_STEP_TIMES) {
+      lastStepTimes.shift();
     }
     
+    // Calculer la vitesse de marche (pas par minute) basée sur la moyenne des derniers pas
+    if (lastStepTimes.length >= 2) {
+      const timeSpan = lastStepTimes[lastStepTimes.length - 1] - lastStepTimes[0];
+      const stepsInSpan = lastStepTimes.length - 1;
+      if (timeSpan > 0 && stepsInSpan > 0) {
+        // Calculer les pas par minute
+        walkingSpeed = (stepsInSpan / timeSpan) * 60000;
+      }
+    }
+    
+    lastStepTime = now;
+    
     // Mise à jour de l'interface
-    stepsInfo.textContent = `pas: ${stepCount}`;
-    updateModel();
+    speedInfo.textContent = `vitesse: ${Math.round(walkingSpeed)} pas/min`;
+    
+    // Mise à jour du modèle à chaque pas détecté
+    updateModelRotation();
+    updateInterface();
   }
   
   // Fonction qui met à jour la rotation du modèle
-  function updateModel() {
-    // Obtenir le temps actuel
-    const now = Date.now();
-    
-    // Vérifier si la personne est toujours en train de marcher
-    if (now - lastStepTime > WALKING_TIMEOUT) {
-      walkingSpeed = 0;
-      statusInfo.textContent = "Inactif";
-    } else {
-      statusInfo.textContent = "Marche détectée";
-    }
-    
+  function updateModelRotation() {
     // Calculer la vitesse de rotation en fonction de la vitesse de marche
     let rotationSpeed;
     
@@ -275,18 +281,36 @@ model-viewer {
     // Appliquer la rotation au modèle 3D
     modelViewer.setAttribute('rotation-per-second', `${rotationDegPerSec}deg`);
     
-    // Simuler la progression de la marche
-    if (walkingSpeed > 0) {
-      // Calculer distance approximative parcourue
-      const distancePerStep = 0.0007; // environ 0.7m par pas
-      const distanceKm = (stepCount * distancePerStep).toFixed(2);
-      distanceInfo.textContent = `marche en cours: ${distanceKm}km`;
-      
-      // Estimer le temps restant
-      const remainingDistance = 8 - distanceKm;
-      if (remainingDistance > 0 && walkingSpeed > 0) {
-        // Conversion pas par minute en km/h approximatif
-        const kmPerHour = walkingSpeed * 0.042; // conversion approximative
+    // Debug
+    debugInfo.textContent = `Rotation: ${rotationSpeed.toFixed(2)} tr/min (${rotationDegPerSec.toFixed(2)} deg/s), Vitesse: ${walkingSpeed.toFixed(1)} pas/min`;
+  }
+  
+  // Fonction qui met à jour les informations d'interface
+  function updateInterface() {
+    // Obtenir le temps actuel
+    const now = Date.now();
+    
+    // Vérifier si la personne est toujours en train de marcher
+    if (now - lastStepTime > WALKING_TIMEOUT) {
+      walkingSpeed = 0;
+      statusInfo.textContent = "Inactif";
+      speedInfo.textContent = "vitesse: 0 pas/min";
+      updateModelRotation(); // Mettre à jour la rotation quand on s'arrête
+    } else {
+      statusInfo.textContent = "Marche détectée";
+    }
+    
+    // Calculer distance approximative parcourue
+    const distancePerStep = 0.0007; // environ 0.7m par pas
+    const distanceKm = (stepCount * distancePerStep).toFixed(2);
+    distanceInfo.textContent = `marche en cours: ${distanceKm}km`;
+    
+    // Estimer le temps restant
+    const remainingDistance = 8 - parseFloat(distanceKm);
+    if (remainingDistance > 0 && walkingSpeed > 0) {
+      // Conversion pas par minute en km/h approximatif
+      const kmPerHour = walkingSpeed * 0.042; // conversion approximative
+      if (kmPerHour > 0) {
         const remainingHours = remainingDistance / kmPerHour;
         const remainingMinutes = Math.ceil(remainingHours * 60);
         timeInfo.textContent = `temps restant: ${remainingMinutes} minutes`;
@@ -324,14 +348,15 @@ model-viewer {
     // Si nous avons assez de valeurs, analyser le motif pour détecter les pas
     if (accelerationValues.length > 5) {
       const currentAcceleration = magnitude;
+      const now = Date.now();
       
       // Détection des pics et vallées pour les pas
-      if (currentAcceleration > lastAcceleration && currentAcceleration > STEP_THRESHOLD) {
-        // Potentiel pic détecté
+      if (currentAcceleration > lastAcceleration && currentAcceleration > STEP_THRESHOLD && !peakDetected) {
+        // Pic détecté
         peakDetected = true;
-        valleyDetected = false;
-      } else if (currentAcceleration < lastAcceleration && peakDetected) {
-        // Potentielle vallée après un pic
+        lastPeakTime = now;
+      } else if (currentAcceleration < lastAcceleration && peakDetected && !valleyDetected && (now - lastPeakTime) < 500) {
+        // Vallée détectée après un pic récent
         valleyDetected = true;
       }
       
@@ -342,11 +367,17 @@ model-viewer {
         valleyDetected = false;
       }
       
+      // Réinitialiser la détection si trop de temps s'est écoulé depuis le dernier pic
+      if (peakDetected && (now - lastPeakTime) > 500) {
+        peakDetected = false;
+      }
+      
       lastAcceleration = currentAcceleration;
     }
     
     // Debug: afficher les données d'accélération
-    debugInfo.textContent = `Acc: ${magnitude.toFixed(2)}, Seuil: ${STEP_THRESHOLD}, Vitesse: ${walkingSpeed.toFixed(1)} pas/min`;
+    debugInfo.innerHTML = `Acc: ${magnitude.toFixed(2)}, Seuil: ${STEP_THRESHOLD}<br>` + 
+                         `Vitesse: ${walkingSpeed.toFixed(1)} pas/min, Pas: ${stepCount}`;
   }
   
   // Fonction pour démarrer le suivi
@@ -401,7 +432,7 @@ model-viewer {
   });
   
   // Mise à jour de l'interface à intervalles réguliers
-  setInterval(updateModel, 1000);
+  setInterval(updateInterface, 1000);
   
   // Ajouter un événement pour activer le mode débogage
   modelViewer.addEventListener('click', function() {
@@ -419,6 +450,23 @@ model-viewer {
   modelViewer.addEventListener('load', function() {
     loaderOverlay.style.opacity = '0';
     setTimeout(() => loaderOverlay.style.display = 'none', 400);
+  });
+  
+  // Ajout d'une simulation de marche pour tests sur ordinateur
+  document.addEventListener('keydown', function(event) {
+    if (event.code === 'Space' && isTracking) {
+      // Simuler un pas lorsqu'on appuie sur la barre d'espace
+      const simulatedAcceleration = STEP_THRESHOLD + 0.5;
+      accelerationValues.push(simulatedAcceleration);
+      peakDetected = true;
+      setTimeout(() => {
+        accelerationValues.push(STEP_THRESHOLD - 0.5);
+        valleyDetected = true;
+        handleStep();
+        peakDetected = false;
+        valleyDetected = false;
+      }, 100);
+    }
   });
 </script>
 </body>

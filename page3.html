@@ -2,41 +2,37 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Page 3</title>
+  <title>Affichage du modèle 3D</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Import de la librairie <model-viewer> -->
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    model-viewer {
+      width: 100%;
+      max-width: 800px;
+      height: 600px;
+      background-color: #fff;
+    }
+  </style>
 </head>
-<body style="background-color: black; color: white;">
-  <h1>Bienvenue sur la Page 3</h1>
-  <button id="deleteCirclesButton" class="delete-circles-button">Retour</button>
-  <script>
-    document.getElementById('deleteCirclesButton').addEventListener('click', function() {
-      // Retourner à la page précédente
-      history.back();
-    });
-  </script>
+<body>
+
+  <!-- Affichage du modèle 3D -->
+  <model-viewer 
+    src="GLB/final.glb" 
+    alt="Modèle 3D interactif"
+    auto-rotate 
+    camera-controls 
+    background-color="#FFFFFF">
+  </model-viewer>
+
 </body>
-<style>
-  .delete-circles-button {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 15px 30px;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s, transform 0.2s;
-  }
-
-  .delete-circles-button:hover {
-    background-color: #0056b3;
-  }
-
-  .delete-circles-button:active {
-    transform: translateX(-50%) scale(0.95);
-  }
-</style>
 </html>

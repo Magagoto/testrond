@@ -183,6 +183,9 @@ const gradientMap = {
 };
 let colorGrid = [];
 let linearGradientZones = new Map();
+let disappearing = [];
+let hiddenCircles = new Set();
+let blinkingCircles = new Set();
 
 function resizeCanvas() {
   const dpr = window.devicePixelRatio || 1; // Récupérer le ratio de pixels de l'appareil
@@ -239,7 +242,13 @@ function resizeCanvas() {
       const c = colorGrid[cy][cx];
       if (c !== colorA && c !== colorB) continue;
       visited.add(key);
-      colorGrid[cy][cx] = null;
+
+      // Ajouter le cercle à la liste des cercles en disparition
+      if (!hiddenCircles.has(key)) {
+        hiddenCircles.add(key);
+        disappearing.push({ x: cx, y: cy, start: performance.now() });
+      }
+
       // Parcours 8 directions
       for (let dx = -1; dx <= 1; dx++) {
         for (let dy = -1; dy <= 1; dy++) {
@@ -346,21 +355,14 @@ function chooseLinearGradientZones() {
 }
 
 function optimizeRendering(time) {
-  // Sur mobile, limiter le rendu pour économiser la batterie
-  if (isMobile && lastRenderTime && time - lastRenderTime < 16) { // ~60fps
-    requestAnimationFrame(optimizeRendering);
-    return;
-  }
-  lastRenderTime = time;
+  // Supprimer la limitation de fréquence pour une animation plus fluide
   animate(time);
   requestAnimationFrame(optimizeRendering);
 }
 
-let lastRenderTime = 0;
-
 function animate(time) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const t = time / 1000;
+  const t = time / 1000; // Temps en secondes pour des calculs plus fluides
   
   // Récupérer les dimensions du rectangle central pour éviter d'y dessiner des cercles
   const centerRect = document.querySelector('.center-rect').getBoundingClientRect();
@@ -384,6 +386,28 @@ function animate(time) {
       }
       
       let r = radius;
+      const anim = disappearing.find(a => a.x === x && a.y === y);
+
+      // Si le cercle est en train de disparaître, réduire son rayon progressivement
+      if (anim) {
+        const elapsed = time - anim.start;
+        r *= 1 - elapsed / 400; // Réduction progressive sur 400ms
+        ctx.globalAlpha = 1 - elapsed / 400; // Réduction de l'opacité
+
+        if (elapsed > 400) {
+          // Une fois l'animation terminée, ajouter le cercle à la liste des clignotants
+          blinkingCircles.add(key);
+          disappearing = disappearing.filter(a => a !== anim);
+          continue;
+        }
+      }
+      
+      // Si le cercle est en train de clignoter
+      if (blinkingCircles.has(key)) {
+        const blinkOpacity = 0.5 + 0.5 * Math.sin(t * 5); // Oscillation entre 0.5 et 1
+        ctx.globalAlpha = blinkOpacity;
+      }
+      
       const endColor = gradientMap[baseColor.toUpperCase()] || baseColor;
       let gradient;
       
@@ -394,7 +418,6 @@ function animate(time) {
         
         // Animation différente selon le type d'animation
         if (animationType === 'progression') {
-          // Animation de progression linéaire à travers le cercle
           position = ((t * animationSpeed + phaseOffset) % (Math.PI * 2)) / (Math.PI * 2);
           
           // Créer le dégradé qui se déplace à travers le cercle
@@ -422,6 +445,7 @@ function animate(time) {
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.fill();
+      ctx.globalAlpha = 1; // Réinitialiser l'opacité
     }
   }
 }

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Grille + rectangle central avec CGU</title>
 <style>
 @font-face {
@@ -106,11 +106,32 @@ body {
 
 @media (max-width: 600px) {
   .center-rect {
-    width: 92vw;
-    min-width: 0;
-    max-width: 98vw;
+    width: 80vw;
+    max-width: 90vw;
     height: auto;
-    min-height: 160px;
+    min-height: 140px;
+    padding: 10px 12px;
+  }
+  
+  .center-rect h1 {
+    font-size: 1.4em;
+    margin-bottom: 10px;
+  }
+  
+  .center-rect h2 {
+    font-size: 0.9em;
+    margin-top: 8px;
+    margin-bottom: 6px;
+  }
+  
+  .center-rect p {
+    font-size: 0.75em;
+    line-height: 1.3;
+  }
+  
+  .cgu-button {
+    font-size: 0.85em;
+    padding: 6px 12px;
   }
 }
 </style>

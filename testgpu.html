@@ -16,7 +16,7 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden !important;
-  background: #111;
+  background: #07114d;
   /* Empêche le scroll sur mobile */
   touch-action: none;
 }
@@ -38,100 +38,141 @@ body {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 320px;
-  height: 260px;
-  background: rgba(0,0,0,0.7);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 8px;
+  width: 340px;
+  height: 270px;
+  background: #07114d; /* même couleur que le fond de page */
+  border: 2.5px solid #fff;
+  box-shadow: 0 8px 32px 0 rgba(0,0,0,0.22), 0 1.5px 16px 0 rgba(62,95,255,0.10);
+  border-radius: 22px;
   transform: translate(-50%, -50%);
   z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 10px 16px;
+  padding: 22px 28px 18px 28px;
   box-sizing: border-box;
-  /* Police par défaut plus lisible */
   font-family: 'Inter', Arial, sans-serif;
   color: #fff;
-  overflow: hidden;
+  overflow: auto; /* Affiche la barre de scroll si besoin */
+  backdrop-filter: blur(12px) saturate(1.3);
+  transition: box-shadow 0.3s, border 0.3s, background 0.3s;
+}
+
+/* Scrollbar fine et rose pour le rectangle CGU */
+.center-rect::-webkit-scrollbar {
+  width: 4px;
+  background: transparent;
+}
+.center-rect::-webkit-scrollbar-thumb {
+  background: #ff5eae;
+  border-radius: 8px;
+  min-height: 24px;
+}
+.center-rect::-webkit-scrollbar-thumb:hover {
+  background: #ff94d6;
+}
+.center-rect {
+  scrollbar-width: thin;
+  scrollbar-color: #ff5eae #07114d;
 }
 
 .center-rect h1 {
   font-family: 'AMORIA', serif;
   font-size: 2.2em;
-  margin-bottom: 15px;
-  margin-top: 5px;
-  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+  margin-top: 2px;
+  letter-spacing: 0.08em;
   text-align: center;
+  color: #fff;
+  text-shadow: 0 2px 12px #0006, 0 1px 0 #fff2;
+  font-weight: 700;
+  /* plus de chrome, style sobre et élégant */
 }
 
 .center-rect h2 {
-  font-size: 1.1em;
+  font-size: 1.13em;
   margin-top: 10px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   font-family: 'Inter', Arial, sans-serif;
-  font-weight: 600;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 8px #0002;
+  border-bottom: 1.5px solid #fff2;
+  padding-bottom: 6px;
+  width: 100%;
+  text-align: center;
 }
 
 .center-rect p {
-  font-size: 0.92em;
+  font-size: 1em;
   text-align: center;
-  margin: 8px 0;
-  line-height: 1.5;
+  margin: 12px 0 8px 0;
+  line-height: 1.6;
   font-family: 'Inter', Arial, sans-serif;
+  color: #e3e8ff;
+  text-shadow: 0 1px 8px #0002;
 }
 
 #cgu-buttons {
   display: flex;
-  gap: 10px;
-  margin-top: 15px;
+  gap: 18px;
+  margin-top: 20px;
 }
 
 .cgu-button {
-  background: rgba(255,255,255,0.15);
-  color: #fff;
-  border: 1px solid rgba(255,255,255,0.3);
-  border-radius: 4px;
-  padding: 8px 15px;
+  background: #fff;
+  color: #222b4d;
+  border: none;
+  border-radius: 7px;
+  padding: 10px 26px;
   font-family: 'Inter', Arial, sans-serif;
-  font-size: 0.95em;
+  font-size: 1em;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px 0 #0002;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s, color 0.2s;
+  outline: none;
 }
 
-.cgu-button:hover {
-  background: rgba(255,255,255,0.25);
+.cgu-button:hover, .cgu-button:focus {
+  background: #222b4d;
+  color: #fff;
+  box-shadow: 0 4px 16px 0 #0004;
+  transform: translateY(-2px) scale(1.04);
 }
 
 @media (max-width: 600px) {
   .center-rect {
-    width: 75vw;
-    max-width: 85vw;
+    width: 90vw;
+    max-width: 98vw;
     height: auto;
     min-height: 120px;
-    padding: 8px 10px;
+    padding: 12px 8px 8px 8px;
+    border-radius: 14px;
   }
-  
   .center-rect h1 {
-    font-size: 1.2em;
-    margin-bottom: 8px;
+    font-size: 1.3em;
+    margin-bottom: 7px;
   }
-  
   .center-rect h2 {
-    font-size: 0.8em;
-    margin-top: 6px;
-    margin-bottom: 4px;
+    font-size: 0.95em;
+    margin-top: 4px;
+    margin-bottom: 6px;
+    padding-bottom: 3px;
   }
-  
   .center-rect p {
-    font-size: 0.7em;
-    line-height: 1.2;
+    font-size: 0.8em;
+    line-height: 1.3;
   }
-  
   .cgu-button {
-    font-size: 0.75em;
-    padding: 5px 10px;
+    font-size: 0.85em;
+    padding: 7px 12px;
+  }
+  #cgu-buttons {
+    gap: 8px;
+    margin-top: 10px;
   }
 }
 </style>
@@ -286,6 +327,20 @@ function getZone(x, y, targetColor, visited) {
   return zone;
 }
 
+function isInCenterRect(cx, cy) {
+  // Rectangle central : 320x260px centré
+  const rectWidth = 320;
+  const rectHeight = 260;
+  const rectLeft = window.innerWidth / 2 - rectWidth / 2;
+  const rectTop = window.innerHeight / 2 - rectHeight / 2;
+  return (
+    cx >= rectLeft &&
+    cx <= rectLeft + rectWidth &&
+    cy >= rectTop &&
+    cy <= rectTop + rectHeight
+  );
+}
+
 function animate(time) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -295,6 +350,7 @@ function animate(time) {
     for (const { x, y, color } of zone) {
       const cx = x * radius;
       const cy = y * radius;
+      if (isInCenterRect(cx, cy)) continue;
       const gradient = ctx.createRadialGradient(cx, cy, radius * 0.3, cx, cy, radius);
       gradient.addColorStop(0, color);
       gradient.addColorStop(1, gradientMap[color.toUpperCase()] || color);
@@ -310,6 +366,7 @@ function animate(time) {
     for (const { x, y, color } of zone) {
       const cx = x * radius;
       const cy = y * radius;
+      if (isInCenterRect(cx, cy)) continue;
       const gradient = ctx.createRadialGradient(cx, cy, radius * 0.3, cx, cy, radius);
       gradient.addColorStop(0, color);
       gradient.addColorStop(1, gradientMap[color.toUpperCase()] || color);
@@ -320,7 +377,6 @@ function animate(time) {
     }
   }
 
-  // Afficher la zone courante du haut
   if (currentZoneIndexTop + currentZoneIndexBottom < appearingZones.length) {
     if (currentZoneIndexTop + currentZoneIndexBottom < appearingZones.length) {
       // Zone du haut
@@ -331,6 +387,7 @@ function animate(time) {
           const { x, y, color } = zoneTop[j];
           const cx = x * radius;
           const cy = y * radius;
+          if (isInCenterRect(cx, cy)) continue;
           const gradient = ctx.createRadialGradient(cx, cy, radius * 0.3, cx, cy, radius);
           gradient.addColorStop(0, color);
           gradient.addColorStop(1, gradientMap[color.toUpperCase()] || color);
@@ -349,6 +406,7 @@ function animate(time) {
           const { x, y, color } = zoneBottom[j];
           const cx = x * radius;
           const cy = y * radius;
+          if (isInCenterRect(cx, cy)) continue;
           const gradient = ctx.createRadialGradient(cx, cy, radius * 0.3, cx, cy, radius);
           gradient.addColorStop(0, color);
           gradient.addColorStop(1, gradientMap[color.toUpperCase()] || color);
@@ -360,12 +418,14 @@ function animate(time) {
       }
     }
 
-    // Animation des cercles pour chaque zone
+    // Animation des cercles pour chaque zone (plus rapide : +5 à chaque frame)
     let needNextFrame = false;
+    const step = 5; // accélération ici
     if (currentZoneIndexTop + currentZoneIndexBottom < appearingZones.length) {
       const zoneTop = appearingZones[currentZoneIndexTop];
       if (currentCircleIndexTop < zoneTop.length - 1) {
-        currentCircleIndexTop++;
+        currentCircleIndexTop += step;
+        if (currentCircleIndexTop > zoneTop.length - 1) currentCircleIndexTop = zoneTop.length - 1;
         needNextFrame = true;
       } else if (currentZoneIndexTop + currentZoneIndexBottom < appearingZones.length) {
         currentZoneIndexTop++;
@@ -376,7 +436,8 @@ function animate(time) {
       if (appearingZones.length - 1 - currentZoneIndexBottom !== currentZoneIndexTop) {
         const zoneBottom = appearingZones[appearingZones.length - 1 - currentZoneIndexBottom];
         if (currentCircleIndexBottom < zoneBottom.length - 1) {
-          currentCircleIndexBottom++;
+          currentCircleIndexBottom += step;
+          if (currentCircleIndexBottom > zoneBottom.length - 1) currentCircleIndexBottom = zoneBottom.length - 1;
           needNextFrame = true;
         } else if (currentZoneIndexTop + currentZoneIndexBottom < appearingZones.length) {
           currentZoneIndexBottom++;

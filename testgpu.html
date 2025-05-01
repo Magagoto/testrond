@@ -183,8 +183,10 @@ const gradientMap = {
 };
 let colorGrid = [];
 let appearingZones = []; // Liste des zones de cercles à afficher progressivement
-let currentZoneIndex = 0; // Index de la zone actuellement en cours d'apparition
-let currentCircleIndex = 0; // Index du cercle actuellement en cours d'apparition
+let currentZoneIndexTop = 0;
+let currentZoneIndexBottom = 0;
+let currentCircleIndexTop = 0;
+let currentCircleIndexBottom = 0;
 
 function resizeCanvas() {
   const dpr = window.devicePixelRatio || 1; // Récupérer le ratio de pixels de l'appareil
@@ -210,8 +212,10 @@ function resizeCanvas() {
 
   colorGrid = new Array(rows).fill().map(() => new Array(cols).fill(null));
   appearingZones = []; // Réinitialiser la liste des zones
-  currentZoneIndex = 0; // Réinitialiser l'index
-  currentCircleIndex = 0; // Réinitialiser l'index des cercles
+  currentZoneIndexTop = 0;
+  currentZoneIndexBottom = 0;
+  currentCircleIndexTop = 0;
+  currentCircleIndexBottom = 0;
 
   // Générer la grille et regrouper les cercles par zones de couleur
   for (let y = 0; y < rows; y++) {
@@ -285,17 +289,30 @@ function getZone(x, y, targetColor, visited) {
 function animate(time) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Afficher toutes les zones déjà générées
-  for (let i = 0; i < currentZoneIndex; i++) {
+  // Afficher toutes les zones déjà générées depuis le haut
+  for (let i = 0; i < currentZoneIndexTop; i++) {
     const zone = appearingZones[i];
     for (const { x, y, color } of zone) {
       const cx = x * radius;
       const cy = y * radius;
-
       const gradient = ctx.createRadialGradient(cx, cy, radius * 0.3, cx, cy, radius);
       gradient.addColorStop(0, color);
       gradient.addColorStop(1, gradientMap[color.toUpperCase()] || color);
-
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  // Afficher toutes les zones déjà générées depuis le bas
+  for (let i = 0; i < currentZoneIndexBottom; i++) {
+    const zone = appearingZones[appearingZones.length - 1 - i];
+    for (const { x, y, color } of zone) {
+      const cx = x * radius;
+      const cy = y * radius;
+      const gradient = ctx.createRadialGradient(cx, cy, radius * 0.3, cx, cy, radius);
+      gradient.addColorStop(0, color);
+      gradient.addColorStop(1, gradientMap[color.toUpperCase()] || color);
       ctx.fillStyle = gradient;
       ctx.beginPath();
       ctx.arc(cx, cy, radius, 0, Math.PI * 2);
@@ -303,38 +320,73 @@ function animate(time) {
     }
   }
 
-  // Afficher les cercles de la zone actuelle progressivement
-  if (currentZoneIndex < appearingZones.length) {
-    const currentZone = appearingZones[currentZoneIndex];
-    for (let j = 0; j <= currentCircleIndex; j++) {
-      if (j >= currentZone.length) break;
-
-      const { x, y, color } = currentZone[j];
-      const cx = x * radius;
-      const cy = y * radius;
-
-      const gradient = ctx.createRadialGradient(cx, cy, radius * 0.3, cx, cy, radius);
-      gradient.addColorStop(0, color);
-      gradient.addColorStop(1, gradientMap[color.toUpperCase()] || color);
-
-      ctx.fillStyle = gradient;
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-      ctx.fill();
+  // Afficher la zone courante du haut
+  if (currentZoneIndexTop + currentZoneIndexBottom < appearingZones.length) {
+    if (currentZoneIndexTop + currentZoneIndexBottom < appearingZones.length) {
+      // Zone du haut
+      if (currentZoneIndexTop + currentZoneIndexBottom < appearingZones.length) {
+        const zoneTop = appearingZones[currentZoneIndexTop];
+        for (let j = 0; j <= currentCircleIndexTop; j++) {
+          if (j >= zoneTop.length) break;
+          const { x, y, color } = zoneTop[j];
+          const cx = x * radius;
+          const cy = y * radius;
+          const gradient = ctx.createRadialGradient(cx, cy, radius * 0.3, cx, cy, radius);
+          gradient.addColorStop(0, color);
+          gradient.addColorStop(1, gradientMap[color.toUpperCase()] || color);
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      // Zone du bas
+      if (currentZoneIndexTop + currentZoneIndexBottom < appearingZones.length &&
+          appearingZones.length - 1 - currentZoneIndexBottom !== currentZoneIndexTop) {
+        const zoneBottom = appearingZones[appearingZones.length - 1 - currentZoneIndexBottom];
+        for (let j = 0; j <= currentCircleIndexBottom; j++) {
+          if (j >= zoneBottom.length) break;
+          const { x, y, color } = zoneBottom[j];
+          const cx = x * radius;
+          const cy = y * radius;
+          const gradient = ctx.createRadialGradient(cx, cy, radius * 0.3, cx, cy, radius);
+          gradient.addColorStop(0, color);
+          gradient.addColorStop(1, gradientMap[color.toUpperCase()] || color);
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
     }
 
-    // Passer au cercle suivant ou à la zone suivante
-    if (currentCircleIndex < currentZone.length - 1) {
-      setTimeout(() => {
-        currentCircleIndex++;
-        requestAnimationFrame(animate);
-      }, 0); // Délai à 0ms pour accélérer
-    } else {
-      setTimeout(() => {
-        currentZoneIndex++;
-        currentCircleIndex = 0;
-        requestAnimationFrame(animate);
-      }, 0); // Délai à 0ms pour accélérer
+    // Animation des cercles pour chaque zone
+    let needNextFrame = false;
+    if (currentZoneIndexTop + currentZoneIndexBottom < appearingZones.length) {
+      const zoneTop = appearingZones[currentZoneIndexTop];
+      if (currentCircleIndexTop < zoneTop.length - 1) {
+        currentCircleIndexTop++;
+        needNextFrame = true;
+      } else if (currentZoneIndexTop + currentZoneIndexBottom < appearingZones.length) {
+        currentZoneIndexTop++;
+        currentCircleIndexTop = 0;
+        needNextFrame = true;
+      }
+      // Zone du bas
+      if (appearingZones.length - 1 - currentZoneIndexBottom !== currentZoneIndexTop) {
+        const zoneBottom = appearingZones[appearingZones.length - 1 - currentZoneIndexBottom];
+        if (currentCircleIndexBottom < zoneBottom.length - 1) {
+          currentCircleIndexBottom++;
+          needNextFrame = true;
+        } else if (currentZoneIndexTop + currentZoneIndexBottom < appearingZones.length) {
+          currentZoneIndexBottom++;
+          currentCircleIndexBottom = 0;
+          needNextFrame = true;
+        }
+      }
+    }
+    if (needNextFrame) {
+      requestAnimationFrame(animate);
     }
   }
 }

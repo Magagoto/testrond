@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Grille + rectangle central avec CGU</title>
 <style>
 @font-face {
@@ -15,15 +15,17 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow: hidden !important;
   background: #111;
+  /* Empêche le scroll sur mobile */
+  touch-action: none;
 }
 body {
   width: 100vw;
   height: 100vh;
   position: relative;
+  overflow: hidden !important;
 }
-/* Canvas de fond animé */
 #canvas {
   position: absolute;
   inset: 0;
@@ -37,39 +39,47 @@ body {
   left: 50%;
   top: 50%;
   width: 320px;
-  height: 280px; /* Augmenté pour accommoder le contenu des CGU */
-  background: rgba(0,0,0,0.7); /* Fond légèrement opaque pour la lisibilité */
-  border: 1px solid rgba(255,255,255,0.2); /* Bordure subtile */
-  border-radius: 8px; /* Coins arrondis */
+  height: 260px;
+  background: rgba(0,0,0,0.7);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
   transform: translate(-50%, -50%);
   z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 10px;
+  padding: 10px 16px;
   box-sizing: border-box;
-  font-family: 'AMORIA', 'Fira Mono', 'Consolas', monospace;
+  /* Police par défaut plus lisible */
+  font-family: 'Inter', Arial, sans-serif;
   color: #fff;
+  overflow: hidden;
 }
 
 .center-rect h1 {
+  font-family: 'AMORIA', serif;
   font-size: 2.2em;
   margin-bottom: 15px;
   margin-top: 5px;
+  letter-spacing: 0.04em;
+  text-align: center;
 }
 
 .center-rect h2 {
-  font-size: 1.2em;
+  font-size: 1.1em;
   margin-top: 10px;
   margin-bottom: 8px;
+  font-family: 'Inter', Arial, sans-serif;
+  font-weight: 600;
 }
 
 .center-rect p {
-  font-size: 0.8em;
+  font-size: 0.92em;
   text-align: center;
   margin: 8px 0;
-  line-height: 1.4;
+  line-height: 1.5;
+  font-family: 'Inter', Arial, sans-serif;
 }
 
 #cgu-buttons {
@@ -84,8 +94,8 @@ body {
   border: 1px solid rgba(255,255,255,0.3);
   border-radius: 4px;
   padding: 8px 15px;
-  font-family: inherit;
-  font-size: 0.9em;
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: 0.95em;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -94,23 +104,13 @@ body {
   background: rgba(255,255,255,0.25);
 }
 
-@media (max-width: 400px) {
+@media (max-width: 600px) {
   .center-rect {
-    width: 90vw;
+    width: 92vw;
+    min-width: 0;
+    max-width: 98vw;
     height: auto;
-    padding: 15px;
-  }
-  
-  .center-rect h1 {
-    font-size: 1.5em;
-  }
-  
-  .center-rect h2 {
-    font-size: 1em;
-  }
-  
-  .center-rect p {
-    font-size: 0.7em;
+    min-height: 160px;
   }
 }
 </style>

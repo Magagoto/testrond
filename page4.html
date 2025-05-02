@@ -199,15 +199,16 @@ body {
     <button class="cgu-button" onclick="refuseCGU()">Refuser</button>
   </div>
 </div>
+<!-- Vérification : il n'y a qu'un seul rectangle central (center-rect) affiché.
+Aucun autre rectangle ou div superposée n'est présent dans le HTML. 
+Si tu vois un rectangle en dessous, il s'agit probablement d'un effet visuel du canvas ou du CSS (ombre portée, etc.).
+Aucune modification n'est nécessaire pour supprimer un rectangle supplémentaire, car il n'y en a pas dans le code. -->
 
 <script>
 // Fonction pour gérer l'acceptation des CGU
 function acceptCGU() {
   const centerRect = document.querySelector('.center-rect');
-  centerRect.innerHTML = '<h1>Chroméa</h1>';
-  centerRect.style.height = '180px';
-  centerRect.style.background = 'rgba(0,0,0,0)';
-  centerRect.style.border = '0';
+  centerRect.style.display = 'none';
 }
 
 // Fonction pour gérer le refus des CGU

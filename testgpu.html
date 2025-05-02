@@ -338,21 +338,8 @@ function getZone(x, y, targetColor, visited) {
 }
 
 function isInCenterRect(cx, cy) {
-  // Récupérer dynamiquement les dimensions et la position du rectangle central
-  const centerRect = document.querySelector('.center-rect');
-  if (!centerRect || centerRect.style.display === 'none') return false;
-
-  const rect = centerRect.getBoundingClientRect();
-
-  // Ajouter une marge de sécurité pour éviter les problèmes de bordure
-  const margin = radius * 2;
-
-  return (
-    cx >= rect.left - margin &&
-    cx <= rect.right + margin &&
-    cy >= rect.top - margin &&
-    cy <= rect.bottom + margin
-  );
+  // Désactivé : autorise les ronds à passer sous le GPU
+  return false;
 }
 
 function animate(time) {

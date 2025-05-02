@@ -59,18 +59,24 @@ body {
   transition: box-shadow 0.3s, border 0.3s, background 0.3s;
 }
 
-/* Scrollbar fine et rose pour le rectangle CGU */
+/* Scrollbar stylisée pour le rectangle CGU */
 .center-rect::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
   background: transparent;
 }
 .center-rect::-webkit-scrollbar-thumb {
-  background: #ff5eae;
-  border-radius: 8px;
-  min-height: 24px;
+  background: linear-gradient(135deg, #ff5eae 0%, #ff94d6 100%);
+  border-radius: 10px;
+  min-height: 28px;
+  box-shadow: 0 2px 8px #ff5eae33;
+  border: 1.5px solid #fff3;
 }
 .center-rect::-webkit-scrollbar-thumb:hover {
-  background: #ff94d6;
+  background: linear-gradient(135deg, #ff94d6 0%, #ff5eae 100%);
+}
+.center-rect::-webkit-scrollbar-track {
+  background: #07114d;
+  border-radius: 10px;
 }
 .center-rect {
   scrollbar-width: thin;
@@ -151,6 +157,9 @@ body {
     min-height: 120px;
     padding: 12px 8px 8px 8px;
     border-radius: 14px;
+    /* Ajout pour remonter le cadre sur mobile */
+    top: 44%;
+    transform: translate(-50%, -44%);
   }
   .center-rect h1 {
     font-size: 1.3em;

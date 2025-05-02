@@ -338,16 +338,20 @@ function getZone(x, y, targetColor, visited) {
 }
 
 function isInCenterRect(cx, cy) {
-  // Rectangle central : 320x260px centré
-  const rectWidth = 320;
-  const rectHeight = 260;
-  const rectLeft = window.innerWidth / 2 - rectWidth / 2;
-  const rectTop = window.innerHeight / 2 - rectHeight / 2;
+  // Récupérer dynamiquement les dimensions et la position du rectangle central
+  const centerRect = document.querySelector('.center-rect');
+  if (!centerRect || centerRect.style.display === 'none') return false;
+
+  const rect = centerRect.getBoundingClientRect();
+
+  // Ajouter une marge de sécurité pour éviter les problèmes de bordure
+  const margin = radius * 2;
+
   return (
-    cx >= rectLeft &&
-    cx <= rectLeft + rectWidth &&
-    cy >= rectTop &&
-    cy <= rectTop + rectHeight
+    cx >= rect.left - margin &&
+    cx <= rect.right + margin &&
+    cy >= rect.top - margin &&
+    cy <= rect.bottom + margin
   );
 }
 

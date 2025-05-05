@@ -1,72 +1,273 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ma Localisation</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 2rem;
-    }
-    #map {
-      height: 400px;
-      width: 100%;
-      margin-top: 1rem;
-    }
-  </style>
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
-    integrity="sha256-sA+qXHU5r+zY3q9dB/tHrtF4V+0jU0GIR3HkT3SZo0U="
-    crossorigin=""
-  />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ma Localisation Précise</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f5f7fa;
+        }
+        header {
+            background-color: #4a6fa5;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        main {
+            flex: 1;
+            padding: 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .info-group {
+            margin-bottom: 1rem;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #4a6fa5;
+            margin-bottom: 0.25rem;
+        }
+        .info-value {
+            background-color: #f1f5f9;
+            padding: 0.75rem;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 1rem;
+        }
+        #map {
+            width: 100%;
+            height: 300px;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+        button {
+            background-color: #4a6fa5;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #3a5a80;
+        }
+        button i {
+            margin-right: 0.5rem;
+        }
+        #loading {
+            display: none;
+            text-align: center;
+            margin: 1rem 0;
+        }
+        .spinner {
+            display: inline-block;
+            width: 2rem;
+            height: 2rem;
+            border: 0.25rem solid rgba(74, 111, 165, 0.3);
+            border-radius: 50%;
+            border-top-color: #4a6fa5;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .accuracy {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #e2e8f0;
+            color: #4a5568;
+            font-size: 0.85rem;
+        }
+    </style>
 </head>
 <body>
-  <h1>Ma Localisation</h1>
-  <p id="coords">Chargement des coordonnées...</p>
-  <p id="location">Chargement de la localisation...</p>
-  <div id="map"></div>
+    <header>
+        <h1>Ma Localisation Précise</h1>
+    </header>
+    
+    <main>
+        <div class="card">
+            <button id="getLocation">
+                <i class="fas fa-location-arrow"></i>
+                Obtenir ma position actuelle
+            </button>
+            
+            <div id="loading">
+                <div class="spinner"></div>
+                <p>Recherche de votre position...</p>
+            </div>
+            
+            <div id="locationDetails" style="display: none;">
+                <h2>Détails de votre position</h2>
+                
+                <div class="info-group">
+                    <div class="info-label">Coordonnées GPS</div>
+                    <div id="coordinates" class="info-value">-</div>
+                    <div id="accuracy" class="accuracy"></div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Adresse</div>
+                    <div id="address" class="info-value">-</div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Ville</div>
+                    <div id="city" class="info-value">-</div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Code postal</div>
+                    <div id="postalCode" class="info-value">-</div>
+                </div>
+                
+                <div class="info-group">
+                    <div class="info-label">Bâtiment / Point d'intérêt</div>
+                    <div id="building" class="info-value">-</div>
+                </div>
+                
+                <div id="map"></div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>Système de géolocalisation précise | Créé avec ❤️</p>
+    </footer>
 
-  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-kodtBmuUL0l1Z6Rw5MmzWzISjLgtrEL7ONFHy6A+G2o=" crossorigin=""></script>
-  <script>
-    const coordsDisplay = document.getElementById("coords");
-    const locationDisplay = document.getElementById("location");
+    <script>
+        document.getElementById('getLocation').addEventListener('click', function() {
+            const loadingElement = document.getElementById('loading');
+            const locationDetails = document.getElementById('locationDetails');
+            
+            // Cacher les détails et afficher le chargement
+            locationDetails.style.display = 'none';
+            loadingElement.style.display = 'block';
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    showPosition, 
+                    showError, 
+                    { enableHighAccuracy: true }
+                );
+            } else {
+                alert("La géolocalisation n'est pas prise en charge par votre navigateur.");
+                loadingElement.style.display = 'none';
+            }
+        });
 
-    function showPosition(position) {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
-      coordsDisplay.textContent = `Latitude : ${lat}, Longitude : ${lon}`;
+        function showPosition(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+            
+            // Afficher les coordonnées
+            document.getElementById('coordinates').textContent = `${lat}, ${lng}`;
+            document.getElementById('accuracy').textContent = `Précision: ±${Math.round(accuracy)} mètres`;
+            
+            // Charger la carte
+            loadMap(lat, lng);
+            
+            // Faire une géocodage inverse pour obtenir l'adresse
+            reverseGeocode(lat, lng);
+            
+            // Afficher les détails et cacher le chargement
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('locationDetails').style.display = 'block';
+        }
 
-      // Affichage de la carte avec Leaflet
-      const map = L.map("map").setView([lat, lon], 13);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap contributors",
-      }).addTo(map);
+        function showError(error) {
+            let message = "";
+            
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message = "Vous avez refusé l'accès à votre position.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = "L'information sur la position n'est pas disponible.";
+                    break;
+                case error.TIMEOUT:
+                    message = "La demande de position a expiré.";
+                    break;
+                case error.UNKNOWN_ERROR:
+                    message = "Une erreur inconnue s'est produite.";
+                    break;
+            }
+            
+            alert(message);
+            document.getElementById('loading').style.display = 'none';
+        }
 
-      L.marker([lat, lon]).addTo(map).bindPopup("Vous êtes ici").openPopup();
-    }
+        function loadMap(lat, lng) {
+            // Créer un élément iframe pour afficher une carte OpenStreetMap
+            const mapElement = document.getElementById('map');
+            mapElement.innerHTML = `<iframe width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" 
+                src="https://www.openstreetmap.org/export/embed.html?bbox=${lng-0.005},${lat-0.005},${lng+0.005},${lat+0.005}&marker=${lat},${lng}" style="border: none; border-radius: 10px;"></iframe>`;
+        }
 
-    function showError(error) {
-      coordsDisplay.textContent = "Impossible de récupérer les coordonnées.";
-    }
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(showPosition, showError);
-    } else {
-      coordsDisplay.textContent = "La géolocalisation n'est pas supportée.";
-    }
-
-    // Localisation par adresse IP
-    fetch("https://ipapi.co/json")
-      .then((res) => res.json())
-      .then((data) => {
-        locationDisplay.textContent = `Vous êtes à ${data.city}, ${data.region}, ${data.country_name}`;
-      })
-      .catch(() => {
-        locationDisplay.textContent = "Impossible de récupérer la localisation via l'IP.";
-      });
-  </script>
+        function reverseGeocode(lat, lng) {
+            // Utiliser l'API de géocodage inverse Nominatim d'OpenStreetMap
+            const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    // Extraire les informations d'adresse
+                    const address = data.display_name || '-';
+                    const city = data.address.city || data.address.town || data.address.village || '-';
+                    const postalCode = data.address.postcode || '-';
+                    
+                    // Essayer de déterminer le bâtiment ou point d'intérêt
+                    let building = '-';
+                    if (data.address.building) {
+                        building = data.address.building;
+                    } else if (data.address.amenity) {
+                        building = data.address.amenity;
+                    } else if (data.address.shop) {
+                        building = data.address.shop;
+                    } else if (data.address.leisure) {
+                        building = data.address.leisure;
+                    }
+                    
+                    // Mettre à jour l'interface utilisateur
+                    document.getElementById('address').textContent = address;
+                    document.getElementById('city').textContent = city;
+                    document.getElementById('postalCode').textContent = postalCode;
+                    document.getElementById('building').textContent = building;
+                })
+                .catch(error => {
+                    console.error("Erreur lors de la récupération de l'adresse:", error);
+                    document.getElementById('address').textContent = "Impossible de récupérer l'adresse";
+                });
+        }
+    </script>
 </body>
 </html>

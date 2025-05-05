@@ -11,6 +11,12 @@
   font-weight: normal;
   font-style: normal;
 }
+@font-face {
+  font-family: 'Mikodacs';
+  src: url('Mikodacs.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
 html, body {
   height: 100%;
   margin: 0;
@@ -99,7 +105,7 @@ body {
 }
 
 .center-rect h1 {
-  font-family: 'AMORIA', serif;
+  font-family: 'Mikodacs', serif;
   font-size: 1.3em; /* réduit */
   margin-bottom: 10px;
   margin-top: 2px;
@@ -225,6 +231,42 @@ body {
   100% { transform: translate(-50%, -50%) scale(1) rotate(0deg);}
 }
 
+@keyframes chromea-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) translateY(-40px) rotate(-8deg);
+    filter: blur(3px);
+    letter-spacing: 0.01em;
+    text-shadow: 0 0 0 #0000;
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08) translateY(8px) rotate(2deg);
+    filter: blur(0.5px);
+    letter-spacing: 0.18em;
+    text-shadow: 0 10px 40px #000a,0 1px 0 #fff2;
+  }
+  80% {
+    transform: scale(0.97) translateY(-4px) rotate(-1deg);
+    letter-spacing: 0.10em;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0) rotate(0deg);
+    filter: blur(0);
+    letter-spacing: 0.13em;
+    text-shadow: 0 6px 40px #000b,0 1px 0 #fff2;
+  }
+}
+@keyframes chromea-float {
+  0%   { transform: scale(1) translateY(0) rotate(0deg);}
+  20%  { transform: scale(1.01) translateY(-8px) rotate(-1deg);}
+  40%  { transform: scale(0.99) translateY(6px) rotate(1deg);}
+  60%  { transform: scale(1.01) translateY(-4px) rotate(-0.5deg);}
+  80%  { transform: scale(1) translateY(4px) rotate(0.5deg);}
+  100% { transform: scale(1) translateY(0) rotate(0deg);}
+}
+
 @media (max-width: 600px) {
   .center-rect {
     width: 80vw;
@@ -270,7 +312,7 @@ body {
 <!-- Titre principal Chroméa juste au-dessus du cadre CGU -->
 <div style="width:100%;text-align:center;z-index:10;position:relative;">
   <h1 id="main-title-chromea"
-      style="display:inline-block; font-family:'AMORIA',serif; font-size:4.2em; color:#fff; letter-spacing:0.13em; margin-top:18vh; margin-bottom:0; text-shadow:0 6px 40px #000b,0 1px 0 #fff2; font-weight:900; line-height:1;">
+      style="display:inline-block; font-family:'Mikodacs',serif; font-size:4.2em; color:#fff; letter-spacing:0.13em; margin-top:18vh; margin-bottom:0; text-shadow:0 6px 40px #000b,0 1px 0 #fff2; font-weight:900; line-height:1; animation: chromea-pop 1.2s cubic-bezier(.22,1.15,.45,1.01), chromea-float 4.5s ease-in-out infinite;">
     Chroméa
   </h1>
 </div>

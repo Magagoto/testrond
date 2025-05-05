@@ -19,6 +19,9 @@ html, body {
   background: #07114d;
   /* Empêche le scroll sur mobile */
   touch-action: none;
+  position: fixed;
+  width: 100vw;
+  /* Ajout pour empêcher tout scroll */
 }
 body {
   width: 100vw;
@@ -27,6 +30,8 @@ body {
   overflow: hidden !important;
   /* Désactive le scroll */
   overscroll-behavior: none;
+  position: fixed;
+  inset: 0;
 }
 #canvas {
   position: absolute;

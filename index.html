@@ -25,6 +25,8 @@ body {
   height: 100vh;
   position: relative;
   overflow: hidden !important;
+  /* Désactive le scroll */
+  overscroll-behavior: none;
 }
 #canvas {
   position: absolute;
@@ -54,7 +56,7 @@ body {
   box-sizing: border-box;
   font-family: 'Inter', Arial, sans-serif;
   color: #fff;
-  overflow: auto; /* Affiche la barre de scroll si besoin */
+  overflow: hidden; /* Désactive le scroll dans le CGU */
   backdrop-filter: blur(12px) saturate(1.3);
   transition: box-shadow 0.3s, border 0.3s, background 0.3s;
 }
@@ -188,6 +190,7 @@ body {
 </head>
 <body>
 <canvas id="canvas"></canvas>
+<audio id="backgroundMusic" src="SONORE/ambiance page principale.mp3" loop preload="auto"></audio>
 <div class="center-rect">
   <h1>Chroméa</h1>
   <h2>Conditions Générales d'Utilisation</h2>
@@ -208,6 +211,8 @@ Aucune modification n'est nécessaire pour supprimer un rectangle supplémentair
 // Fonction pour gérer l'acceptation des CGU
 function acceptCGU() {
   window.location.href = "jeu.html";
+  // Pour lancer la musique sur la page CGU si besoin :
+  // document.getElementById('backgroundMusic').play();
 }
 
 // Fonction pour gérer le refus des CGU

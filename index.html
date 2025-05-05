@@ -470,14 +470,18 @@ function debounce(func, wait) {
   };
 }
 
-// Essaye de jouer la musique dès que possible
-document.getElementById('backgroundMusic').play().catch(() => {});
-
 // Initialisation
 window.addEventListener("load", () => {
   window.addEventListener("resize", debounce(resizeCanvas, 250));
   resizeCanvas();
   requestAnimationFrame(animate);
+
+  try {
+    document.getElementById('backgroundMusic').play();
+  } catch (e) {
+    // Certains navigateurs bloquent la lecture auto sans interaction
+    // Rien à faire ici, c'est une limitation navigateur
+  }
 });
 </script>
 </body>

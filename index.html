@@ -473,15 +473,6 @@ function debounce(func, wait) {
 // Essaye de jouer la musique dès que possible
 document.getElementById('backgroundMusic').play().catch(() => {});
 
-// Démarrage musique d'ambiance après interaction utilisateur (fallback)
-function playMusicOnce() {
-  document.getElementById('backgroundMusic').play().catch(() => {});
-  window.removeEventListener('pointerdown', playMusicOnce);
-  window.removeEventListener('keydown', playMusicOnce);
-}
-window.addEventListener('pointerdown', playMusicOnce);
-window.addEventListener('keydown', playMusicOnce);
-
 // Initialisation
 window.addEventListener("load", () => {
   window.addEventListener("resize", debounce(resizeCanvas, 250));

@@ -55,6 +55,31 @@ const specialLinks = ["page1.html", "page2.html", "page3.html", "page4.html"];
 
 let linearGradientZones = new Map();
 
+// Liste des textes possibles pour les bulles
+const bubbleTexts = [
+  "De ce côté !",
+  "C’est par là !",
+  "Suis-moi !",
+  "Viens donc !",
+  "Par là, vite !",
+  "Par ce chemin !",
+  "Approche !",
+  "Viens par ici !",
+  "Par ici, l’ami !",
+  "Par là que ça se passe !",
+  "C’est ici que ça se passe !",
+  "Suivez cette direction !",
+  "Entre donc ici !",
+  "C’est la bonne voie !",
+  "Ce chemin, vite !"
+];
+
+// Pour stocker le texte attribué à chaque bulle spéciale (clé: `${x},${y}`)
+let bubbleTextMap = new Map();
+
+// Pour stocker la forme et la taille de queue attribuées à chaque bulle spéciale (clé: `${x},${y}`)
+let bubbleShapeMap = new Map();
+
 setInterval(() => {
   // Vérifier si le jeu du gyroscope (page1) est terminé
   let gameState = localStorage.getItem("game-state");
@@ -306,25 +331,51 @@ function chooseSpecialCircles() {
   specialCircles = [];
   specialZones.clear();
 
-  const total = colorGrid.length * colorGrid[0].length;
-  const selectedIndices = new Set();
-  while (selectedIndices.size < 4) {
-    const index = Math.floor(Math.random() * total);
-    selectedIndices.add(index);
+  // Mélange les textes pour garantir unicité
+  const shuffledTexts = bubbleTexts.slice().sort(() => Math.random() - 0.5);
+
+  // On ne veut pas de ronds spéciaux sur les bords ni sur les deux dernières lignes
+  const validPositions = [];
+  const rows = colorGrid.length;
+  const cols = colorGrid[0].length;
+  for (let y = 1; y < rows - 2; y++) { // pas la première ni les deux dernières lignes
+    for (let x = 1; x < cols - 1; x++) { // pas la première ni la dernière colonne
+      validPositions.push({ x, y });
+    }
+  }
+
+  // Sélectionne 4 positions valides aléatoires
+  const selected = [];
+  const usedIndices = new Set();
+  while (selected.length < 4 && validPositions.length > 0) {
+    const idx = Math.floor(Math.random() * validPositions.length);
+    if (!usedIndices.has(idx)) {
+      selected.push(validPositions[idx]);
+      usedIndices.add(idx);
+    }
+    // Pour éviter boucle infinie si peu de positions valides
+    if (usedIndices.size > validPositions.length) break;
   }
 
   let count = 0;
-  for (let y = 0; y < colorGrid.length; y++) {
-    for (let x = 0; x < colorGrid[0].length; x++) {
-      const index = y * colorGrid[0].length + x;
-      if (selectedIndices.has(index)) {
-        specialCircles.push({ x, y, link: specialLinks[count++] });
-        const zone = getZone(x, y, colorGrid[y][x]);
-        for (const key of zone) {
-          specialZones.add(key);
-        }
-      }
+  bubbleTextMap.clear();
+  bubbleShapeMap.clear();
+  for (const pos of selected) {
+    const { x, y } = pos;
+    specialCircles.push({ x, y, link: specialLinks[count++] });
+    const zone = getZone(x, y, colorGrid[y][x]);
+    for (const key of zone) {
+      specialZones.add(key);
     }
+    // Attribue un texte unique à cette bulle
+    const text = shuffledTexts.shift() || "Par ici !";
+    bubbleTextMap.set(`${x},${y}`, text);
+
+    // Attribue une forme et une taille de queue aléatoire à cette bulle
+    const shapes = ["ellipse", "roundedRect", "rect"];
+    const shape = shapes[Math.floor(Math.random() * shapes.length)];
+    const tailSize = 0.7 + Math.random() * 0.8; // entre 0.7 et 1.5
+    bubbleShapeMap.set(`${x},${y}`, { shape, tailSize });
   }
 }
 
@@ -346,6 +397,7 @@ function animate(time) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const t = time / 1000;
 
+  // 1. Dessin de tous les cercles (normaux et spéciaux)
   for (let y = 0; y < colorGrid.length; y++) {
     for (let x = 0; x < colorGrid[0].length; x++) {
       const key = `${x},${y}`;
@@ -369,7 +421,7 @@ function animate(time) {
       }
 
       if (specialZones.has(key)) {
-        const shake = isMobile ? 1 : 2; // Moins de secousse sur mobile
+        const shake = isMobile ? 1 : 2;
         cx += (Math.random() - 0.5) * shake;
         cy += (Math.random() - 0.5) * shake;
       }
@@ -385,24 +437,13 @@ function animate(time) {
         ctx.fill();
       } else {
         const endColor = gradientMap[baseColor.toUpperCase()] || baseColor;
-
         let gradient;
         if (linearGradientZones.has(key)) {
           const gradientInfo = linearGradientZones.get(key);
           const { baseAngle, phaseOffset, animationType, animationSpeed, oscillationAmount } = gradientInfo;
-          
           let currentAngle, position;
-          
-          // Animation différente selon le type d'animation
           if (animationType === 'progression') {
-            // Animation de progression linéaire à travers le cercle
             position = ((t * animationSpeed + phaseOffset) % (Math.PI * 2)) / (Math.PI * 2);
-            
-            // Calculer la position du dégradé qui traverse le cercle
-            const offsetX = Math.cos(baseAngle) * r * 2 * (position - 0.5); 
-            const offsetY = Math.sin(baseAngle) * r * 2 * (position - 0.5);
-            
-            // Créer le dégradé qui se déplace à travers le cercle
             gradient = ctx.createLinearGradient(
               cx - Math.cos(baseAngle) * r, 
               cy - Math.sin(baseAngle) * r,
@@ -410,7 +451,6 @@ function animate(time) {
               cy + Math.sin(baseAngle) * r
             );
           } else {
-            // Animation d'oscillation (comme dans la version précédente)
             currentAngle = baseAngle + Math.sin(t * animationSpeed + phaseOffset) * oscillationAmount;
             const dx = Math.cos(currentAngle) * r;
             const dy = Math.sin(currentAngle) * r;
@@ -420,10 +460,8 @@ function animate(time) {
           const pulse = 0.3 + 0.2 * Math.sin(t + (x + y) / 5);
           gradient = ctx.createRadialGradient(cx, cy, r * pulse, cx, cy, r);
         }
-
         gradient.addColorStop(0, baseColor);
         gradient.addColorStop(1, endColor);
-
         ctx.fillStyle = gradient;
         ctx.beginPath();
         ctx.arc(cx, cy, r, 0, Math.PI * 2);
@@ -431,6 +469,141 @@ function animate(time) {
       }
     }
   }
+
+  // 2. Dessin des bulles BD au-dessus des ronds spéciaux
+  for (const { x, y } of specialCircles) {
+    const key = `${x},${y}`;
+    if (hiddenCircles.has(key)) continue;
+    let cx = x * diameter + radius;
+    let cy = y * diameter + radius;
+    if (specialZones.has(key)) {
+      const shake = isMobile ? 1 : 2;
+      cx += (Math.random() - 0.5) * shake;
+      cy += (Math.random() - 0.5) * shake;
+    }
+    // Récupère les coordonnées associées à ce rond
+    const coords = circleCoords.get(key);
+    // Récupère le texte unique pour cette bulle
+    const bubbleText = bubbleTextMap.get(key) || "Par ici !";
+    // Récupère la forme et la taille de queue pour cette bulle
+    const bubbleShape = bubbleShapeMap.get(key) || { shape: "ellipse", tailSize: 1 };
+    drawSpeechBubble(ctx, cx, cy, radius, x, y, t, coords, bubbleText, bubbleShape);
+  }
+}
+
+// --- Fonction pour dessiner une bulle de BD à côté d'un cercle spécial ---
+// Ajout du paramètre bubbleShape {shape, tailSize}
+function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleShape) {
+  // Décalage horizontal (gauche/droite) et vertical pour ne pas masquer le rond
+  const verticalOffset = r * 2.2;
+  const offsetX = (x < colorGrid[0].length / 2) ? r * 2.6 : -r * 2.6;
+  const bubbleX = cx + offsetX;
+  const bubbleY = cy - r * 0.7 - verticalOffset;
+  const bounce = Math.sin(t * 2 + x + y) * 3;
+
+  ctx.save();
+
+  // --- Calcul dynamique de la taille de la bulle en fonction du texte ---
+  ctx.font = `bold ${Math.round(r * 0.85)}px 'Inter', Arial, sans-serif`;
+  const textMetrics = ctx.measureText(bubbleText);
+  const textWidth = textMetrics.width;
+
+  let coordsWidth = 0;
+  if (coords) {
+    ctx.font = `${Math.round(r * 0.55)}px 'Inter', Arial, sans-serif`;
+    coordsWidth = ctx.measureText(`${coords.lat.toFixed(4)}, ${coords.long.toFixed(4)}`).width;
+  }
+
+  const maxTextWidth = Math.max(textWidth, coordsWidth);
+  const paddingX = r * 0.7;
+  const paddingY = r * 0.7;
+  const mainW = Math.max(r * 2.3, (maxTextWidth / 2) + paddingX);
+  const mainH = r * 1.25 + paddingY * 0.3;
+
+  // --- Forme de la bulle ---
+  const shape = bubbleShape?.shape || "ellipse";
+  const tailSize = bubbleShape?.tailSize || 1;
+
+  // 1. Dessin de la bulle principale
+  ctx.beginPath();
+  if (shape === "ellipse") {
+    ctx.ellipse(bubbleX, bubbleY + bounce, mainW, mainH, 0, 0, Math.PI * 2);
+  } else if (shape === "roundedRect") {
+    // Rectangle arrondi
+    const rectRadius = r * 0.7;
+    ctx.moveTo(bubbleX - mainW + rectRadius, bubbleY + bounce - mainH);
+    ctx.lineTo(bubbleX + mainW - rectRadius, bubbleY + bounce - mainH);
+    ctx.quadraticCurveTo(bubbleX + mainW, bubbleY + bounce - mainH, bubbleX + mainW, bubbleY + bounce - mainH + rectRadius);
+    ctx.lineTo(bubbleX + mainW, bubbleY + bounce + mainH - rectRadius);
+    ctx.quadraticCurveTo(bubbleX + mainW, bubbleY + bounce + mainH, bubbleX + mainW - rectRadius, bubbleY + bounce + mainH);
+    ctx.lineTo(bubbleX - mainW + rectRadius, bubbleY + bounce + mainH);
+    ctx.quadraticCurveTo(bubbleX - mainW, bubbleY + bounce + mainH, bubbleX - mainW, bubbleY + bounce + mainH - rectRadius);
+    ctx.lineTo(bubbleX - mainW, bubbleY + bounce - mainH + rectRadius);
+    ctx.quadraticCurveTo(bubbleX - mainW, bubbleY + bounce - mainH, bubbleX - mainW + rectRadius, bubbleY + bounce - mainH);
+    ctx.closePath();
+  } else if (shape === "rect") {
+    // Rectangle simple
+    ctx.rect(bubbleX - mainW, bubbleY + bounce - mainH, mainW * 2, mainH * 2);
+  }
+  ctx.shadowColor = "#0005";
+  ctx.shadowBlur = 12;
+  ctx.fillStyle = "#fff";
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // 2. Dessin de la queue (tail) avec taille variable
+  ctx.save();
+  ctx.beginPath();
+  let tipX, tipY, baseLeftX, baseLeftY, baseRightX, baseRightY;
+  const tailW = r * (0.18 + 0.18 * tailSize); // largeur de la queue
+  const tailH = r * (1.2 + 1.2 * tailSize);   // longueur de la queue
+  if (offsetX > 0) {
+    // Bulle à droite, queue à gauche-bas
+    tipX = cx + r * 0.3;
+    tipY = cy + r * 0.5;
+    baseLeftX = bubbleX - mainW * 0.25 - tailW;
+    baseLeftY = bubbleY + bounce + mainH;
+    baseRightX = bubbleX - mainW * 0.05 + tailW;
+    baseRightY = bubbleY + bounce + mainH;
+  } else {
+    // Bulle à gauche, queue à droite-bas
+    tipX = cx - r * 0.3;
+    tipY = cy + r * 0.5;
+    baseLeftX = bubbleX + mainW * 0.05 - tailW;
+    baseLeftY = bubbleY + bounce + mainH;
+    baseRightX = bubbleX + mainW * 0.25 + tailW;
+    baseRightY = bubbleY + bounce + mainH;
+  }
+  ctx.moveTo(baseLeftX, baseLeftY);
+  ctx.lineTo(tipX, tipY + tailH * 0.1); // queue plus longue
+  ctx.lineTo(baseRightX, baseRightY);
+  ctx.closePath();
+  ctx.fillStyle = "#fff";
+  ctx.shadowColor = "#0003";
+  ctx.shadowBlur = 4;
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  // Texte principal
+  ctx.font = `bold ${Math.round(r * 0.85)}px 'Inter', Arial, sans-serif`;
+  ctx.fillStyle = "#222b4d";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(bubbleText, bubbleX, bubbleY + bounce - r * 0.18);
+
+  // Coordonnées
+  if (coords) {
+    ctx.font = `${Math.round(r * 0.55)}px 'Inter', Arial, sans-serif`;
+    ctx.fillStyle = "#444";
+    ctx.fillText(
+      `${coords.lat.toFixed(4)}, ${coords.long.toFixed(4)}`,
+      bubbleX,
+      bubbleY + bounce + r * 0.38
+    );
+  }
+
+  ctx.restore();
 }
 
 // Fonction pour assigner des numéros et des coordonnées à tous les cercles visibles

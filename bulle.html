@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ma Localisation</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+    #map {
+      height: 400px;
+      width: 100%;
+      margin-top: 1rem;
+    }
+  </style>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+    integrity="sha256-sA+qXHU5r+zY3q9dB/tHrtF4V+0jU0GIR3HkT3SZo0U="
+    crossorigin=""
+  />
+</head>
+<body>
+  <h1>Ma Localisation</h1>
+  <p id="coords">Chargement des coordonnées...</p>
+  <p id="location">Chargement de la localisation...</p>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-kodtBmuUL0l1Z6Rw5MmzWzISjLgtrEL7ONFHy6A+G2o=" crossorigin=""></script>
+  <script>
+    const coordsDisplay = document.getElementById("coords");
+    const locationDisplay = document.getElementById("location");
+
+    function showPosition(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      coordsDisplay.textContent = `Latitude : ${lat}, Longitude : ${lon}`;
+
+      // Affichage de la carte avec Leaflet
+      const map = L.map("map").setView([lat, lon], 13);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors",
+      }).addTo(map);
+
+      L.marker([lat, lon]).addTo(map).bindPopup("Vous êtes ici").openPopup();
+    }
+
+    function showError(error) {
+      coordsDisplay.textContent = "Impossible de récupérer les coordonnées.";
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(showPosition, showError);
+    } else {
+      coordsDisplay.textContent = "La géolocalisation n'est pas supportée.";
+    }
+
+    // Localisation par adresse IP
+    fetch("https://ipapi.co/json")
+      .then((res) => res.json())
+      .then((data) => {
+        locationDisplay.textContent = `Vous êtes à ${data.city}, ${data.region}, ${data.country_name}`;
+      })
+      .catch(() => {
+        locationDisplay.textContent = "Impossible de récupérer la localisation via l'IP.";
+      });
+  </script>
+</body>
+</html>

@@ -25,9 +25,12 @@
 
 <canvas id="canvas" style="display: block;"></canvas>
 <audio id="sound" src="2019.mp3" preload="auto"></audio>
-<audio id="backgroundMusic" src="SONORE/ambiance page principale.mp3" loop preload="auto"></audio>
+<audio id="backgroundMusic" src="SONORE/ambiance page principale.mp3" loop preload="auto" autoplay></audio>
 
 <script>
+  // Essaye de jouer la musique dès que possible
+  document.getElementById('backgroundMusic').play().catch(() => {});
+
   // Script pour initialiser directement l'application sans passer par les CGU
   window.addEventListener("load", function() {
     // Ajouter les gestionnaires d'événements directement
@@ -49,12 +52,12 @@
     chooseSpecialCircles();
     assignCircleNumbersAndCoords();
     requestAnimationFrame(optimizeRendering);
-    document.getElementById('backgroundMusic').play();
+    document.getElementById('backgroundMusic').play().catch(() => {});
   });
 
-  // Démarrage musique d'ambiance après interaction utilisateur
+  // Démarrage musique d'ambiance après interaction utilisateur (fallback)
   function playMusicOnce() {
-    document.getElementById('backgroundMusic').play();
+    document.getElementById('backgroundMusic').play().catch(() => {});
     window.removeEventListener('pointerdown', playMusicOnce);
     window.removeEventListener('keydown', playMusicOnce);
   }

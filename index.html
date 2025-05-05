@@ -190,7 +190,7 @@ body {
 </head>
 <body>
 <canvas id="canvas"></canvas>
-<audio id="backgroundMusic" src="SONORE/ambiance page principale.mp3" loop preload="auto"></audio>
+<audio id="backgroundMusic" src="SONORE/ambiance page principale.mp3" loop preload="auto" autoplay></audio>
 <div class="center-rect">
   <h1>Chroméa</h1>
   <h2>Conditions Générales d'Utilisation</h2>
@@ -219,15 +219,6 @@ function acceptCGU() {
 function refuseCGU() {
   alert("Vous devez accepter les CGU pour accéder à l'expérience.");
 }
-
-// Démarrage musique d'ambiance après interaction utilisateur
-function playMusicOnce() {
-  document.getElementById('backgroundMusic').play();
-  window.removeEventListener('pointerdown', playMusicOnce);
-  window.removeEventListener('keydown', playMusicOnce);
-}
-window.addEventListener('pointerdown', playMusicOnce);
-window.addEventListener('keydown', playMusicOnce);
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -478,6 +469,18 @@ function debounce(func, wait) {
     }, wait);
   };
 }
+
+// Essaye de jouer la musique dès que possible
+document.getElementById('backgroundMusic').play().catch(() => {});
+
+// Démarrage musique d'ambiance après interaction utilisateur (fallback)
+function playMusicOnce() {
+  document.getElementById('backgroundMusic').play().catch(() => {});
+  window.removeEventListener('pointerdown', playMusicOnce);
+  window.removeEventListener('keydown', playMusicOnce);
+}
+window.addEventListener('pointerdown', playMusicOnce);
+window.addEventListener('keydown', playMusicOnce);
 
 // Initialisation
 window.addEventListener("load", () => {

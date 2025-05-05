@@ -52,11 +52,7 @@
     chooseSpecialCircles();
     assignCircleNumbersAndCoords();
     requestAnimationFrame(optimizeRendering);
-    try {
-      document.getElementById('backgroundMusic').play();
-    } catch (e) {
-      // Limitation navigateur
-    }
+    document.getElementById('backgroundMusic').play().catch(() => {});
   });
 </script>
 </body>

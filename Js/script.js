@@ -338,23 +338,33 @@ function chooseSpecialCircles() {
   const validPositions = [];
   const rows = colorGrid.length;
   const cols = colorGrid[0].length;
-  for (let y = 1; y < rows - 2; y++) { // pas la première ni les deux dernières lignes
-    for (let x = 1; x < cols - 1; x++) { // pas la première ni la dernière colonne
+  for (let y = 1; y < rows - 2; y++) {
+    for (let x = 1; x < cols - 1; x++) {
       validPositions.push({ x, y });
     }
   }
 
-  // Sélectionne 4 positions valides aléatoires
+  // Sélectionne 4 positions valides aléatoires, jamais côte à côte
   const selected = [];
-  const usedIndices = new Set();
+  const forbidden = new Set();
   while (selected.length < 4 && validPositions.length > 0) {
-    const idx = Math.floor(Math.random() * validPositions.length);
-    if (!usedIndices.has(idx)) {
-      selected.push(validPositions[idx]);
-      usedIndices.add(idx);
+    // Filtrer les positions non interdites
+    const candidates = validPositions.filter(
+      pos => !forbidden.has(`${pos.x},${pos.y}`)
+    );
+    if (candidates.length === 0) break;
+    const idx = Math.floor(Math.random() * candidates.length);
+    const pos = candidates[idx];
+    selected.push(pos);
+
+    // Marquer les positions voisines comme interdites (8 directions)
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        const nx = pos.x + dx;
+        const ny = pos.y + dy;
+        forbidden.add(`${nx},${ny}`);
+      }
     }
-    // Pour éviter boucle infinie si peu de positions valides
-    if (usedIndices.size > validPositions.length) break;
   }
 
   let count = 0;
@@ -371,8 +381,8 @@ function chooseSpecialCircles() {
     const text = shuffledTexts.shift() || "Par ici !";
     bubbleTextMap.set(`${x},${y}`, text);
 
-    // Attribue une forme et une taille de queue aléatoire à cette bulle
-    const shapes = ["ellipse", "roundedRect", "rect"];
+    // Ajoute la nouvelle forme "softRect" dans le choix
+    const shapes = ["ellipse", "roundedRect", "softRect"];
     const shape = shapes[Math.floor(Math.random() * shapes.length)];
     const tailSize = 0.7 + Math.random() * 0.8; // entre 0.7 et 1.5
     bubbleShapeMap.set(`${x},${y}`, { shape, tailSize });
@@ -496,21 +506,21 @@ function animate(time) {
 function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleShape) {
   // Décalage horizontal (gauche/droite) et vertical pour ne pas masquer le rond
   const verticalOffset = r * 2.2;
-  const offsetX = (x < colorGrid[0].length / 2) ? r * 2.6 : -r * 2.6;
-  const bubbleX = cx + offsetX;
-  const bubbleY = cy - r * 0.7 - verticalOffset;
+  let offsetX = (x < colorGrid[0].length / 2) ? r * 2.6 : -r * 2.6;
+  let bubbleX = cx + offsetX;
+  let bubbleY = cy - r * 0.7 - verticalOffset;
   const bounce = Math.sin(t * 2 + x + y) * 3;
 
-  ctx.save();
-
   // --- Calcul dynamique de la taille de la bulle en fonction du texte ---
-  ctx.font = `bold ${Math.round(r * 0.85)}px 'Inter', Arial, sans-serif`;
+  ctx.save();
+  // Utilise une police élégante et réduit la taille
+  ctx.font = `600 ${Math.round(r * 0.68)}px 'Georgia', 'Times New Roman', serif`;
   const textMetrics = ctx.measureText(bubbleText);
   const textWidth = textMetrics.width;
 
   let coordsWidth = 0;
   if (coords) {
-    ctx.font = `${Math.round(r * 0.55)}px 'Inter', Arial, sans-serif`;
+    ctx.font = `600 ${Math.round(r * 0.48)}px 'Georgia', 'Times New Roman', serif`;
     coordsWidth = ctx.measureText(`${coords.lat.toFixed(4)}, ${coords.long.toFixed(4)}`).width;
   }
 
@@ -519,6 +529,18 @@ function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleSha
   const paddingY = r * 0.7;
   const mainW = Math.max(r * 2.3, (maxTextWidth / 2) + paddingX);
   const mainH = r * 1.25 + paddingY * 0.3;
+
+  // --- Empêcher la bulle de sortir du cadre de la page ---
+  // On ajuste bubbleX et bubbleY si besoin
+  const minX = mainW + 4;
+  const maxX = canvas.width / (window.devicePixelRatio || 1) - mainW - 4;
+  const minY = mainH + 4;
+  const maxY = canvas.height / (window.devicePixelRatio || 1) - mainH - 4;
+
+  if (bubbleX < minX) bubbleX = minX;
+  if (bubbleX > maxX) bubbleX = maxX;
+  if (bubbleY < minY) bubbleY = minY;
+  if (bubbleY > maxY) bubbleY = maxY;
 
   // --- Forme de la bulle ---
   const shape = bubbleShape?.shape || "ellipse";
@@ -529,7 +551,6 @@ function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleSha
   if (shape === "ellipse") {
     ctx.ellipse(bubbleX, bubbleY + bounce, mainW, mainH, 0, 0, Math.PI * 2);
   } else if (shape === "roundedRect") {
-    // Rectangle arrondi
     const rectRadius = r * 0.7;
     ctx.moveTo(bubbleX - mainW + rectRadius, bubbleY + bounce - mainH);
     ctx.lineTo(bubbleX + mainW - rectRadius, bubbleY + bounce - mainH);
@@ -541,8 +562,32 @@ function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleSha
     ctx.lineTo(bubbleX - mainW, bubbleY + bounce - mainH + rectRadius);
     ctx.quadraticCurveTo(bubbleX - mainW, bubbleY + bounce - mainH, bubbleX - mainW + rectRadius, bubbleY + bounce - mainH);
     ctx.closePath();
+  } else if (shape === "softRect") {
+    const rx = mainW;
+    const ry = mainH;
+    const softness = 0.65;
+    ctx.moveTo(bubbleX - rx * softness, bubbleY + bounce - ry);
+    ctx.quadraticCurveTo(
+      bubbleX - rx, bubbleY + bounce - ry,
+      bubbleX - rx, bubbleY + bounce - ry * softness
+    );
+    ctx.lineTo(bubbleX - rx, bubbleY + bounce + ry * softness);
+    ctx.quadraticCurveTo(
+      bubbleX - rx, bubbleY + bounce + ry,
+      bubbleX - rx * softness, bubbleY + bounce + ry
+    );
+    ctx.lineTo(bubbleX + rx * softness, bubbleY + bounce + ry);
+    ctx.quadraticCurveTo(
+      bubbleX + rx, bubbleY + bounce + ry,
+      bubbleX + rx, bubbleY + bounce + ry * softness
+    );
+    ctx.lineTo(bubbleX + rx, bubbleY + bounce - ry * softness);
+    ctx.quadraticCurveTo(
+      bubbleX + rx, bubbleY + bounce - ry,
+      bubbleX + rx * softness, bubbleY + bounce - ry
+    );
+    ctx.closePath();
   } else if (shape === "rect") {
-    // Rectangle simple
     ctx.rect(bubbleX - mainW, bubbleY + bounce - mainH, mainW * 2, mainH * 2);
   }
   ctx.shadowColor = "#0005";
@@ -555,10 +600,9 @@ function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleSha
   ctx.save();
   ctx.beginPath();
   let tipX, tipY, baseLeftX, baseLeftY, baseRightX, baseRightY;
-  const tailW = r * (0.18 + 0.18 * tailSize); // largeur de la queue
-  const tailH = r * (1.2 + 1.2 * tailSize);   // longueur de la queue
+  const tailW = r * (0.18 + 0.18 * tailSize);
+  const tailH = r * (1.2 + 1.2 * tailSize);
   if (offsetX > 0) {
-    // Bulle à droite, queue à gauche-bas
     tipX = cx + r * 0.3;
     tipY = cy + r * 0.5;
     baseLeftX = bubbleX - mainW * 0.25 - tailW;
@@ -566,7 +610,6 @@ function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleSha
     baseRightX = bubbleX - mainW * 0.05 + tailW;
     baseRightY = bubbleY + bounce + mainH;
   } else {
-    // Bulle à gauche, queue à droite-bas
     tipX = cx - r * 0.3;
     tipY = cy + r * 0.5;
     baseLeftX = bubbleX + mainW * 0.05 - tailW;
@@ -575,7 +618,7 @@ function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleSha
     baseRightY = bubbleY + bounce + mainH;
   }
   ctx.moveTo(baseLeftX, baseLeftY);
-  ctx.lineTo(tipX, tipY + tailH * 0.1); // queue plus longue
+  ctx.lineTo(tipX, tipY + tailH * 0.1);
   ctx.lineTo(baseRightX, baseRightY);
   ctx.closePath();
   ctx.fillStyle = "#fff";
@@ -586,7 +629,7 @@ function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleSha
   ctx.restore();
 
   // Texte principal
-  ctx.font = `bold ${Math.round(r * 0.85)}px 'Inter', Arial, sans-serif`;
+  ctx.font = `600 ${Math.round(r * 0.68)}px 'Georgia', 'Times New Roman', serif`;
   ctx.fillStyle = "#222b4d";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -594,7 +637,7 @@ function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleSha
 
   // Coordonnées
   if (coords) {
-    ctx.font = `${Math.round(r * 0.55)}px 'Inter', Arial, sans-serif`;
+    ctx.font = `600 ${Math.round(r * 0.48)}px 'Georgia', 'Times New Roman', serif`;
     ctx.fillStyle = "#444";
     ctx.fillText(
       `${coords.lat.toFixed(4)}, ${coords.long.toFixed(4)}`,

@@ -663,7 +663,13 @@ function initCguDecor() {
 }
 
 function acceptCGU() {
-  document.getElementById("cgu-modal").style.display = "none";
+  // Supporte l'ancien et le nouveau CGU
+  const cguModal = document.getElementById("cgu-modal");
+  const cguRect = document.getElementById("cgu-rect");
+  const cguBg = document.getElementById("canvas-cgu-bg");
+  if (cguModal) cguModal.style.display = "none";
+  if (cguRect) cguRect.style.display = "none";
+  if (cguBg) cguBg.style.display = "none";
   canvas.style.display = "block";
   
   // Ajouter les gestionnaires d'événements

@@ -1,8 +1,9 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-const cguCanvas = document.getElementById("cgu-background");
-const cguCtx = cguCanvas.getContext("2d");
+// Suppression des références au cgu-background
+// const cguCanvas = document.getElementById("cgu-background");
+// const cguCtx = cguCanvas.getContext("2d");
 
 const sound = document.getElementById("sound");
 const mobileInfo = document.getElementById("mobile-info");
@@ -525,8 +526,6 @@ function handleInteraction(e) {
     }
   }
 
-
-  
   localStorage.setItem("last-special-circle-clicked", JSON.stringify({ x: col, y: row }));
 }
 
@@ -608,96 +607,9 @@ function showMobileInfo() {
   }
 }
 
-function initCguDecor() {
-  cguCanvas.width = window.innerWidth;
-  cguCanvas.height = window.innerHeight;
-  
-  // Ajuster l'espacement sur mobile
-  const spacing = isMobile ? 40 : 60;
-  
-  const bounds = document.getElementById("cgu-content").getBoundingClientRect();
-  const margin = isMobile ? 30 : 50;
-  const startX = bounds.left - margin;
-  const endX = bounds.right + margin;
-  const startY = bounds.top - margin;
-  const endY = bounds.bottom + margin;
-  const cguCircles = [];
+// Suppression de la fonction initCguDecor qui n'est plus nécessaire
 
-  for (let y = startY; y < endY; y += spacing) {
-    for (let x = startX; x < endX; x += spacing) {
-      if (x < bounds.left || x > bounds.right || y < bounds.top || y > bounds.bottom) {
-        const baseColor = colors[Math.floor(Math.random() * colors.length)];
-        const endColor = gradientMap[baseColor.toUpperCase()] || baseColor;
-        cguCircles.push({ 
-          x, y, 
-          baseColor, 
-          endColor, 
-          pulseOffset: Math.random() * Math.PI * 2,
-          r: isMobile ? radius * 0.8 : radius // Cercles un peu plus petits sur mobile
-        });
-      }
-    }
-  }
-
-  function animateCguDecor(time) {
-    cguCtx.clearRect(0, 0, cguCanvas.width, cguCanvas.height);
-    const t = time / 1000;
-    for (const circle of cguCircles) {
-      const pulse = 0.3 + 0.2 * Math.sin(t + circle.pulseOffset);
-      const gradient = cguCtx.createRadialGradient(
-        circle.x, circle.y, circle.r * pulse,
-        circle.x, circle.y, circle.r
-      );
-      gradient.addColorStop(0, circle.baseColor);
-      gradient.addColorStop(1, circle.endColor);
-
-      cguCtx.beginPath();
-      cguCtx.arc(circle.x, circle.y, circle.r, 0, Math.PI * 2);
-      cguCtx.fillStyle = gradient;
-      cguCtx.fill();
-    }
-    requestAnimationFrame(animateCguDecor);
-  }
-
-  requestAnimationFrame(animateCguDecor);
-}
-
-function acceptCGU() {
-  // Supporte l'ancien et le nouveau CGU
-  const cguModal = document.getElementById("cgu-modal");
-  const cguRect = document.getElementById("cgu-rect");
-  const cguBg = document.getElementById("canvas-cgu-bg");
-  if (cguModal) cguModal.style.display = "none";
-  if (cguRect) cguRect.style.display = "none";
-  if (cguBg) cguBg.style.display = "none";
-  canvas.style.display = "block";
-  
-  // Ajouter les gestionnaires d'événements
-  if (isMobile) {
-    canvas.addEventListener("touchstart", handleInteraction, { passive: false });
-    canvas.addEventListener("touchmove", handleHover, { passive: false });
-    canvas.addEventListener("touchend", handleHoverEnd);
-    showMobileInfo();
-  } else {
-    canvas.addEventListener("click", handleInteraction);
-    canvas.addEventListener("mousemove", handleHover);
-    canvas.addEventListener("mouseout", handleHoverEnd);
-  }
-  
-  window.addEventListener("resize", debounce(resizeCanvas, 250));
-  resizeCanvas();
-  chooseSpecialCircles();
-  assignCircleNumbersAndCoords(); // Numéroter les cercles et attribuer des coordonnées au démarrage
-  requestAnimationFrame(optimizeRendering);
-  document.getElementById('backgroundMusic').play();
-}
-
-function refuseCGU() {
-  document.getElementById("cgu-content").innerHTML = `
-    <h2>Accès refusé</h2>
-    <p>Vous devez accepter les conditions pour accéder à l'expérience.</p>
-  `;
-}
+// Suppression des fonctions acceptCGU et refuseCGU qui ne sont plus nécessaires
 
 // Fonction utilitaire pour limiter les appels de redimensionnement
 function debounce(func, wait) {
@@ -712,8 +624,9 @@ function debounce(func, wait) {
   };
 }
 
+// Suppression des gestionnaires liés aux CGU
 window.addEventListener("load", () => {
-  initCguDecor();
+  // initCguDecor(); - Supprimé
   
   // Vérifier si nous sommes sur un appareil à écran tactile et adapter l'interface
   if (isMobile) {
@@ -729,11 +642,7 @@ window.addEventListener('load', () => {
   }
 });
 
-window.addEventListener("resize", () => {
-  if (document.getElementById("cgu-modal").style.display !== "none") {
-    initCguDecor();
-  }
-});
+// Suppression de la vérification de redimensionnement liée aux CGU
 
 // Gestion des problèmes audio sur iOS
 document.addEventListener('touchstart', function() {

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="Css/style.css">
+  <script src="Js/script.js" defer></script>
+
+  <title>Zones de ronds regroupés</title>
+
+</head>
+<body>
+<!-- Les éléments CGU ont été supprimés -->
+
+<div id="mobile-info">
+  Bonjour Raffineur numéro 587 ! Dépêchez-vous d'aller rafinner !
+</div>
+
+<!-- Mise à jour du div pour afficher le numéro et les coordonnées du cercle -->
+<div id="circle-number-display">
+  <div>Cercle #<span id="circle-number">0</span></div>
+  <div><span class="coord-label">Lat:</span><span id="circle-lat">0.0000</span></div>
+  <div><span class="coord-label">Long:</span><span id="circle-long">0.0000</span></div>
+</div>
+
+<canvas id="canvas" style="display: block;"></canvas>
+<audio id="sound" src="2019.mp3" preload="auto"></audio>
+<audio id="backgroundMusic" src="SONORE/ambiance page principale.mp3" loop preload="auto"></audio>
+
+<script>
+  // Script pour initialiser directement l'application sans passer par les CGU
+  window.addEventListener("load", function() {
+    // Ajouter les gestionnaires d'événements directement
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      canvas.addEventListener("touchstart", handleInteraction, { passive: false });
+      canvas.addEventListener("touchmove", handleHover, { passive: false });
+      canvas.addEventListener("touchend", handleHoverEnd);
+      showMobileInfo();
+    } else {
+      canvas.addEventListener("click", handleInteraction);
+      canvas.addEventListener("mousemove", handleHover);
+      canvas.addEventListener("mouseout", handleHoverEnd);
+    }
+    
+    window.addEventListener("resize", debounce(resizeCanvas, 250));
+    resizeCanvas();
+    chooseSpecialCircles();
+    assignCircleNumbersAndCoords();
+    requestAnimationFrame(optimizeRendering);
+    document.getElementById('backgroundMusic').play();
+  });
+</script>
+</body>
+</html>

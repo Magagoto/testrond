@@ -220,6 +220,15 @@ function refuseCGU() {
   alert("Vous devez accepter les CGU pour accéder à l'expérience.");
 }
 
+// Démarrage musique d'ambiance après interaction utilisateur
+function playMusicOnce() {
+  document.getElementById('backgroundMusic').play();
+  window.removeEventListener('pointerdown', playMusicOnce);
+  window.removeEventListener('keydown', playMusicOnce);
+}
+window.addEventListener('pointerdown', playMusicOnce);
+window.addEventListener('keydown', playMusicOnce);
+
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 // Configuration responsive

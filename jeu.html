@@ -51,6 +51,15 @@
     requestAnimationFrame(optimizeRendering);
     document.getElementById('backgroundMusic').play();
   });
+
+  // Démarrage musique d'ambiance après interaction utilisateur
+  function playMusicOnce() {
+    document.getElementById('backgroundMusic').play();
+    window.removeEventListener('pointerdown', playMusicOnce);
+    window.removeEventListener('keydown', playMusicOnce);
+  }
+  window.addEventListener('pointerdown', playMusicOnce);
+  window.addEventListener('keydown', playMusicOnce);
 </script>
 </body>
 </html>

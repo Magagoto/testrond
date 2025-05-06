@@ -875,3 +875,54 @@ document.addEventListener('touchstart', function() {
 function disableGPU() {
   canvas.style.display = 'none'; // Désactiver le rendu GPU en masquant le canvas
 }
+
+// Fonction modifiée pour la fin du jeu qui sauvegarde le score dans le localStorage
+function endGame() {
+    clearInterval(timerInterval);
+    gameActive = false;
+    
+    backgroundMusic.pause();
+    backgroundMusic.currentTime = 0;
+    
+    // Sauvegarder le score dans le localStorage pour la page des scores
+    localStorage.setItem('pending-score', score.toString());
+    
+    // Demander le nom du joueur
+    let playerName = prompt(`Temps écoulé! Score final: ${score}\n\nEntrez votre nom:`, "Joueur");
+    
+    // Si l'utilisateur annule, on utilise "Joueur" par défaut
+    if (playerName === null || playerName.trim() === '') {
+        playerName = "Joueur";
+    }
+    
+    // Sauvegarder le nom du joueur
+    localStorage.setItem('pending-player', playerName);
+    
+    // Indiquer que le jeu est terminé pour que la page des scores puisse le détecter
+    localStorage.setItem("game-state", "finished");
+    
+    // Proposer d'aller à la page des scores
+    setTimeout(() => {
+        if (confirm("Voulez-vous voir le tableau des scores?")) {
+            window.location.href = "scores.html";
+        } else {
+            // Réinitialiser le jeu
+            resetGame();
+        }
+    }, 500);
+}
+
+// Fonction pour réinitialiser le jeu
+function resetGame() {
+    score = 0;
+    updateScoreDisplay();
+    timerSeconds = 70; // Remettre à 70 secondes pour la prochaine partie
+    timerDisplay.textContent = "01:10";
+    timerDisplay.style.color = "white";
+    timerDisplay.style.animation = "none";
+    
+    // Afficher à nouveau le bouton de démarrage
+    startBtn.style.display = 'block';
+    gyroStatus.classList.remove("active");
+    gyroStatus.style.opacity = 0;
+}

@@ -26,6 +26,8 @@
       border: 2px solid rgba(0, 255, 204, 0.5); /* Bordure plus visible */
       backdrop-filter: blur(19px); /* Effet de flou plus intense */
       font-family: 'Fira Mono', 'Consolas', monospace;
+      cursor: move; /* Indique que l'élément est déplaçable */
+      touch-action: none; /* Empêche l'action tactile par défaut */
     }
     
     #user-location-box .location-header {
@@ -114,10 +116,28 @@
     /* Adaptation pour mobile */
     @media (max-width: 600px) {
       #user-location-box {
-        max-width: 85vw;
-        width: 200px;
+        max-width: 80vw;
+        width: 160px; /* Taille réduite sur mobile */
+        font-size: 11px; /* Police plus petite sur mobile */
+        padding: 8px; /* Padding réduit */
+      }
+      
+      #user-location-box .location-title {
         font-size: 12px;
-        padding: 10px;
+      }
+      
+      #user-location-box .info-label {
+        font-size: 10px;
+      }
+      
+      #user-location-box .info-value {
+        font-size: 10px;
+        padding: 4px 6px;
+      }
+      
+      #user-location-box .location-refresh {
+        padding: 4px 8px;
+        font-size: 10px;
       }
     }
   </style>
@@ -233,6 +253,75 @@
   function hideLocationBox() {
     document.getElementById('user-location-box').style.display = 'none';
   }
+
+  // Code pour rendre le rectangle de localisation déplaçable
+  let isDragging = false;
+  let offsetX, offsetY;
+  const locationBox = document.getElementById('user-location-box');
+
+  // Fonction pour démarrer le déplacement
+  function startDrag(e) {
+    const isTouch = e.type.startsWith('touch');
+    const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+    const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+    
+    // Ne pas déclencher le drag si on clique sur le bouton de fermeture ou d'actualisation
+    if (e.target.classList.contains('location-close') || 
+        e.target.classList.contains('location-refresh')) {
+      return;
+    }
+    
+    const rect = locationBox.getBoundingClientRect();
+    offsetX = clientX - rect.left;
+    offsetY = clientY - rect.top;
+    isDragging = true;
+    
+    // Empêcher les comportements par défaut
+    if (isTouch) {
+      e.preventDefault();
+    }
+  }
+
+  // Fonction pour le déplacement en cours
+  function drag(e) {
+    if (!isDragging) return;
+    
+    const isTouch = e.type.startsWith('touch');
+    const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+    const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+    
+    // Calculer la nouvelle position
+    const newLeft = clientX - offsetX;
+    const newTop = clientY - offsetY;
+    
+    // Limiter la position à l'intérieur de la fenêtre
+    const maxX = window.innerWidth - locationBox.offsetWidth;
+    const maxY = window.innerHeight - locationBox.offsetHeight;
+    
+    locationBox.style.left = `${Math.max(0, Math.min(maxX, newLeft))}px`;
+    locationBox.style.top = `${Math.max(0, Math.min(maxY, newTop))}px`;
+    
+    // Empêcher les comportements par défaut (comme le scroll)
+    if (isTouch) {
+      e.preventDefault();
+    }
+  }
+
+  // Fonction pour terminer le déplacement
+  function endDrag() {
+    isDragging = false;
+  }
+
+  // Ajouter les gestionnaires d'événements pour souris et tactile
+  locationBox.addEventListener('mousedown', startDrag);
+  locationBox.addEventListener('touchstart', startDrag, { passive: false });
+  
+  document.addEventListener('mousemove', drag);
+  document.addEventListener('touchmove', drag, { passive: false });
+  
+  document.addEventListener('mouseup', endDrag);
+  document.addEventListener('touchend', endDrag);
+  document.addEventListener('touchcancel', endDrag);
 
   // Script pour initialiser directement l'application sans passer par les CGU
   window.addEventListener("load", function() {

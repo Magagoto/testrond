@@ -767,19 +767,21 @@
                 clearInterval(colorAnalysisInterval);
             }
             
-            // S'assurer que l'élément est visible dès le début
-            realtimeColor.classList.remove('hidden');
+            if (!realtimeColor) return;
             
             // Créer un canvas temporaire pour l'analyse
             const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
+            const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true }); // Optimisation pour la lecture fréquente
             
             // Ajuster l'intervalle selon le type d'appareil
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const interval = isMobile ? 300 : 200; // Moins fréquent sur mobile pour économiser la batterie
+            const interval = isMobile ? 500 : 300; // Encore moins fréquent sur mobile
             
+            let analysisCount = 0;
             colorAnalysisInterval = setInterval(() => {
-                if (!stream || video.paused || video.ended || !video.videoWidth) {
+                if (!stream || !video.videoWidth || video.paused || video.ended) {
+                    // Si pas encore de flux vidéo, garder l'élément masqué
+                    realtimeColor.classList.add('hidden');
                     return;
                 }
                 
@@ -797,11 +799,22 @@
                     const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
                     const dominantColor = extractDominantColor(imageData, true);
                     
-                    // Mettre à jour l'affichage
+                    // Mettre à jour l'affichage de la couleur
                     colorPreview.style.backgroundColor = dominantColor.rgb;
                     colorValue.textContent = dominantColor.hex;
+                    
+                    // Montrer l'élément après la première analyse réussie
+                    realtimeColor.classList.remove('hidden');
+                    
+                    // Sur mobile, après quelques analyses réussies, ralentir encore plus l'intervalle
+                    if (isMobile && ++analysisCount > 10) {
+                        clearInterval(colorAnalysisInterval);
+                        colorAnalysisInterval = setInterval(arguments.callee, 800); // Intervalle plus lent
+                        analysisCount = -1000; // Éviter de réinitialiser à nouveau
+                    }
                 } catch (e) {
                     console.error('Erreur dans l\'analyse de couleur:', e);
+                    // Ne pas masquer l'élément en cas d'erreur temporaire
                 }
             }, interval);
         }
@@ -821,17 +834,34 @@
                     stopRealtimeColorAnalysis();
                 }
 
-                // Optimisations supplémentaires pour mobile
+                // Masquer le panneau de couleur en temps réel jusqu'à ce que la caméra soit prête
+                if (realtimeColor) realtimeColor.classList.add('hidden');
+
+                // Montrer le placeholder pendant le chargement
+                videoPlaceholder.style.display = 'flex';
+
+                // Détection spécifique pour iPhone/iPad
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
                 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                
                 let constraints;
                 
-                if (isMobile) {
-                    // Résolution réduite pour mobile avec plus d'options de compatibilité
+                if (isIOS) {
+                    // Paramètres spécifiques pour iOS qui ont tendance à mieux fonctionner
                     constraints = {
                         audio: false,
                         video: {
                             facingMode: facingMode,
-                            width: { ideal: 640 }, // Encore plus réduit pour assurer la compatibilité
+                            width: { ideal: 480 },
+                            height: { ideal: 360 }
+                        }
+                    };
+                } else if (isMobile) {
+                    constraints = {
+                        audio: false,
+                        video: {
+                            facingMode: facingMode,
+                            width: { ideal: 640 },
                             height: { ideal: 480 }
                         }
                     };
@@ -846,50 +876,73 @@
                     };
                 }
 
+                console.log("Tentative d'accès à la caméra avec les contraintes:", constraints);
                 stream = await navigator.mediaDevices.getUserMedia(constraints);
+                
+                // S'assurer que l'élément vidéo est visible et correctement configuré
+                video.style.display = 'block';
+                video.setAttribute('playsinline', true); // Important pour iOS
+                video.setAttribute('autoplay', true);
                 video.srcObject = stream;
                 
-                // Masquer le placeholder une fois la caméra activée
-                videoPlaceholder.style.display = 'none';
+                // Forcer le démarrage de la vidéo
+                try {
+                    await video.play();
+                    console.log("La vidéo est en cours de lecture");
+                } catch (e) {
+                    console.error("Erreur lors du démarrage de la vidéo:", e);
+                    // Sur iOS, l'autoplay peut être bloqué - invitez l'utilisateur à interagir
+                    if (isIOS) {
+                        statusMessage.textContent = "Touchez l'écran pour activer la caméra";
+                        document.body.addEventListener('touchstart', function iosVideoFix() {
+                            video.play();
+                            document.body.removeEventListener('touchstart', iosVideoFix);
+                        }, { once: true });
+                    }
+                }
                 
-                // Rendre la vidéo visible explicitement
-                video.style.display = 'block';
+                // Masquer le placeholder une fois que la vidéo est en lecture
+                video.addEventListener('playing', function onPlaying() {
+                    console.log("Événement 'playing' déclenché");
+                    videoPlaceholder.style.display = 'none';
+                    statusMessage.textContent = 'Caméra active et fonctionnelle.';
+                    video.removeEventListener('playing', onPlaying);
+                });
                 
-                // Utiliser un gestionnaire d'événement pour s'assurer que tout est prêt
                 video.onloadedmetadata = () => {
-                    // Forcer la vidéo à s'afficher
-                    video.play().catch(e => console.error('Erreur lors du démarrage de la vidéo:', e));
-                    
+                    console.log("Métadonnées vidéo chargées:", video.videoWidth, "x", video.videoHeight);
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
-                    statusMessage.textContent = 'Caméra prête. Vous pouvez prendre une photo.';
                     
-                    // Démarrer l'analyse de couleur une fois la caméra prête
+                    // Démarrer l'analyse de couleur avec un léger délai
                     setTimeout(() => {
                         startRealtimeColorAnalysis();
                     }, 500);
                 };
 
-                // Deuxième gestionnaire d'événement pour s'assurer que tout fonctionne
-                video.onplaying = () => {
-                    statusMessage.textContent = 'Caméra active et fonctionnelle.';
-                };
-
                 applyVideoFilter();
             } catch (error) {
+                console.error('Erreur complète d\'accès à la caméra:', error);
                 statusMessage.textContent = `Erreur d'accès à la caméra: ${error.message}`;
-                console.error('Erreur d\'accès à la caméra:', error);
                 videoPlaceholder.style.display = 'flex';
-                videoPlaceholder.textContent = `Erreur d'accès à la caméra: ${error.message}`;
-                realtimeColor.classList.add('hidden');
+                videoPlaceholder.innerHTML = `
+                    <div style="text-align: center;">
+                        <p>Erreur d'accès à la caméra: ${error.message}</p>
+                        <button onclick="requestCameraAgain()" style="margin-top: 15px; padding: 8px 15px; background: rgba(0,255,204,0.2); color: #00ffcc; border: 1px solid #00ffcc; border-radius: 8px;">
+                            Réessayer
+                        </button>
+                    </div>
+                `;
             }
         }
 
-        // Changer de caméra
-        document.getElementById('switchCamera').addEventListener('click', () => {
-            facingMode = facingMode === 'user' ? 'environment' : 'user';
-            initCamera();
-        });
+        // Fonction pour réessayer d'accéder à la caméra (à ajouter)
+        function requestCameraAgain() {
+            videoPlaceholder.innerHTML = 'Nouvelle tentative d\'accès à la caméra...';
+            setTimeout(() => {
+                initCamera();
+            }, 500);
+        }
 
         // Capturer une photo
         document.getElementById('captureBtn').addEventListener('click', () => {
@@ -1032,6 +1085,49 @@
         
         // Initialisation au chargement
         document.addEventListener('DOMContentLoaded', function() {
+            // Pour iOS: demander la permission audio/vidéo au chargement
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            if (isIOS) {
+                // En iOS 13+, les permissions audio/vidéo nécessitent une interaction utilisateur
+                document.body.addEventListener('touchstart', function iosPermissionFix() {
+                    document.body.removeEventListener('touchstart', iosPermissionFix);
+                    // Juste pour forcer une demande de permission
+                    navigator.mediaDevices.getUserMedia({audio: false, video: true})
+                        .then(tempStream => {
+                            // Arrêter immédiatement ce flux temporaire
+                            tempStream.getTracks().forEach(track => track.stop());
+                            initCamera();
+                        })
+                        .catch(err => {
+                            console.error("Erreur lors de la demande de permission iOS:", err);
+                            initCamera();
+                        });
+                }, { once: true });
+            }
+            
+            // Gérer les événements de visibilité pour économiser la batterie
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    // La page n'est pas visible, suspendre l'analyse de couleur
+                    stopRealtimeColorAnalysis();
+                } else if (video.srcObject && !document.getElementById('galleryModeContainer').classList.contains('hidden')) {
+                    // La page est visible à nouveau et nous sommes en mode caméra
+                    startRealtimeColorAnalysis();
+                }
+            });
+            
+            // Fixer l'orientation sur mobile pour éviter les problèmes de redimensionnement
+            window.addEventListener('resize', function() {
+                const isMobile = window.innerWidth <= 768;
+                if (isMobile && video.srcObject) {
+                    // Recalculer les dimensions pour s'adapter à la nouvelle orientation
+                    setTimeout(() => {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                    }, 300);
+                }
+            });
+
             // S'assurer que l'interface s'adapte correctement au chargement
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 statusMessage.textContent = 'Votre navigateur ne prend pas en charge l\'accès à la caméra.';

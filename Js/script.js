@@ -14,6 +14,11 @@ const numberSpan = document.getElementById('circle-number');
 const latSpan = document.getElementById('circle-lat');
 const longSpan = document.getElementById('circle-long');
 
+// Références aux éléments pour afficher les coordonnées au survol
+const circleCoordDisplay = document.getElementById('circle-coord-display');
+const hoverLatSpan = document.getElementById('hover-lat');
+const hoverLongSpan = document.getElementById('hover-long');
+
 // Variables pour le système de numérotation et coordonnées des cercles
 let circleMap = new Map(); // Pour stocker les numéros des cercles
 let circleCoords = new Map(); // Pour stocker les coordonnées géographiques
@@ -188,6 +193,7 @@ function processConnectedCircles(cx, cy, targetColor, processed) {
   }
 }
 
+// Correction de la fonction pour générer des coordonnées aléatoires d'Orléans
 function generateRandomOrleansCoords() {
   const lat = orleansLimits.minLat + Math.random() * (orleansLimits.maxLat - orleansLimits.minLat);
   const long = orleansLimits.minLong + Math.random() * (orleansLimits.maxLong - orleansLimits.minLong);
@@ -327,6 +333,7 @@ function chooseLinearGradientZones() {
   }
 }
 
+// Pour de meilleures formes de bulles, mettons à jour la façon dont nous attribuons les formes
 function chooseSpecialCircles() {
   specialCircles = [];
   specialZones.clear();
@@ -381,10 +388,10 @@ function chooseSpecialCircles() {
     const text = shuffledTexts.shift() || "Par ici !";
     bubbleTextMap.set(`${x},${y}`, text);
 
-    // Ajoute la nouvelle forme "softRect" dans le choix
-    const shapes = ["ellipse", "roundedRect", "softRect"];
+    // Nouveaux styles de bulles modernes
+    const shapes = ["ellipse", "roundedRect"];
     const shape = shapes[Math.floor(Math.random() * shapes.length)];
-    const tailSize = 0.7 + Math.random() * 0.8; // entre 0.7 et 1.5
+    const tailSize = 0.8 + Math.random() * 0.7; // Entre 0.8 et 1.5 - queue plus subtile
     bubbleShapeMap.set(`${x},${y}`, { shape, tailSize });
   }
 }
@@ -491,6 +498,10 @@ function animate(time) {
       cx += (Math.random() - 0.5) * shake;
       cy += (Math.random() - 0.5) * shake;
     }
+    
+    // Dessiner les 4 traits autour du cercle spécial
+    drawSpecialCircleMarkers(ctx, cx, cy, radius, t);
+    
     // Récupère les coordonnées associées à ce rond
     const coords = circleCoords.get(key);
     // Récupère le texte unique pour cette bulle
@@ -501,26 +512,81 @@ function animate(time) {
   }
 }
 
-// --- Fonction pour dessiner une bulle de BD à côté d'un cercle spécial ---
-// Ajout du paramètre bubbleShape {shape, tailSize}
+// Nouvelle fonction pour dessiner des marqueurs autour des cercles spéciaux
+function drawSpecialCircleMarkers(ctx, cx, cy, r, t) {
+  // Paramètres pour les traits - doublé la longueur et augmenté la distance
+  const markerLength = r * 2.4; // Longueur doublée (environ 2 cercles)
+  const markerDistance = r * 2.0; // Distance augmentée
+  const markerWidth = 2.5;      // Légèrement plus épais
+  
+  // Couleur des traits avec une pulsation subtile basée sur le temps
+  const opacity = 0.7 + 0.3 * Math.sin(t * 2);
+  ctx.strokeStyle = `rgba(0, 255, 204, ${opacity})`;
+  ctx.lineWidth = markerWidth;
+  
+  // Enregistrer l'état actuel du contexte
+  ctx.save();
+  
+  // Effet de lueur grâce à une ombre
+  ctx.shadowColor = 'rgba(0, 255, 204, 0.5)';
+  ctx.shadowBlur = 12;
+  
+  // Rotation pour que les traits tournent dans le sens inverse des aiguilles d'une montre
+  const rotationSpeed = 0.5; // Vitesse de rotation
+  const angle = t * rotationSpeed;
+  
+  // Appliquer la rotation à partir du centre du cercle
+  ctx.translate(cx, cy);
+  ctx.rotate(-angle); // Sens anti-horaire (négatif)
+  ctx.translate(-cx, -cy);
+  
+  // Trait du haut (devenu gauche avec la rotation)
+  ctx.beginPath();
+  ctx.moveTo(cx - markerLength/2, cy - markerDistance);
+  ctx.lineTo(cx + markerLength/2, cy - markerDistance);
+  ctx.stroke();
+  
+  // Trait du bas (devenu droit avec la rotation)
+  ctx.beginPath();
+  ctx.moveTo(cx - markerLength/2, cy + markerDistance);
+  ctx.lineTo(cx + markerLength/2, cy + markerDistance);
+  ctx.stroke();
+  
+  // Trait de gauche (devenu bas avec la rotation)
+  ctx.beginPath();
+  ctx.moveTo(cx - markerDistance, cy - markerLength/2);
+  ctx.lineTo(cx - markerDistance, cy + markerLength/2);
+  ctx.stroke();
+  
+  // Trait de droite (devenu haut avec la rotation)
+  ctx.beginPath();
+  ctx.moveTo(cx + markerDistance, cy - markerLength/2);
+  ctx.lineTo(cx + markerDistance, cy + markerLength/2);
+  ctx.stroke();
+  
+  // Restaurer l'état du contexte
+  ctx.restore();
+}
+
+// Fonction améliorée pour dessiner une bulle moderne à côté d'un cercle spécial
 function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleShape) {
-  // Décalage horizontal (gauche/droite) et vertical pour ne pas masquer le rond
+  // Décalage horizontal et vertical pour ne pas masquer le rond
   const verticalOffset = r * 2.2;
   let offsetX = (x < colorGrid[0].length / 2) ? r * 2.6 : -r * 2.6;
   let bubbleX = cx + offsetX;
   let bubbleY = cy - r * 0.7 - verticalOffset;
   const bounce = Math.sin(t * 2 + x + y) * 3;
 
-  // --- Calcul dynamique de la taille de la bulle en fonction du texte ---
   ctx.save();
-  // Utilise une police élégante et réduit la taille
-  ctx.font = `600 ${Math.round(r * 0.68)}px 'Georgia', 'Times New Roman', serif`;
+  
+  // Utilise une police plus moderne
+  ctx.font = `500 ${Math.round(r * 0.68)}px 'Segoe UI', Roboto, -apple-system, sans-serif`;
   const textMetrics = ctx.measureText(bubbleText);
   const textWidth = textMetrics.width;
 
   let coordsWidth = 0;
   if (coords) {
-    ctx.font = `600 ${Math.round(r * 0.48)}px 'Georgia', 'Times New Roman', serif`;
+    ctx.font = `400 ${Math.round(r * 0.48)}px 'Segoe UI', Roboto, -apple-system, sans-serif`;
     coordsWidth = ctx.measureText(`${coords.lat.toFixed(4)}, ${coords.long.toFixed(4)}`).width;
   }
 
@@ -530,8 +596,7 @@ function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleSha
   const mainW = Math.max(r * 2.3, (maxTextWidth / 2) + paddingX);
   const mainH = r * 1.25 + paddingY * 0.3;
 
-  // --- Empêcher la bulle de sortir du cadre de la page ---
-  // On ajuste bubbleX et bubbleY si besoin
+  // Ajustement pour éviter de sortir du cadre
   const minX = mainW + 4;
   const maxX = canvas.width / (window.devicePixelRatio || 1) - mainW - 4;
   const minY = mainH + 4;
@@ -542,103 +607,59 @@ function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleSha
   if (bubbleY < minY) bubbleY = minY;
   if (bubbleY > maxY) bubbleY = maxY;
 
-  // --- Forme de la bulle ---
   const shape = bubbleShape?.shape || "ellipse";
   const tailSize = bubbleShape?.tailSize || 1;
 
-  // 1. Dessin de la bulle principale
-  ctx.beginPath();
-  if (shape === "ellipse") {
-    ctx.ellipse(bubbleX, bubbleY + bounce, mainW, mainH, 0, 0, Math.PI * 2);
-  } else if (shape === "roundedRect") {
-    const rectRadius = r * 0.7;
-    ctx.moveTo(bubbleX - mainW + rectRadius, bubbleY + bounce - mainH);
-    ctx.lineTo(bubbleX + mainW - rectRadius, bubbleY + bounce - mainH);
-    ctx.quadraticCurveTo(bubbleX + mainW, bubbleY + bounce - mainH, bubbleX + mainW, bubbleY + bounce - mainH + rectRadius);
-    ctx.lineTo(bubbleX + mainW, bubbleY + bounce + mainH - rectRadius);
-    ctx.quadraticCurveTo(bubbleX + mainW, bubbleY + bounce + mainH, bubbleX + mainW - rectRadius, bubbleY + bounce + mainH);
-    ctx.lineTo(bubbleX - mainW + rectRadius, bubbleY + bounce + mainH);
-    ctx.quadraticCurveTo(bubbleX - mainW, bubbleY + bounce + mainH, bubbleX - mainW, bubbleY + bounce + mainH - rectRadius);
-    ctx.lineTo(bubbleX - mainW, bubbleY + bounce - mainH + rectRadius);
-    ctx.quadraticCurveTo(bubbleX - mainW, bubbleY + bounce - mainH, bubbleX - mainW + rectRadius, bubbleY + bounce - mainH);
-    ctx.closePath();
-  } else if (shape === "softRect") {
-    const rx = mainW;
-    const ry = mainH;
-    const softness = 0.65;
-    ctx.moveTo(bubbleX - rx * softness, bubbleY + bounce - ry);
-    ctx.quadraticCurveTo(
-      bubbleX - rx, bubbleY + bounce - ry,
-      bubbleX - rx, bubbleY + bounce - ry * softness
-    );
-    ctx.lineTo(bubbleX - rx, bubbleY + bounce + ry * softness);
-    ctx.quadraticCurveTo(
-      bubbleX - rx, bubbleY + bounce + ry,
-      bubbleX - rx * softness, bubbleY + bounce + ry
-    );
-    ctx.lineTo(bubbleX + rx * softness, bubbleY + bounce + ry);
-    ctx.quadraticCurveTo(
-      bubbleX + rx, bubbleY + bounce + ry,
-      bubbleX + rx, bubbleY + bounce + ry * softness
-    );
-    ctx.lineTo(bubbleX + rx, bubbleY + bounce - ry * softness);
-    ctx.quadraticCurveTo(
-      bubbleX + rx, bubbleY + bounce - ry,
-      bubbleX + rx * softness, bubbleY + bounce - ry
-    );
-    ctx.closePath();
-  } else if (shape === "rect") {
-    ctx.rect(bubbleX - mainW, bubbleY + bounce - mainH, mainW * 2, mainH * 2);
-  }
-  ctx.shadowColor = "#0005";
-  ctx.shadowBlur = 12;
-  ctx.fillStyle = "#fff";
-  ctx.fill();
-  ctx.shadowBlur = 0;
+  // Aligner sur le style du rectangle de localisation
+  // Fond avec transparence réduite
+  ctx.fillStyle = "rgba(0, 255, 204, 0.2)"; // Même couleur que le user-location-box
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+  ctx.shadowBlur = 16;
+  ctx.shadowOffsetY = 2;
 
-  // 2. Dessin de la queue (tail) avec taille variable
-  ctx.save();
+  // Dessiner la bulle principale comme un rectangle arrondi (comme user-location-box)
+  const cornerRadius = r * 0.4; // Rayon des coins arrondi
+  const rectWidth = mainW * 2;
+  const rectHeight = mainH * 2;
+  
   ctx.beginPath();
-  let tipX, tipY, baseLeftX, baseLeftY, baseRightX, baseRightY;
-  const tailW = r * (0.18 + 0.18 * tailSize);
-  const tailH = r * (1.2 + 1.2 * tailSize);
-  if (offsetX > 0) {
-    tipX = cx + r * 0.3;
-    tipY = cy + r * 0.5;
-    baseLeftX = bubbleX - mainW * 0.25 - tailW;
-    baseLeftY = bubbleY + bounce + mainH;
-    baseRightX = bubbleX - mainW * 0.05 + tailW;
-    baseRightY = bubbleY + bounce + mainH;
-  } else {
-    tipX = cx - r * 0.3;
-    tipY = cy + r * 0.5;
-    baseLeftX = bubbleX + mainW * 0.05 - tailW;
-    baseLeftY = bubbleY + bounce + mainH;
-    baseRightX = bubbleX + mainW * 0.25 + tailW;
-    baseRightY = bubbleY + bounce + mainH;
-  }
-  ctx.moveTo(baseLeftX, baseLeftY);
-  ctx.lineTo(tipX, tipY + tailH * 0.1);
-  ctx.lineTo(baseRightX, baseRightY);
+  // Dessiner un rectangle arrondi comme user-location-box
+  ctx.moveTo(bubbleX - rectWidth/2 + cornerRadius, bubbleY + bounce - rectHeight/2);
+  // Dessiner le haut
+  ctx.arcTo(bubbleX + rectWidth/2, bubbleY + bounce - rectHeight/2, bubbleX + rectWidth/2, bubbleY + bounce - rectHeight/2 + cornerRadius, cornerRadius);
+  // Dessiner le côté droit
+  ctx.arcTo(bubbleX + rectWidth/2, bubbleY + bounce + rectHeight/2, bubbleX + rectWidth/2 - cornerRadius, bubbleY + bounce + rectHeight/2, cornerRadius);
+  // Dessiner le bas
+  ctx.arcTo(bubbleX - rectWidth/2, bubbleY + bounce + rectHeight/2, bubbleX - rectWidth/2, bubbleY + bounce + rectHeight/2 - cornerRadius, cornerRadius);
+  // Dessiner le côté gauche
+  ctx.arcTo(bubbleX - rectWidth/2, bubbleY + bounce - rectHeight/2, bubbleX - rectWidth/2 + cornerRadius, bubbleY + bounce - rectHeight/2, cornerRadius);
+  
   ctx.closePath();
-  ctx.fillStyle = "#fff";
-  ctx.shadowColor = "#0003";
-  ctx.shadowBlur = 4;
+  
+  // Appliquer couleur de fond et effet blur comme user-location-box
   ctx.fill();
+  
+  // Bordure identique au user-location-box
+  ctx.strokeStyle = 'rgba(0, 255, 204, 0.5)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  
+  // Réinitialiser les ombres pour le texte
+  ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
-  ctx.restore();
+  ctx.shadowOffsetY = 0;
 
-  // Texte principal
-  ctx.font = `600 ${Math.round(r * 0.68)}px 'Georgia', 'Times New Roman', serif`;
-  ctx.fillStyle = "#222b4d";
+  // Texte principal dans la couleur du user-location-box
+  ctx.font = `500 ${Math.round(r * 0.68)}px 'Fira Mono', 'Consolas', monospace`;
+  ctx.fillStyle = '#00ffcc'; // Couleur du texte identique au user-location-box
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(bubbleText, bubbleX, bubbleY + bounce - r * 0.18);
 
-  // Coordonnées
+  // Coordonnées avec un style semblable au info-value du user-location-box
   if (coords) {
-    ctx.font = `600 ${Math.round(r * 0.48)}px 'Georgia', 'Times New Roman', serif`;
-    ctx.fillStyle = "#444";
+    ctx.font = `400 ${Math.round(r * 0.48)}px 'Fira Mono', 'Consolas', monospace`;
+    ctx.fillStyle = '#00ffcc'; // Couleur du texte identique au user-location-box
     ctx.fillText(
       `${coords.lat.toFixed(4)}, ${coords.long.toFixed(4)}`,
       bubbleX,
@@ -690,25 +711,39 @@ function handleHover(e) {
   const row = Math.floor(my / diameter);
   const key = `${col},${row}`;
 
-  // Vérifier si on survole un cercle valide
+  // Vérifier si on survole un cercle valide et si les éléments DOM existent
   if (colorGrid[row]?.[col] && !hiddenCircles.has(key)) {
-    const circleNumber = circleMap.get(key);
     const coords = circleCoords.get(key);
     
-    if (circleNumber && coords) {
-      numberSpan.textContent = circleNumber;
-      latSpan.textContent = coords.lat.toFixed(6);
-      longSpan.textContent = coords.long.toFixed(6);
-      numberDisplay.style.display = 'block';
+    // Vérifier si les coordonnées existent et si les éléments DOM sont disponibles
+    if (coords && circleCoordDisplay && hoverLatSpan && hoverLongSpan) {
+      // Afficher les coordonnées près du curseur
+      hoverLatSpan.textContent = coords.lat.toFixed(6);
+      hoverLongSpan.textContent = coords.long.toFixed(6);
+      circleCoordDisplay.style.display = 'block';
+      
+      // Positionner près du curseur
+      circleCoordDisplay.style.top = `${my + 20}px`;
+      circleCoordDisplay.style.left = `${mx + 20}px`;
+      
+      // Assurer que l'affichage ne sort pas de l'écran
+      const displayRect = circleCoordDisplay.getBoundingClientRect();
+      if (displayRect.right > window.innerWidth) {
+        circleCoordDisplay.style.left = `${mx - displayRect.width - 20}px`;
+      }
+      if (displayRect.bottom > window.innerHeight) {
+        circleCoordDisplay.style.top = `${my - displayRect.height - 20}px`;
+      }
     }
-  } else {
-    numberDisplay.style.display = 'none';
+  } else if (circleCoordDisplay) {
+    circleCoordDisplay.style.display = 'none';
   }
 }
 
 // Fonction pour gérer la fin du survol
 function handleHoverEnd() {
-  numberDisplay.style.display = 'none';
+  if (numberDisplay) numberDisplay.style.display = 'none';
+  if (circleCoordDisplay) circleCoordDisplay.style.display = 'none';
 }
 
 // Gestionnaire d'événements unifié pour les clics et les touches

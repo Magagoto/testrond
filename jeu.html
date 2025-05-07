@@ -7,20 +7,153 @@
   <script src="Js/script.js" defer></script>
 
   <title>Zones de ronds regroupés</title>
-
+  <style>
+    /* Style pour le rectangle de localisation, adapté au style existant avec moins de transparence */
+    #user-location-box {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(0, 255, 204, 0.2); /* Transparence réduite */
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      color: #00ffcc;
+      box-shadow: 0 2px 16px rgba(0, 255, 204, 0.3), 0 1px 8px rgba(0, 0, 0, 0.5); /* Ombre plus prononcée */
+      z-index: 1000;
+      width: 220px;
+      max-width: 90vw;
+      display: none;
+      border: 2px solid rgba(0, 255, 204, 0.5); /* Bordure plus visible */
+      backdrop-filter: blur(19px); /* Effet de flou plus intense */
+      font-family: 'Fira Mono', 'Consolas', monospace;
+    }
+    
+    #user-location-box .location-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      border-bottom: 1px solid rgba(0, 255, 204, 0.3);
+      padding-bottom: 5px;
+    }
+    
+    #user-location-box .location-icon {
+      color: #00ffcc;
+      margin-right: 8px;
+      font-size: 16px;
+    }
+    
+    #user-location-box .location-title {
+      font-weight: bold;
+      color: #00ffcc;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+    }
+    
+    #user-location-box .info-item {
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+    
+    #user-location-box .info-label {
+      font-weight: bold;
+      color: rgba(255, 255, 255, 0.7);
+      display: block;
+      margin-bottom: 4px;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+    
+    #user-location-box .info-value {
+      background-color: rgba(7, 17, 77, 0.8); /* Fond plus foncé et moins transparent */
+      padding: 6px 8px;
+      border-radius: 4px;
+      font-family: 'Fira Mono', monospace;
+      font-size: 11px;
+      word-break: break-all;
+      color: #fff;
+      border: 1px solid rgba(0, 255, 204, 0.4); /* Bordure plus visible */
+    }
+    
+    #user-location-box .location-refresh {
+      background: rgba(0, 255, 204, 0.13);
+      color: #00ffcc;
+      border: 1px solid #00ffcc;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      margin-top: 6px;
+      display: inline-block;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      letter-spacing: 0.5px;
+      transition: background 0.3s, color 0.3s;
+    }
+    
+    #user-location-box .location-refresh:hover {
+      background: #00ffcc;
+      color: #111;
+    }
+    
+    #user-location-box .location-close {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: none;
+      border: none;
+      color: rgba(0, 255, 204, 0.7);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 0;
+      transition: color 0.3s;
+    }
+    
+    #user-location-box .location-close:hover {
+      color: #00ffcc;
+    }
+    
+    /* Adaptation pour mobile */
+    @media (max-width: 600px) {
+      #user-location-box {
+        max-width: 85vw;
+        width: 200px;
+        font-size: 12px;
+        padding: 10px;
+      }
+    }
+  </style>
 </head>
 <body>
-<!-- Les éléments CGU ont été supprimés -->
+
 
 <div id="mobile-info">
   Bonjour Raffineur numéro 587 ! Dépêchez-vous d'aller rafinner !
 </div>
 
-<!-- Mise à jour du div pour afficher le numéro et les coordonnées du cercle -->
-<div id="circle-number-display">
-  <div>Cercle #<span id="circle-number">0</span></div>
-  <div><span class="coord-label">Lat:</span><span id="circle-lat">0.0000</span></div>
-  <div><span class="coord-label">Long:</span><span id="circle-long">0.0000</span></div>
+<!-- Ajout d'un encart pour afficher les coordonnées des cercles au survol avec une meilleure structure -->
+<div id="circle-coord-display">
+  <div><span class="coord-label">Lat:</span><span id="hover-lat">0.0000</span></div>
+  <div><span class="coord-label">Long:</span><span id="hover-long">0.0000</span></div>
+</div>
+
+<!-- Ajout du rectangle de géolocalisation modifié -->
+<div id="user-location-box">
+  <button class="location-close" onclick="hideLocationBox()">×</button>
+  <div class="location-header">
+    <span class="location-icon">📍</span>
+    <span class="location-title">Votre position</span>
+  </div>
+  
+  <div class="info-item">
+    <div class="info-label">Coordonnées</div>
+    <div id="user-coordinates" class="info-value">Chargement...</div>
+  </div>
+  
+  <div class="info-item">
+    <div class="info-label">Adresse</div>
+    <div id="user-address" class="info-value">Chargement...</div>
+  </div>
+  
+  <button class="location-refresh" onclick="getUserLocation()">Actualiser</button>
 </div>
 
 <canvas id="canvas" style="display: block;"></canvas>
@@ -30,6 +163,76 @@
 <script>
   // Essaye de jouer la musique dès que possible
   document.getElementById('backgroundMusic').play().catch(() => {});
+
+  // Fonction pour obtenir la géolocalisation de l'utilisateur
+  function getUserLocation() {
+    const locationBox = document.getElementById('user-location-box');
+    locationBox.style.display = 'block';
+    
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(showPosition, showError, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000 // Utiliser une position en cache si disponible (max 1 minute)
+      });
+    } else {
+      document.getElementById('user-coordinates').textContent = "Géolocalisation non supportée";
+      document.getElementById('user-address').textContent = "Non disponible";
+    }
+  }
+  
+  function showPosition(position) {
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+    
+    // Afficher les coordonnées sans la précision
+    document.getElementById('user-coordinates').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    
+    // Faire un géocodage inverse pour obtenir l'adresse
+    reverseGeocode(lat, lng);
+  }
+  
+  function showError(error) {
+    let errorMessage = "";
+    switch(error.code) {
+      case error.PERMISSION_DENIED:
+        errorMessage = "Accès refusé";
+        break;
+      case error.POSITION_UNAVAILABLE:
+        errorMessage = "Position indisponible";
+        break;
+      case error.TIMEOUT:
+        errorMessage = "Délai expiré";
+        break;
+      case error.UNKNOWN_ERROR:
+        errorMessage = "Erreur inconnue";
+        break;
+    }
+    document.getElementById('user-coordinates').textContent = errorMessage;
+    document.getElementById('user-address').textContent = "Non disponible";
+  }
+  
+  function reverseGeocode(lat, lng) {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+    
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        // Extraire les informations d'adresse
+        const address = data.display_name || 'Adresse inconnue';
+        
+        // Mettre à jour l'interface utilisateur
+        document.getElementById('user-address').textContent = address;
+      })
+      .catch(error => {
+        console.error("Erreur lors de la récupération de l'adresse:", error);
+        document.getElementById('user-address').textContent = "Impossible de récupérer l'adresse";
+      });
+  }
+  
+  function hideLocationBox() {
+    document.getElementById('user-location-box').style.display = 'none';
+  }
 
   // Script pour initialiser directement l'application sans passer par les CGU
   window.addEventListener("load", function() {
@@ -53,6 +256,25 @@
     assignCircleNumbersAndCoords();
     requestAnimationFrame(optimizeRendering);
     document.getElementById('backgroundMusic').play().catch(() => {});
+    
+    // S'assurer que l'élément pour les coordonnées au survol existe
+    if (!document.getElementById('circle-coord-display')) {
+      const coordDisplay = document.createElement('div');
+      coordDisplay.id = 'circle-coord-display';
+      coordDisplay.innerHTML = `
+        <div><span class="coord-label">Lat:</span><span id="hover-lat">0.0000</span></div>
+        <div><span class="coord-label">Long:</span><span id="hover-long">0.0000</span></div>
+      `;
+      document.body.appendChild(coordDisplay);
+    }
+    
+    // S'assurer que les variables globales pour les éléments DOM sont définies
+    window.circleCoordDisplay = document.getElementById('circle-coord-display');
+    window.hoverLatSpan = document.getElementById('hover-lat');
+    window.hoverLongSpan = document.getElementById('hover-long');
+    
+    // Obtenir la localisation après un court délai
+    setTimeout(getUserLocation, 1000);
   });
 </script>
 </body>

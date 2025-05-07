@@ -488,14 +488,46 @@
         
         /* Pour assurer que la grille de focus soit correctement visible sur mobile */
         #focus-grid {
-            border: 2px dashed rgba(0, 255, 204, 0.7); /* Plus visible */
-            box-shadow: 0 0 8px rgba(0, 255, 204, 0.3); /* Léger effet de lueur */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40%;
+            height: 40%;
+            border: 2px dashed rgba(0, 255, 204, 0.7);
+            z-index: 2;
+            pointer-events: none;
+            border-radius: 8px;
+            box-shadow: 0 0 12px rgba(0, 255, 204, 0.3);
         }
         
         /* Ajustement du panneau en temps réel pour mobile */
         #realtime-color {
-            padding: 8px;
-            font-size: 0.85rem;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(7, 17, 77, 0.8);
+            backdrop-filter: blur(5px);
+            color: white;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            letter-spacing: 0.5px;
+            border-top: 1px solid rgba(0, 255, 204, 0.2);
+            z-index: 5;
+            opacity: 1;
+        }
+        
+        #color-preview {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
         }
     </style>
 </head>
@@ -735,43 +767,11 @@
                 clearInterval(colorAnalysisInterval);
             }
             
+            // S'assurer que l'élément est visible dès le début
+            realtimeColor.classList.remove('hidden');
+            
             // Créer un canvas temporaire pour l'analyse
             const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            
-            // Ajuster la fréquence d'analyse en fonction de l'appareil
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const interval = isMobile ? 300 : 200; // Moins fréquent sur mobile pour économiser la batterie
-            
-            colorAnalysisInterval = setInterval(() => {
-                if (!stream || video.paused || video.ended) {
-                    return;
-                }
-                
-                // Définir les dimensions du canvas temporaire
-                if (tempCanvas.width !== video.videoWidth || tempCanvas.height !== video.videoHeight) {
-                    tempCanvas.width = video.videoWidth;
-                    tempCanvas.height = video.videoHeight;
-                }
-                
-                // Dessiner la frame actuelle sur le canvas temporaire
-                tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
-                
-                // Extraire la couleur dominante de la zone centrale
-                const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-                const dominantColor = extractDominantColor(imageData, true);
-                
-                // Mettre à jour l'affichage
-                colorPreview.style.backgroundColor = dominantColor.rgb;
-                colorValue.textContent = dominantColor.hex;
-                
-                // Assurer que l'élément est visible
-                realtimeColor.classList.remove('hidden');
-                
-            }, interval);
-        }
-        
-        // Arrêter l'analyse en temps réel
         function stopRealtimeColorAnalysis() {
             if (colorAnalysisInterval) {
                 clearInterval(colorAnalysisInterval);

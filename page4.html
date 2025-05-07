@@ -3,73 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Application Photo Web</title>
+    <title>Chroméa - Capture d'image</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            text-align: center;
-            background-color: #f0f2f5;
+        :root {
+            --primary-bg: #111;
+            --primary-accent: #00ffcc;
+            --secondary-accent: #4267B2;
+            --tertiary-accent: #362777;
+            --text-light: #ffffff;
+            --text-dark: #111;
+            --card-bg: rgba(24, 44, 76, 0.15);
+            --gradient-1: linear-gradient(135deg, #00ffcc 0%, #00A993 100%);
+            --gradient-2: linear-gradient(135deg, #4267B2 0%, #2A4899 100%);
+            --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.25);
+            --border-radius: 12px;
         }
-        h1 {
-            color: #4267B2;
-            margin-bottom: 30px;
+        
+        @font-face {
+            font-family: 'Mikodacs';
+            src: url('Mikodacs.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
         }
-        .container {
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        html, body {
+            margin: 0;
+            height: 100%;
+            overflow-x: hidden;
+            font-family: 'Fira Mono', 'Consolas', monospace, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+            background: var(--primary-bg);
+            color: var(--text-light);
+            background-image: url('data:image/svg+xml;utf8,<svg width="120" height="120" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="30" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><circle cx="90" cy="30" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><circle cx="30" cy="90" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><circle cx="90" cy="90" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><polyline points="90,0 90,30 30,30 30,90 90,90 90,120" fill="none" stroke="%23222" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/></svg>');
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
+            padding: 80px 20px 30px;
         }
+        
+        #app-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            min-width: 340px;
+            max-width: 100vw;
+            height: 68px;
+            background: linear-gradient(180deg, #182c4c 0%, #111 100%) !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            box-shadow: 0 2px 8px #0008;
+        }
+        
+        #banner-content {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 0 30px;
+            gap: 32px;
+        }
+        
+        h1 {
+            font-family: 'Mikodacs', serif;
+            font-size: 2.2rem;
+            color: var(--primary-accent);
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-shadow: 
+                0 0 8px rgba(0, 255, 204, 0.4),
+                0 0 16px rgba(0, 255, 204, 0.2);
+            margin: 10px 0 30px;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto 30px;
+            background: rgba(24, 44, 76, 0.13);
+            backdrop-filter: blur(12px);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--shadow-soft);
+            border: 2px solid rgba(0, 255, 204, 0.13);
+        }
+        
+        .mode-toggle {
+            display: flex;
+            border-radius: 30px;
+            overflow: hidden;
+            margin: 0 auto 25px;
+            width: 300px;
+            border: 2px solid var(--primary-accent);
+            box-shadow: 0 2px 16px rgba(0, 255, 204, 0.2);
+        }
+        
+        .mode-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--primary-accent);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            letter-spacing: 1px;
+        }
+        
+        .mode-btn.active {
+            background: var(--primary-accent);
+            color: var(--text-dark);
+            box-shadow: 0 2px 10px rgba(0, 255, 204, 0.4);
+        }
+        
         #videoContainer, #photoContainer {
             position: relative;
             width: 100%;
             max-width: 500px;
-            border-radius: 8px;
+            border-radius: var(--border-radius);
             overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            background-color: #333;
+            box-shadow: var(--shadow-soft);
+            background-color: #131c50;
             aspect-ratio: 4/3;
+            margin: 0 auto 20px;
+            border: 2px solid rgba(0, 255, 204, 0.2);
         }
+        
         #video, #canvas, #photo {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            border-radius: calc(var(--border-radius) - 2px);
         }
+        
         .button-group {
             display: flex;
             gap: 15px;
-            margin-top: 10px;
+            margin-top: 25px;
             flex-wrap: wrap;
             justify-content: center;
         }
+        
         button {
             padding: 12px 24px;
-            font-size: 16px;
+            font-size: 0.95rem;
             border: none;
-            border-radius: 30px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s;
-            font-weight: bold;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            font-weight: 600;
+            letter-spacing: 1px;
         }
+        
         .primary {
-            background-color: #4267B2;
-            color: white;
+            background: rgba(0, 255, 204, 0.13);
+            color: var(--primary-accent);
+            border: 2px solid var(--primary-accent);
+            box-shadow: 0 2px 16px rgba(0, 255, 204, 0.2), 0 1px 8px rgba(0, 0, 0, 0.3);
         }
+        
         .secondary {
-            background-color: #42B72A;
-            color: white;
+            background: var(--primary-accent);
+            color: var(--text-dark);
+            border: 2px solid var(--primary-accent);
+            box-shadow: 0 2px 16px rgba(0, 255, 204, 0.2), 0 1px 8px rgba(0, 0, 0, 0.3);
         }
+        
         .danger {
-            background-color: #FF4C4C;
+            background: rgba(255, 76, 76, 0.13);
+            color: #FF4C4C;
+            border: 2px solid #FF4C4C;
+            box-shadow: 0 2px 16px rgba(255, 76, 76, 0.2), 0 1px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+        }
+        
+        button.primary:hover {
+            background: var(--primary-accent);
+            color: var(--text-dark);
+        }
+        
+        button.danger:hover {
+            background: #FF4C4C;
             color: white;
         }
-        button:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
+        
+        button:active {
+            transform: translateY(1px);
         }
+        
         .gallery {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -77,86 +218,195 @@
             margin-top: 30px;
             width: 100%;
         }
+        
         .gallery-item {
             position: relative;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             aspect-ratio: 1/1;
+            border: 1px solid rgba(0, 255, 204, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+        
+        .gallery-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            border-color: var(--primary-accent);
+        }
+        
         .gallery-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
+        
         .delete-btn {
             position: absolute;
-            top: 5px;
-            right: 5px;
-            background-color: rgba(255, 0, 0, 0.7);
+            top: 8px;
+            right: 8px;
+            background: rgba(255, 76, 76, 0.8);
             color: white;
             border: none;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            font-size: 12px;
+            width: 28px;
+            height: 28px;
+            font-size: 14px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            transition: all 0.2s ease;
+            z-index: 10;
         }
-        .mode-toggle {
-            display: flex;
-            border-radius: 30px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            border: 2px solid #4267B2;
+        
+        .delete-btn:hover {
+            background: rgba(255, 50, 50, 1);
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 76, 76, 0.6);
         }
-        .mode-btn {
-            padding: 10px 20px;
-            border: none;
-            background-color: #e4e6eb;
-            color: #4267B2;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .mode-btn.active {
-            background-color: #4267B2;
-            color: white;
-        }
+        
         .hidden {
             display: none;
         }
+        
         .status-message {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            background-color: #e4e6eb;
+            margin: 15px auto;
+            padding: 12px 20px;
+            border-radius: 12px;
+            background: rgba(0, 255, 204, 0.07);
+            backdrop-filter: blur(5px);
+            max-width: 80%;
+            font-size: 0.9rem;
+            color: var(--primary-accent);
+            border: 1px solid rgba(0, 255, 204, 0.2);
+            animation: pulse 2s infinite ease-in-out;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            letter-spacing: 0.5px;
         }
+        
+        @keyframes pulse {
+            0% { opacity: 0.8; box-shadow: 0 0 5px rgba(0, 255, 204, 0.1); }
+            50% { opacity: 1; box-shadow: 0 0 12px rgba(0, 255, 204, 0.3); }
+            100% { opacity: 0.8; box-shadow: 0 0 5px rgba(0, 255, 204, 0.1); }
+        }
+        
         .effects-panel {
             display: flex;
             gap: 10px;
-            margin-top: 10px;
+            margin: 20px auto;
             flex-wrap: wrap;
             justify-content: center;
+            max-width: 500px;
         }
+        
         .effect-btn {
             padding: 8px 15px;
-            font-size: 14px;
-            border: 2px solid #4267B2;
+            font-size: 0.85rem;
+            border: 1px solid rgba(0, 255, 204, 0.3);
             border-radius: 20px;
-            background-color: white;
-            color: #4267B2;
+            background: rgba(0, 255, 204, 0.05);
+            color: var(--primary-accent);
             cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            letter-spacing: 0.5px;
         }
+        
         .effect-btn.active {
-            background-color: #4267B2;
+            background: var(--primary-accent);
+            color: var(--text-dark);
+            box-shadow: 0 0 16px rgba(0, 255, 204, 0.4);
+        }
+        
+        .color-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(7, 17, 77, 0.8);
+            backdrop-filter: blur(5px);
             color: white;
+            padding: 8px;
+            font-size: 12px;
+            border-top: 1px solid rgba(0, 255, 204, 0.2);
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            letter-spacing: 0.5px;
+        }
+        
+        .color-swatch {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        h2 {
+            color: var(--primary-accent);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 8px rgba(0, 255, 204, 0.2);
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            letter-spacing: 1px;
+        }
+        
+        @keyframes blink {
+            from { opacity: 1; }
+            to { opacity: 0.3; }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .container {
+                padding: 16px;
+                margin: 0 5px 20px;
+            }
+            
+            .mode-toggle {
+                width: 90%;
+            }
+            
+            .button-group {
+                gap: 10px;
+            }
+            
+            button {
+                padding: 10px 18px;
+                font-size: 0.9rem;
+            }
+            
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+            
+            #app-banner {
+                height: 80px;
+                min-width: 100vw;
+                padding-left: 0;
+                padding-right: 0;
+            }
+            
+            html, body {
+                padding-top: 90px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>📷 Application Photo Web</h1>
+    <div id="app-banner">
+        <div id="banner-content">
+            <h1>Capteur d'Images Chroméa</h1>
+        </div>
+    </div>
     
     <div class="mode-toggle">
         <button class="mode-btn active" id="cameraMode">Mode Caméra</button>
@@ -177,18 +427,35 @@
         </div>
 
         <div class="button-group">
-            <button id="switchCamera" class="primary">Changer de caméra</button>
-            <button id="captureBtn" class="secondary">📸 Prendre une photo</button>
+            <button id="switchCamera" class="primary">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 3a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V8a6 6 0 0 1 6-6h4.5L10 4.5l.7.7L14.2 2l-3.5-3.2-.7.7L12.5 2H8z"/>
+                </svg>
+                Changer de caméra
+            </button>
+            <button id="captureBtn" class="secondary">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/>
+                    <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+                </svg>
+                Capturer l'image
+            </button>
         </div>
         
         <p id="statusMessage" class="status-message">Initialisation de la caméra...</p>
     </div>
 
     <div class="container hidden" id="galleryModeContainer">
-        <h2>Mes Photos</h2>
+        <h2>Images Capturées</h2>
         <div class="gallery" id="photoGallery"></div>
         <div class="button-group">
-            <button id="clearAllBtn" class="danger">Supprimer toutes les photos</button>
+            <button id="clearAllBtn" class="danger">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                </svg>
+                Supprimer toutes les images
+            </button>
         </div>
     </div>
 
@@ -285,6 +552,48 @@
             initCamera();
         });
 
+        // Fonction pour extraire la couleur dominante d'une image
+        function extractDominantColor(imageData) {
+            const data = imageData.data;
+            const colorCounts = {};
+            const step = 5; // Analyser un pixel sur 5 pour améliorer les performances
+            
+            // Analyser les pixels et compter les occurrences de chaque couleur
+            for (let i = 0; i < data.length; i += 4 * step) {
+                // Ignorer les pixels transparents
+                if (data[i + 3] < 128) continue;
+                
+                // Simplifier les valeurs RGB pour réduire le nombre total de couleurs
+                const r = Math.floor(data[i] / 10) * 10;
+                const g = Math.floor(data[i + 1] / 10) * 10;
+                const b = Math.floor(data[i + 2] / 10) * 10;
+                
+                const colorKey = `${r},${g},${b}`;
+                
+                if (!colorCounts[colorKey]) {
+                    colorCounts[colorKey] = 0;
+                }
+                colorCounts[colorKey]++;
+            }
+            
+            // Trouver la couleur avec le plus grand nombre d'occurrences
+            let maxCount = 0;
+            let dominantColor = '0,0,0';
+            
+            for (const colorKey in colorCounts) {
+                if (colorCounts[colorKey] > maxCount) {
+                    maxCount = colorCounts[colorKey];
+                    dominantColor = colorKey;
+                }
+            }
+            
+            const [r, g, b] = dominantColor.split(',').map(Number);
+            return {
+                rgb: `rgb(${r}, ${g}, ${b})`,
+                hex: `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+            };
+        }
+
         // Capturer une photo
         document.getElementById('captureBtn').addEventListener('click', () => {
             // Dessiner l'image actuelle de la vidéo sur le canvas
@@ -310,11 +619,15 @@
                 ctx.filter = 'none';
             }
             
+            // Extraire la couleur dominante
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const dominantColor = extractDominantColor(imageData);
+            
             // Convertir en URL data
             const photoDataUrl = canvas.toDataURL('image/jpeg');
             
-            // Sauvegarder la photo
-            savePhoto(photoDataUrl);
+            // Sauvegarder la photo avec la couleur dominante
+            savePhoto(photoDataUrl, dominantColor);
             
             // Afficher message de confirmation
             statusMessage.textContent = 'Photo capturée et enregistrée!';
@@ -324,12 +637,13 @@
         });
 
         // Sauvegarder une photo
-        function savePhoto(dataUrl) {
+        function savePhoto(dataUrl, dominantColor) {
             const timestamp = new Date().toISOString();
             photos.push({
                 id: Date.now().toString(),
                 url: dataUrl,
-                timestamp: timestamp
+                timestamp: timestamp,
+                dominantColor: dominantColor
             });
             localStorage.setItem('capturedPhotos', JSON.stringify(photos));
         }
@@ -346,9 +660,17 @@
             photos.forEach((photo, index) => {
                 const photoElement = document.createElement('div');
                 photoElement.className = 'gallery-item';
+                
+                // Vérifier si la photo a une couleur dominante (pour la compatibilité avec les anciennes photos)
+                const dominantColor = photo.dominantColor || { rgb: 'rgb(128, 128, 128)', hex: '#808080' };
+                
                 photoElement.innerHTML = `
                     <img class="gallery-img" src="${photo.url}" alt="Photo ${index + 1}">
                     <button class="delete-btn" data-id="${photo.id}">✕</button>
+                    <div class="color-info">
+                        <div class="color-swatch" style="background-color: ${dominantColor.rgb}"></div>
+                        <span>${dominantColor.hex}</span>
+                    </div>
                 `;
                 photoGallery.appendChild(photoElement);
             });

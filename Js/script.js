@@ -384,8 +384,12 @@ function chooseSpecialCircles() {
     for (const key of zone) {
       specialZones.add(key);
     }
-    // Attribue un texte unique à cette bulle
-    const text = shuffledTexts.shift() || "Par ici !";
+    // Attribue un texte unique à cette bulle avec un espace fin avant le point d'exclamation
+    let text = shuffledTexts.shift() || "Par ici !";
+    
+    // Remplacer les points d'exclamation par un espace fin + point d'exclamation
+    text = text.replace(/\!/g, '\u202F!');
+    
     bubbleTextMap.set(`${x},${y}`, text);
 
     // Nouveaux styles de bulles modernes
@@ -571,36 +575,47 @@ function drawSpecialCircleMarkers(ctx, cx, cy, r, t) {
 // Fonction améliorée pour dessiner une bulle moderne à côté d'un cercle spécial
 function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleShape) {
   // Décalage horizontal et vertical pour ne pas masquer le rond
-  const verticalOffset = r * 2.2;
+  const verticalOffset = r * 2.0; // Réduit légèrement
   let offsetX = (x < colorGrid[0].length / 2) ? r * 2.6 : -r * 2.6;
   let bubbleX = cx + offsetX;
-  let bubbleY = cy - r * 0.7 - verticalOffset;
-  const bounce = Math.sin(t * 2 + x + y) * 3;
+  let bubbleY = cy - r * 0.5 - verticalOffset; // Réduit légèrement
+  const bounce = Math.sin(t * 2 + x + y) * 2; // Réduit amplitude du rebond
 
   ctx.save();
   
-  // Utilise une police plus moderne
-  ctx.font = `500 ${Math.round(r * 0.68)}px 'Segoe UI', Roboto, -apple-system, sans-serif`;
-  const textMetrics = ctx.measureText(bubbleText);
-  const textWidth = textMetrics.width;
+  // Calculer la taille optimale pour le texte
+  const fontSize = Math.round(r * 0.65); // Légèrement plus petit
+  
+  ctx.font = `500 ${fontSize}px 'Fira Mono', 'Consolas', monospace`;
+  let textMetrics = ctx.measureText(bubbleText);
+  let textWidth = textMetrics.width;
 
+  // Hauteur approximative du texte
+  const textHeight = fontSize * 0.7;
+  
   let coordsWidth = 0;
+  let coordsFontSize = fontSize * 0.7; // Plus petit pour les coordonnées
   if (coords) {
-    ctx.font = `400 ${Math.round(r * 0.48)}px 'Segoe UI', Roboto, -apple-system, sans-serif`;
-    coordsWidth = ctx.measureText(`${coords.lat.toFixed(4)}, ${coords.long.toFixed(4)}`).width;
+    ctx.font = `400 ${Math.round(coordsFontSize)}px 'Fira Mono', 'Consolas', monospace`;
+    const coordsText = `${coords.lat.toFixed(4)}, ${coords.long.toFixed(4)}`;
+    coordsWidth = ctx.measureText(coordsText).width;
   }
 
   const maxTextWidth = Math.max(textWidth, coordsWidth);
-  const paddingX = r * 0.7;
-  const paddingY = r * 0.7;
-  const mainW = Math.max(r * 2.3, (maxTextWidth / 2) + paddingX);
-  const mainH = r * 1.25 + paddingY * 0.3;
-
+  const paddingX = r * 0.6; // Reduced padding
+  const paddingY = r * 0.6; // Reduced padding
+  
+  // Ajustement des dimensions de la bulle
+  const rectWidth = Math.max(maxTextWidth + paddingX * 2, r * 4.6);
+  const rectHeight = coords 
+    ? textHeight + coordsFontSize + paddingY * 2.5  // Hauteur avec coordonnées
+    : textHeight + paddingY * 2;                    // Hauteur sans coordonnées
+  
   // Ajustement pour éviter de sortir du cadre
-  const minX = mainW + 4;
-  const maxX = canvas.width / (window.devicePixelRatio || 1) - mainW - 4;
-  const minY = mainH + 4;
-  const maxY = canvas.height / (window.devicePixelRatio || 1) - mainH - 4;
+  const minX = rectWidth/2 + 4;
+  const maxX = canvas.width / (window.devicePixelRatio || 1) - rectWidth/2 - 4;
+  const minY = rectHeight/2 + 4;
+  const maxY = canvas.height / (window.devicePixelRatio || 1) - rectHeight/2 - 4;
 
   if (bubbleX < minX) bubbleX = minX;
   if (bubbleX > maxX) bubbleX = maxX;
@@ -610,20 +625,17 @@ function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleSha
   const shape = bubbleShape?.shape || "ellipse";
   const tailSize = bubbleShape?.tailSize || 1;
 
-  // Aligner sur le style du rectangle de localisation
-  // Fond avec transparence réduite
-  ctx.fillStyle = "rgba(0, 255, 204, 0.2)"; // Même couleur que le user-location-box
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-  ctx.shadowBlur = 16;
-  ctx.shadowOffsetY = 2;
+  // Fond avec transparence réduite et couleur plus foncée
+  ctx.fillStyle = "rgba(0, 40, 30, 0.75)";
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetY = 3;
 
-  // Dessiner la bulle principale comme un rectangle arrondi (comme user-location-box)
-  const cornerRadius = r * 0.4; // Rayon des coins arrondi
-  const rectWidth = mainW * 2;
-  const rectHeight = mainH * 2;
+  // Dessiner la bulle principale comme un rectangle arrondi
+  const cornerRadius = r * 0.4;
   
   ctx.beginPath();
-  // Dessiner un rectangle arrondi comme user-location-box
+  // Dessiner un rectangle arrondi
   ctx.moveTo(bubbleX - rectWidth/2 + cornerRadius, bubbleY + bounce - rectHeight/2);
   // Dessiner le haut
   ctx.arcTo(bubbleX + rectWidth/2, bubbleY + bounce - rectHeight/2, bubbleX + rectWidth/2, bubbleY + bounce - rectHeight/2 + cornerRadius, cornerRadius);
@@ -636,11 +648,13 @@ function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleSha
   
   ctx.closePath();
   
-  // Appliquer couleur de fond et effet blur comme user-location-box
+  // Appliquer effet de flou
+  ctx.globalAlpha = 0.95;
   ctx.fill();
+  ctx.globalAlpha = 1.0;
   
-  // Bordure identique au user-location-box
-  ctx.strokeStyle = 'rgba(0, 255, 204, 0.5)';
+  // Bordure
+  ctx.strokeStyle = 'rgba(0, 255, 204, 0.6)';
   ctx.lineWidth = 2;
   ctx.stroke();
   
@@ -649,21 +663,26 @@ function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleSha
   ctx.shadowBlur = 0;
   ctx.shadowOffsetY = 0;
 
-  // Texte principal dans la couleur du user-location-box
-  ctx.font = `500 ${Math.round(r * 0.68)}px 'Fira Mono', 'Consolas', monospace`;
-  ctx.fillStyle = '#00ffcc'; // Couleur du texte identique au user-location-box
+  // Texte principal
+  ctx.font = `500 ${fontSize}px 'Fira Mono', 'Consolas', monospace`;
+  ctx.fillStyle = '#00ffcc';
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(bubbleText, bubbleX, bubbleY + bounce - r * 0.18);
+  
+  // Positionnement du texte - centré si pas de coordonnées, sinon légèrement plus haut
+  let textYOffset = coords ? -rectHeight/5 : 0;
+  ctx.fillText(bubbleText, bubbleX, bubbleY + bounce + textYOffset);
 
-  // Coordonnées avec un style semblable au info-value du user-location-box
+  // Coordonnées
   if (coords) {
-    ctx.font = `400 ${Math.round(r * 0.48)}px 'Fira Mono', 'Consolas', monospace`;
-    ctx.fillStyle = '#00ffcc'; // Couleur du texte identique au user-location-box
+    ctx.font = `400 ${Math.round(coordsFontSize)}px 'Fira Mono', 'Consolas', monospace`;
+    ctx.fillStyle = '#00ffcc';
+    
+    // Position des coordonnées - légèrement en dessous du texte principal
     ctx.fillText(
       `${coords.lat.toFixed(4)}, ${coords.long.toFixed(4)}`,
       bubbleX,
-      bubbleY + bounce + r * 0.38
+      bubbleY + bounce + rectHeight/4
     );
   }
 

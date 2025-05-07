@@ -238,11 +238,48 @@
     fetch(url)
       .then(response => response.json())
       .then(data => {
-        // Extraire les informations d'adresse
-        const address = data.display_name || 'Adresse inconnue';
+        // Simplifier l'adresse en extrayant uniquement les parties pertinentes
+        let simplifiedAddress = '';
+        
+        if (data.address) {
+          const address = data.address;
+          const addressParts = [];
+          
+          // Ajouter le nom de la rue et le numéro s'ils existent
+          if (address.road) {
+            let roadName = address.road;
+            if (address.house_number) {
+              roadName += ' ' + address.house_number;
+            }
+            addressParts.push(roadName);
+          }
+          
+          // Ajouter le quartier s'il existe
+          if (address.suburb) {
+            addressParts.push(address.suburb);
+          }
+          
+          // Ajouter la ville s'il existe
+          if (address.city || address.town || address.village) {
+            addressParts.push(address.city || address.town || address.village);
+          }
+          
+          simplifiedAddress = addressParts.join(', ');
+        }
+        
+        // Si nous n'avons pas pu construire une adresse simplifiée, utiliser un format court de display_name
+        if (!simplifiedAddress && data.display_name) {
+          // Supprimer le pays et le code postal de la fin de l'adresse
+          simplifiedAddress = data.display_name.split(',').slice(0, 3).join(',');
+        }
+        
+        // Utiliser une valeur par défaut si l'adresse est vide
+        if (!simplifiedAddress) {
+          simplifiedAddress = 'Adresse inconnue';
+        }
         
         // Mettre à jour l'interface utilisateur
-        document.getElementById('user-address').textContent = address;
+        document.getElementById('user-address').textContent = simplifiedAddress;
       })
       .catch(error => {
         console.error("Erreur lors de la récupération de l'adresse:", error);

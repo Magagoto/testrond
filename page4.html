@@ -772,6 +772,40 @@
             
             // Créer un canvas temporaire pour l'analyse
             const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            // Ajuster l'intervalle selon le type d'appareil
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const interval = isMobile ? 300 : 200; // Moins fréquent sur mobile pour économiser la batterie
+            
+            colorAnalysisInterval = setInterval(() => {
+                if (!stream || video.paused || video.ended || !video.videoWidth) {
+                    return;
+                }
+                
+                try {
+                    // Définir les dimensions du canvas temporaire
+                    if (tempCanvas.width !== video.videoWidth || tempCanvas.height !== video.videoHeight) {
+                        tempCanvas.width = video.videoWidth;
+                        tempCanvas.height = video.videoHeight;
+                    }
+                    
+                    // Dessiner la frame actuelle sur le canvas temporaire
+                    tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+                    
+                    // Extraire la couleur dominante de la zone centrale
+                    const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+                    const dominantColor = extractDominantColor(imageData, true);
+                    
+                    // Mettre à jour l'affichage
+                    colorPreview.style.backgroundColor = dominantColor.rgb;
+                    colorValue.textContent = dominantColor.hex;
+                } catch (e) {
+                    console.error('Erreur dans l\'analyse de couleur:', e);
+                }
+            }, interval);
+        }
+
         function stopRealtimeColorAnalysis() {
             if (colorAnalysisInterval) {
                 clearInterval(colorAnalysisInterval);
@@ -789,40 +823,56 @@
 
                 // Optimisations supplémentaires pour mobile
                 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                let constraints;
+                
                 if (isMobile) {
-                    // Sur mobile, utiliser une qualité légèrement inférieure pour de meilleures performances
-                    const constraints = {
+                    // Résolution réduite pour mobile avec plus d'options de compatibilité
+                    constraints = {
+                        audio: false,
                         video: {
                             facingMode: facingMode,
-                            width: { ideal: 720 }, // Résolution réduite pour mobile
+                            width: { ideal: 640 }, // Encore plus réduit pour assurer la compatibilité
                             height: { ideal: 480 }
                         }
                     };
-                    stream = await navigator.mediaDevices.getUserMedia(constraints);
                 } else {
-                    const constraints = {
+                    constraints = {
+                        audio: false,
                         video: {
                             facingMode: facingMode,
                             width: { ideal: 1280 },
                             height: { ideal: 720 }
                         }
                     };
-                    stream = await navigator.mediaDevices.getUserMedia(constraints);
                 }
 
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
                 
                 // Masquer le placeholder une fois la caméra activée
                 videoPlaceholder.style.display = 'none';
                 
-                // Définir les dimensions du canvas pour correspondre à la vidéo
+                // Rendre la vidéo visible explicitement
+                video.style.display = 'block';
+                
+                // Utiliser un gestionnaire d'événement pour s'assurer que tout est prêt
                 video.onloadedmetadata = () => {
+                    // Forcer la vidéo à s'afficher
+                    video.play().catch(e => console.error('Erreur lors du démarrage de la vidéo:', e));
+                    
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
                     statusMessage.textContent = 'Caméra prête. Vous pouvez prendre une photo.';
                     
                     // Démarrer l'analyse de couleur une fois la caméra prête
-                    startRealtimeColorAnalysis();
+                    setTimeout(() => {
+                        startRealtimeColorAnalysis();
+                    }, 500);
+                };
+
+                // Deuxième gestionnaire d'événement pour s'assurer que tout fonctionne
+                video.onplaying = () => {
+                    statusMessage.textContent = 'Caméra active et fonctionnelle.';
                 };
 
                 applyVideoFilter();

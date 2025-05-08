@@ -18,19 +18,22 @@ const longSpan = document.getElementById('circle-long');
 const circleCoordDisplay = document.getElementById('circle-coord-display');
 const hoverLatSpan = document.getElementById('hover-lat');
 const hoverLongSpan = document.getElementById('hover-long');
+const hoverPoiName = document.getElementById('hover-poi-name');
 
 // Variables pour le système de numérotation et coordonnées des cercles
 let circleMap = new Map(); // Pour stocker les numéros des cercles
 let circleCoords = new Map(); // Pour stocker les coordonnées géographiques
 let circleCounter = 1; // Compteur pour assigner des numéros aux cercles
+let circlePOI = new Map(); // Pour associer les POI aux cercles
+let assignedPOIs = new Set(); // Pour suivre les POI déjà assignés
 
-// Limites géographiques d'Orléans (approximatives)
-// Centre approximatif d'Orléans : 47.9025, 1.9046
+// Limites géographiques d'Orléans (centre-ville uniquement)
+// Médiathèque au nord (47.9045), Loire au sud (~47.8968)
 const orleansLimits = {
-  minLat: 47.8700, // Sud
-  maxLat: 47.9400, // Nord
-  minLong: 1.8500, // Ouest
-  maxLong: 1.9600  // Est
+  minLat: 47.8965, // Sud (juste au sud de la Loire)
+  maxLat: 47.9080, // Nord (juste au nord de la Médiathèque et la Gare)
+  minLong: 1.8950, // Ouest
+  maxLong: 1.9200  // Est
 };
 
 // Configuration responsive
@@ -41,7 +44,7 @@ const baseRadius = isMobile ? 16 : 22;
 let radius = baseRadius;
 let diameter = radius * 2;
 
-const colors = ["#00A993", "#E68B4A", "#7A1619", "#362777", "#EB7AAE",
+const colors = ["#00A993", "#E68B4A", "#7A1619", "#362777", "#EB7AAE", 
   "#0069AA", "#DC0C15", "#E03A8D", "#FFFFFF", "#2A4899"];
 
 const gradientMap = {
@@ -63,19 +66,19 @@ let linearGradientZones = new Map();
 // Liste des textes possibles pour les bulles
 const bubbleTexts = [
   "De ce côté !",
-  "C’est par là !",
+  "C'est par là !",
   "Suis-moi !",
   "Viens donc !",
   "Par là, vite !",
   "Par ce chemin !",
   "Approche !",
   "Viens par ici !",
-  "Par ici, l’ami !",
+  "Par ici, l'ami !",
   "Par là que ça se passe !",
-  "C’est ici que ça se passe !",
+  "C'est ici que ça se passe !",
   "Suivez cette direction !",
   "Entre donc ici !",
-  "C’est la bonne voie !",
+  "C'est la bonne voie !",
   "Ce chemin, vite !"
 ];
 
@@ -138,7 +141,7 @@ setInterval(() => {
       console.log(`Zones effacées pour ${colorsSet.size} couleurs autour du cercle spécial page1`);
       console.log(`Cercles à cacher: ${hiddenCircles.size}`);
       console.log(`Cercles disparaissant: ${disappearing.length}`);
-
+      
       // Déclencher l'effet sonore
       try {
         sound.currentTime = 0;
@@ -193,13 +196,92 @@ function processConnectedCircles(cx, cy, targetColor, processed) {
   }
 }
 
-// Correction de la fonction pour générer des coordonnées aléatoires d'Orléans
-function generateRandomOrleansCoords() {
-  const lat = orleansLimits.minLat + Math.random() * (orleansLimits.maxLat - orleansLimits.minLat);
-  const long = orleansLimits.minLong + Math.random() * (orleansLimits.maxLong - orleansLimits.minLong);
+// Fonction pour normaliser des coordonnées géographiques à la grille du canvas
+function mapCoordsToGrid(lat, long, rows, cols) {
+  // Calculer la position relative aux limites d'Orléans
+  const latRatio = (lat - orleansLimits.minLat) / (orleansLimits.maxLat - orleansLimits.minLat);
+  const longRatio = (long - orleansLimits.minLong) / (orleansLimits.maxLong - orleansLimits.minLong);
+  
+  // Convertir en position de grille (inverser y pour correspondre à la convention cartographique)
+  // La Médiathèque est en haut (petit y), la Loire en bas (grand y)
+  const y = Math.floor((1 - latRatio) * (rows - 1));
+  const x = Math.floor(longRatio * (cols - 1));
+  
+  // S'assurer que les valeurs sont dans les limites
   return {
-    lat: parseFloat(lat.toFixed(6)),  // 6 décimales pour la précision
-    long: parseFloat(long.toFixed(6))
+    x: Math.max(0, Math.min(cols - 1, x)),
+    y: Math.max(0, Math.min(rows - 1, y))
+  };
+}
+
+// Associer les POI d'Orléans aux cercles
+function associatePOIsToCircles() {
+  if (!window.orleansPOI || !Array.isArray(window.orleansPOI)) {
+    console.error("Les POI d'Orléans ne sont pas disponibles");
+    return;
+  }
+  
+  // Réinitialiser les POIs assignés
+  assignedPOIs.clear();
+  circlePOI.clear();
+  
+  const rows = colorGrid.length;
+  const cols = colorGrid[0].length;
+  
+  // Parcourir tous les POI et les associer aux cercles les plus proches
+  for (const poi of window.orleansPOI) {
+    // Obtenir la position de grille correspondant aux coordonnées du POI
+    const gridPos = mapCoordsToGrid(poi.lat, poi.long, rows, cols);
+    const key = `${gridPos.x},${gridPos.y}`;
+    
+    // Vérifier si le cercle à cette position est visible
+    if (!hiddenCircles.has(key)) {
+      circlePOI.set(key, poi);
+      assignedPOIs.add(poi.name);
+      
+      // Stocker également les coordonnées réelles du POI
+      circleCoords.set(key, {
+        lat: poi.lat,
+        long: poi.long
+      });
+    }
+  }
+  
+  console.log(`${assignedPOIs.size} POIs d'Orléans associés aux cercles`);
+}
+
+// Fonction pour générer des coordonnées aléatoires d'Orléans
+function generateRandomOrleansCoords() {
+  // Si nous avons déjà utilisé tous les POI, générer des coordonnées aléatoires
+  // mais toujours dans les limites du centre-ville
+  if (assignedPOIs.size >= window.orleansPOI.length) {
+    const lat = orleansLimits.minLat + Math.random() * (orleansLimits.maxLat - orleansLimits.minLat);
+    const long = orleansLimits.minLong + Math.random() * (orleansLimits.maxLong - orleansLimits.minLong);
+    return {
+      lat: parseFloat(lat.toFixed(6)),
+      long: parseFloat(long.toFixed(6)),
+      name: "Point du centre-ville" // Nom plus précis
+    };
+  }
+  
+  // Sinon, utiliser un POI non encore assigné
+  const availablePOIs = window.orleansPOI.filter(poi => !assignedPOIs.has(poi.name));
+  if (availablePOIs.length > 0) {
+    const randomPOI = availablePOIs[Math.floor(Math.random() * availablePOIs.length)];
+    assignedPOIs.add(randomPOI.name);
+    return {
+      lat: randomPOI.lat,
+      long: randomPOI.long,
+      name: randomPOI.name,
+      description: randomPOI.description
+    };
+  }
+  
+  // Fallback si quelque chose ne va pas
+  return {
+    lat: 47.9025,
+    long: 1.9046,
+    name: "Orléans"
   };
 }
 
@@ -225,7 +307,6 @@ function resizeCanvas() {
   const rows = Math.ceil(canvas.height / diameter / dpr);
 
   colorGrid = new Array(rows).fill().map(() => new Array(cols).fill(null));
-
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
       const neighbors = getNeighborColors(x, y);
@@ -242,9 +323,14 @@ function resizeCanvas() {
   }
 
   chooseLinearGradientZones();
-  
-  // Réinitialiser la numérotation et les coordonnées des cercles après redimensionnement
-  setTimeout(assignCircleNumbersAndCoords, 100);
+
+  // Réinitialiser la numérotation des cercles après redimensionnement
+  setTimeout(() => {
+    // D'abord associer les POI aux cercles
+    associatePOIsToCircles();
+    // Puis compléter la numérotation et les coordonnées pour les cercles sans POI
+    assignCircleNumbersAndCoords();
+  }, 100);
 }
 
 function getNeighborColors(cx, cy) {
@@ -303,7 +389,7 @@ function chooseLinearGradientZones() {
     if (zone.size > 5) {
       const baseAngle = Math.random() * 2 * Math.PI;
       const phaseOffset = Math.random() * Math.PI * 2;
-      
+
       // Décider du type d'animation pour cette zone (30% de progression linéaire, 70% oscillation)
       const animationType = Math.random() < 0.3 ? 'progression' : 'oscillation';
       
@@ -328,7 +414,7 @@ function chooseLinearGradientZones() {
         if (zoneCount > 10 + Math.random() * 20) break;
       }
     }
-
+  
     attempts++;
   }
 }
@@ -340,7 +426,7 @@ function chooseSpecialCircles() {
 
   // Mélange les textes pour garantir unicité
   const shuffledTexts = bubbleTexts.slice().sort(() => Math.random() - 0.5);
-
+  
   // On ne veut pas de ronds spéciaux sur les bords ni sur les deux dernières lignes
   const validPositions = [];
   const rows = colorGrid.length;
@@ -363,7 +449,7 @@ function chooseSpecialCircles() {
     const idx = Math.floor(Math.random() * candidates.length);
     const pos = candidates[idx];
     selected.push(pos);
-
+    
     // Marquer les positions voisines comme interdites (8 directions)
     for (let dy = -1; dy <= 1; dy++) {
       for (let dx = -1; dx <= 1; dx++) {
@@ -384,6 +470,7 @@ function chooseSpecialCircles() {
     for (const key of zone) {
       specialZones.add(key);
     }
+    
     // Attribue un texte unique à cette bulle avec un espace fin avant le point d'exclamation
     let text = shuffledTexts.shift() || "Par ici !";
     
@@ -466,9 +553,9 @@ function animate(time) {
           if (animationType === 'progression') {
             position = ((t * animationSpeed + phaseOffset) % (Math.PI * 2)) / (Math.PI * 2);
             gradient = ctx.createLinearGradient(
-              cx - Math.cos(baseAngle) * r, 
+              cx - Math.cos(baseAngle) * r,
               cy - Math.sin(baseAngle) * r,
-              cx + Math.cos(baseAngle) * r, 
+              cx + Math.cos(baseAngle) * r,
               cy + Math.sin(baseAngle) * r
             );
           } else {
@@ -513,6 +600,38 @@ function animate(time) {
     // Récupère la forme et la taille de queue pour cette bulle
     const bubbleShape = bubbleShapeMap.get(key) || { shape: "ellipse", tailSize: 1 };
     drawSpeechBubble(ctx, cx, cy, radius, x, y, t, coords, bubbleText, bubbleShape);
+  }
+
+  // Ajouter une mise en évidence spéciale pour les cercles avec un POI
+  for (let y = 0; y < colorGrid.length; y++) {
+    for (let x = 0; x < colorGrid[0].length; x++) {
+      const key = `${x},${y}`;
+      if (hiddenCircles.has(key)) continue;
+      
+      // Vérifier si ce cercle a un POI associé
+      const poi = circlePOI.get(key);
+      if (poi) {
+        const cx = x * diameter + radius;
+        const cy = y * diameter + radius;
+        
+        // Ajouter un effet visuel subtil pour indiquer les POI
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius + 2, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0, 255, 204, 0.7)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        
+        // Ajouter une pulsation
+        const pulse = 0.5 + 0.5 * Math.sin(t * 2 + (x + y) / 3);
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 1.2 * pulse, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(0, 255, 204, ${0.2 * pulse})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
   }
 }
 
@@ -568,94 +687,76 @@ function drawSpecialCircleMarkers(ctx, cx, cy, r, t) {
   ctx.lineTo(cx + markerDistance, cy + markerLength/2);
   ctx.stroke();
   
-  // Restaurer l'état du contexte
   ctx.restore();
 }
 
-// Fonction améliorée pour dessiner une bulle moderne à côté d'un cercle spécial
+// Fonction pour dessiner une bulle moderne à côté d'un cercle spécial
 function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleShape) {
-  // Décalage horizontal et vertical pour ne pas masquer le rond
+  // Positionnement de la bulle
   const verticalOffset = r * 2.0; // Réduit légèrement
-  let offsetX = (x < colorGrid[0].length / 2) ? r * 2.6 : -r * 2.6;
+  const offsetX = (x < colorGrid[0].length / 2) ? r * 2.6 : -r * 2.6;
   let bubbleX = cx + offsetX;
-  let bubbleY = cy - r * 0.5 - verticalOffset; // Réduit légèrement
-  const bounce = Math.sin(t * 2 + x + y) * 2; // Réduit amplitude du rebond
-
-  ctx.save();
+  let bubbleY = cy - verticalOffset;
   
-  // Calculer la taille optimale pour le texte
+  // Ajouter un léger effet du rebond
+  const bounce = Math.sin(t * 2) * 3; // Réduit légèrement
+  
+  // Configurer le texte
   const fontSize = Math.round(r * 0.65); // Légèrement plus petit
-  
   ctx.font = `500 ${fontSize}px 'Fira Mono', 'Consolas', monospace`;
   let textMetrics = ctx.measureText(bubbleText);
   let textWidth = textMetrics.width;
-
-  // Hauteur approximative du texte
-  const textHeight = fontSize * 0.7;
   
-  let coordsWidth = 0;
-  let coordsFontSize = fontSize * 0.7; // Plus petit pour les coordonnées
-  if (coords) {
-    ctx.font = `400 ${Math.round(coordsFontSize)}px 'Fira Mono', 'Consolas', monospace`;
-    const coordsText = `${coords.lat.toFixed(4)}, ${coords.long.toFixed(4)}`;
-    coordsWidth = ctx.measureText(coordsText).width;
-  }
-
-  const maxTextWidth = Math.max(textWidth, coordsWidth);
-  const paddingX = r * 0.6; // Reduced padding
-  const paddingY = r * 0.6; // Reduced padding
+  // Ajouter de la marge pour une taille approximative du texte
+  const paddingX = r * 0.8; // Reduced padding
   
-  // Ajustement des dimensions de la bulle
-  const rectWidth = Math.max(maxTextWidth + paddingX * 2, r * 4.6);
-  const rectHeight = coords 
-    ? textHeight + coordsFontSize + paddingY * 2.5  // Hauteur avec coordonnées
-    : textHeight + paddingY * 2;                    // Hauteur sans coordonnées
+  // Calculer les dimensions de la bulle
+  const rectWidth = textWidth + paddingX * 2;
+  let rectHeight = r * 4.6;                     // Hauteur sans coordonnées
   
-  // Ajustement pour éviter de sortir du cadre
-  const minX = rectWidth/2 + 4;
-  const maxX = canvas.width / (window.devicePixelRatio || 1) - rectWidth/2 - 4;
-  const minY = rectHeight/2 + 4;
-  const maxY = canvas.height / (window.devicePixelRatio || 1) - rectHeight/2 - 4;
-
+  // Limites pour éviter de sortir du cadre
+  const minX = (rectWidth/2 + 4) / (window.devicePixelRatio || 1);
+  const maxX = (canvas.width / (window.devicePixelRatio || 1)) - rectWidth/2 - 4;
+  const minY = (rectHeight/2 + 4) / (window.devicePixelRatio || 1);
+  const maxY = (canvas.height / (window.devicePixelRatio || 1)) - rectHeight/2 - 4;
+  
+  // Ajuster si nécessaire
   if (bubbleX < minX) bubbleX = minX;
   if (bubbleX > maxX) bubbleX = maxX;
   if (bubbleY < minY) bubbleY = minY;
   if (bubbleY > maxY) bubbleY = maxY;
-
+  
+  // Arrondi des coins - plus moderne
+  const cornerRadius = r * 0.7;
   const shape = bubbleShape?.shape || "ellipse";
   const tailSize = bubbleShape?.tailSize || 1;
-
+  
   // Fond avec transparence réduite et couleur plus foncée
-  ctx.fillStyle = "rgba(0, 40, 30, 0.75)";
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+  ctx.fillStyle = 'rgba(0, 40, 30, 0.6)';
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
   ctx.shadowBlur = 20;
   ctx.shadowOffsetY = 3;
-
-  // Dessiner la bulle principale comme un rectangle arrondi
-  const cornerRadius = r * 0.4;
   
   ctx.beginPath();
-  // Dessiner un rectangle arrondi
-  ctx.moveTo(bubbleX - rectWidth/2 + cornerRadius, bubbleY + bounce - rectHeight/2);
-  // Dessiner le haut
-  ctx.arcTo(bubbleX + rectWidth/2, bubbleY + bounce - rectHeight/2, bubbleX + rectWidth/2, bubbleY + bounce - rectHeight/2 + cornerRadius, cornerRadius);
-  // Dessiner le côté droit
-  ctx.arcTo(bubbleX + rectWidth/2, bubbleY + bounce + rectHeight/2, bubbleX + rectWidth/2 - cornerRadius, bubbleY + bounce + rectHeight/2, cornerRadius);
-  // Dessiner le bas
-  ctx.arcTo(bubbleX - rectWidth/2, bubbleY + bounce + rectHeight/2, bubbleX - rectWidth/2, bubbleY + bounce + rectHeight/2 - cornerRadius, cornerRadius);
-  // Dessiner le côté gauche
-  ctx.arcTo(bubbleX - rectWidth/2, bubbleY + bounce - rectHeight/2, bubbleX - rectWidth/2 + cornerRadius, bubbleY + bounce - rectHeight/2, cornerRadius);
   
+  // Arrondir les coins pour un look moderne
+  const tailOffset = r * 0.4;
+  
+  // Dessiner le contour de la bulle avec des coins arrondis
+  ctx.moveTo(bubbleX - rectWidth/2 + cornerRadius, bubbleY + bounce - rectHeight/2);
+  ctx.arcTo(bubbleX + rectWidth/2, bubbleY + bounce - rectHeight/2, bubbleX + rectWidth/2, bubbleY + bounce - rectHeight/2 + cornerRadius, cornerRadius);
+  ctx.arcTo(bubbleX + rectWidth/2, bubbleY + bounce + rectHeight/2, bubbleX + rectWidth/2 - cornerRadius, bubbleY + bounce + rectHeight/2, cornerRadius);
+  ctx.arcTo(bubbleX - rectWidth/2, bubbleY + bounce + rectHeight/2, bubbleX - rectWidth/2, bubbleY + bounce + rectHeight/2 - cornerRadius, cornerRadius);
+  ctx.arcTo(bubbleX - rectWidth/2, bubbleY + bounce - rectHeight/2, bubbleX - rectWidth/2 + cornerRadius, bubbleY + bounce - rectHeight/2, cornerRadius);
   ctx.closePath();
   
-  // Appliquer effet de flou
-  ctx.globalAlpha = 0.95;
-  ctx.fill();
+  // Appliquer le fond avec un super effet de flou
   ctx.globalAlpha = 1.0;
+  ctx.fill();
   
-  // Bordure
+  // Bordure discrète
   ctx.strokeStyle = 'rgba(0, 255, 204, 0.6)';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.stroke();
   
   // Réinitialiser les ombres pour le texte
@@ -675,6 +776,7 @@ function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleSha
 
   // Coordonnées
   if (coords) {
+    const coordsFontSize = fontSize * 0.7; // Plus petit pour les coordonnées
     ctx.font = `400 ${Math.round(coordsFontSize)}px 'Fira Mono', 'Consolas', monospace`;
     ctx.fillStyle = '#00ffcc';
     
@@ -739,6 +841,28 @@ function handleHover(e) {
       // Afficher les coordonnées près du curseur
       hoverLatSpan.textContent = coords.lat.toFixed(6);
       hoverLongSpan.textContent = coords.long.toFixed(6);
+      
+      // Afficher le nom du POI s'il existe
+      const poi = circlePOI.get(key);
+      const poiNameContainer = document.querySelector('#circle-coord-display .poi-name-container');
+      
+      if (poi && poi.name && hoverPoiName) {
+        hoverPoiName.textContent = poi.name;
+        if (poiNameContainer) {
+          poiNameContainer.style.display = 'block';
+        }
+      } else if (coords.name && hoverPoiName) {
+        hoverPoiName.textContent = coords.name;
+        if (poiNameContainer) {
+          poiNameContainer.style.display = 'block';
+        }
+      } else {
+        if (hoverPoiName) hoverPoiName.textContent = "Lieu inconnu";
+        if (poiNameContainer) {
+          poiNameContainer.style.display = 'block';
+        }
+      }
+      
       circleCoordDisplay.style.display = 'block';
       
       // Positionner près du curseur
@@ -801,10 +925,10 @@ function handleInteraction(e) {
 
 function hideSimilarCircles(row, col) {
   const color = colorGrid[row]?.[col];
-
-  const toHide = new Set();
   const visited = new Set();
   const queue = [[col, row]];
+
+  const toHide = new Set();
 
   while (queue.length) {
     const [x, y] = queue.shift();
@@ -816,8 +940,8 @@ function hideSimilarCircles(row, col) {
 
     const key = `${x},${y}`;
     if (visited.has(key)) continue;
-    visited.add(key);
 
+    visited.add(key);
     if (colorGrid[y]?.[x] === color && !hiddenCircles.has(key)) {
       toHide.add(key);
       for (let dy = -1; dy <= 1; dy++) {
@@ -846,7 +970,7 @@ function hideSimilarCircles(row, col) {
     } catch (e) {
       console.log("Erreur audio:", e);
     }
-    
+
     const now = performance.now();
     for (const key of toHide) {
       const [x, y] = key.split(',').map(Number);
@@ -857,7 +981,7 @@ function hideSimilarCircles(row, col) {
     setTimeout(() => {
       assignCircleNumbersAndCoords();
     }, 500);
-  }  
+  }
 }
 
 function showMobileInfo() {
@@ -877,10 +1001,6 @@ function showMobileInfo() {
   }
 }
 
-// Suppression de la fonction initCguDecor qui n'est plus nécessaire
-
-// Suppression des fonctions acceptCGU et refuseCGU qui ne sont plus nécessaires
-
 // Fonction utilitaire pour limiter les appels de redimensionnement
 function debounce(func, wait) {
   let timeout;
@@ -896,8 +1016,6 @@ function debounce(func, wait) {
 
 // Suppression des gestionnaires liés aux CGU
 window.addEventListener("load", () => {
-  // initCguDecor(); - Supprimé
-  
   // Vérifier si nous sommes sur un appareil à écran tactile et adapter l'interface
   if (isMobile) {
     document.body.classList.add('mobile');
@@ -911,8 +1029,6 @@ window.addEventListener('load', () => {
     disableGPU();
   }
 });
-
-// Suppression de la vérification de redimensionnement liée aux CGU
 
 // Gestion des problèmes audio sur iOS
 document.addEventListener('touchstart', function() {
@@ -930,13 +1046,82 @@ function disableGPU() {
   canvas.style.display = 'none'; // Désactiver le rendu GPU en masquant le canvas
 }
 
+// Variables pour le jeu
+let score = 0;
+let timerSeconds = 70; // 1:10 en secondes
+let timerInterval;
+let gameActive = false;
+const scoreDisplay = document.getElementById('score-display');
+const backgroundMusic = document.getElementById('backgroundMusic');
+const timerDisplay = document.getElementById('timer-display');
+const startBtn = document.getElementById('start-game');
+const gyroStatus = document.getElementById('gyro-status');
+
+// Fonction pour mettre à jour l'affichage du score
+function updateScoreDisplay() {
+    if (scoreDisplay) {
+        scoreDisplay.textContent = score;
+    }
+}
+
+// Fonction pour mettre à jour le timer
+function updateTimer() {
+    if (timerSeconds <= 0) {
+        endGame();
+        return;
+    }
+    timerSeconds--;
+    
+    const minutes = Math.floor(timerSeconds / 60);
+    const seconds = timerSeconds % 60;
+    
+    if (timerDisplay) {
+        timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        // Alerte visuelle lorsque le temps est presque écoulé
+        if (timerSeconds <= 10) {
+            timerDisplay.style.color = "#ff0000";
+            timerDisplay.style.animation = "pulse 1s infinite";
+        }
+    }
+}
+
+// Fonction pour démarrer le jeu
+function startGame() {
+    if (gameActive) return;
+    
+    gameActive = true;
+    score = 0;
+    updateScoreDisplay();
+    
+    // Cacher le bouton de démarrage
+    if (startBtn) {
+        startBtn.style.display = 'none';
+    }
+    
+    // Afficher l'indicateur de gyroscope actif
+    if (gyroStatus) {
+        gyroStatus.classList.add("active");
+        gyroStatus.style.opacity = 1;
+    }
+    
+    // Démarrer la musique de fond
+    if (backgroundMusic) {
+        backgroundMusic.play().catch(e => console.log("Erreur de lecture audio:", e));
+    }
+    
+    // Démarrer le timer
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
 // Fonction modifiée pour la fin du jeu qui sauvegarde le score dans le localStorage
 function endGame() {
     clearInterval(timerInterval);
     gameActive = false;
     
-    backgroundMusic.pause();
-    backgroundMusic.currentTime = 0;
+    if (backgroundMusic) {
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+    }
     
     // Sauvegarder le score dans le localStorage pour la page des scores
     localStorage.setItem('pending-score', score.toString());
@@ -971,12 +1156,29 @@ function resetGame() {
     score = 0;
     updateScoreDisplay();
     timerSeconds = 70; // Remettre à 70 secondes pour la prochaine partie
-    timerDisplay.textContent = "01:10";
-    timerDisplay.style.color = "white";
-    timerDisplay.style.animation = "none";
+    if (timerDisplay) {
+        timerDisplay.textContent = "01:10";
+        timerDisplay.style.color = "white";
+        timerDisplay.style.animation = "none";
+    }
     
     // Afficher à nouveau le bouton de démarrage
-    startBtn.style.display = 'block';
-    gyroStatus.classList.remove("active");
-    gyroStatus.style.opacity = 0;
+    if (startBtn) {
+        startBtn.style.display = 'block';
+    }
+    
+    if (gyroStatus) {
+        gyroStatus.classList.remove("active");
+        gyroStatus.style.opacity = 0;
+    }
 }
+
+// Initialiser les éléments du jeu si présents
+document.addEventListener('DOMContentLoaded', () => {
+    // Si les éléments du jeu sont présents, configurer les écouteurs d'événements
+    if (startBtn) {
+        startBtn.addEventListener('click', startGame);
+    }
+        // Initialiser l'affichage du score
+    updateScoreDisplay();
+});

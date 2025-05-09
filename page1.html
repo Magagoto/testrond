@@ -16,24 +16,6 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      /* Fix pour les appareils Android */
-      position: fixed;
-      width: 100%;
-      touch-action: none; /* Désactive les gestes tactiles par défaut */
-      overscroll-behavior: none; /* Empêche le rebond/défilement sur certains navigateurs */
-      -webkit-overflow-scrolling: none; /* Désactive le défilement avec élan sur iOS */
-      user-select: none; /* Empêche la sélection de texte */
-    }
-    
-    /* Conteneur principal fixe pour le jeu */
-    #game-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      z-index: 1;
     }
 
     #ball {
@@ -564,116 +546,113 @@
   </style>
 </head>
 <body>
-  <!-- Conteneur principal du jeu -->
-  <div id="game-container">
-    <!-- Bannière du jeu -->
-    <div id="game-banner">
-      <div id="banner-content">
-        <span id="timer-display">01:10</span>
-        <span id="score-display">Score: 0</span>
-        <span id="gyro-status"></span>
-      </div>
+  <!-- Bannière du jeu -->
+  <div id="game-banner">
+    <div id="banner-content">
+      <span id="timer-display">01:10</span>
+      <span id="score-display">Score: 0</span>
+      <span id="gyro-status"></span>
     </div>
+  </div>
 
-    <!-- Pop-up du tutoriel -->
-    <div class="tutorial-overlay" id="tutorial-overlay">
-      <div class="tutorial-container">
-        <div class="tutorial-header">
-          <h2>Rite d'Alignement Énergétique</h2>
-        </div>
-        <div class="tutorial-content">
-          <div class="tutorial-step">
-            <div class="step-number">1</div>
-            <div>
-              <p>Bienvenue, Raffineur.</p>
-              <p>Tu t'apprêtes à entamer un <span class="highlight">rite d'alignement énergétique</span>.</p>
-              <p>Pour ce faire, saisis ton artefact — ton téléphone — et incline-le pour guider l'énergie jusqu'à son réceptacle.</p>
-            </div>
-          </div>
-          
-          <div class="tutorial-step">
-            <div class="step-number">2</div>
-            <div>
-              <p>Observe sa teinte : elle t'indique la cage qui lui correspond. Il te suffit d'amener l'énergie dans un réceptacle de même couleur.</p>
-              <p>Ton objectif est simple : faire correspondre la couleur de l'énergie avec celle des cages.</p>
-              <p>Si les énergies s'accordent, tu gagnes <span class="highlight">+2 points</span>. En cas de dissonance, tu perds <span class="highlight">-1 point</span>.</p>
-            </div>
-          </div>
-          
-          <div class="tutorial-step">
-            <div class="step-number">3</div>
-            <div>
-              <p>À chaque contact, l'énergie change de forme — une <span class="highlight">transmutation aléatoire</span>.</p>
-              <p>Les réceptacles eux aussi sont instables : leurs dimensions fluctuent au fil du temps.</p>
-            </div>
-          </div>
-          
-          <div class="tutorial-step">
-            <div class="step-number">4</div>
-            <div>
-              <p><span class="highlight">⏱ Tu as 1 minute et 10 secondes</span> pour affiner ta trajectoire et récolter un maximum de points.</p>
-              <p>Respire. Ressens. Laisse-toi guider par l'équilibre.</p>
-              <p>Bonne chance, Raffineur.</p>
-            </div>
+  <!-- Pop-up du tutoriel -->
+  <div class="tutorial-overlay" id="tutorial-overlay">
+    <div class="tutorial-container">
+      <div class="tutorial-header">
+        <h2>Rite d'Alignement Énergétique</h2>
+      </div>
+      <div class="tutorial-content">
+        <div class="tutorial-step">
+          <div class="step-number">1</div>
+          <div>
+            <p>Bienvenue, Raffineur.</p>
+            <p>Tu t'apprêtes à entamer un <span class="highlight">rite d'alignement énergétique</span>.</p>
+            <p>Pour ce faire, saisis ton artefact — ton téléphone — et incline-le pour guider l'énergie jusqu'à son réceptacle.</p>
           </div>
         </div>
-        <button class="tutorial-btn" id="tutorial-close-btn">J'ai compris, commencer le rite</button>
+        
+        <div class="tutorial-step">
+          <div class="step-number">2</div>
+          <div>
+            <p>Observe sa teinte : elle t'indique la cage qui lui correspond. Il te suffit d'amener l'énergie dans un réceptacle de même couleur.</p>
+            <p>Ton objectif est simple : faire correspondre la couleur de l'énergie avec celle des cages.</p>
+            <p>Si les énergies s'accordent, tu gagnes <span class="highlight">+2 points</span>. En cas de dissonance, tu perds <span class="highlight">-1 point</span>.</p>
+          </div>
+        </div>
+        
+        <div class="tutorial-step">
+          <div class="step-number">3</div>
+          <div>
+            <p>À chaque contact, l'énergie change de forme — une <span class="highlight">transmutation aléatoire</span>.</p>
+            <p>Les réceptacles eux aussi sont instables : leurs dimensions fluctuent au fil du temps.</p>
+          </div>
+        </div>
+        
+        <div class="tutorial-step">
+          <div class="step-number">4</div>
+          <div>
+            <p><span class="highlight">⏱ Tu as 1 minute et 10 secondes</span> pour affiner ta trajectoire et récolter un maximum de points.</p>
+            <p>Respire. Ressens. Laisse-toi guider par l'équilibre.</p>
+            <p>Bonne chance, Raffineur.</p>
+          </div>
+        </div>
       </div>
+      <button class="tutorial-btn" id="tutorial-close-btn">J'ai compris, commencer le rite</button>
     </div>
+  </div>
 
-    <button id="start-btn">Activer le gyroscope</button>
-    <div id="ball"></div>
-    <div id="info"></div>
-    
-    <!-- Ajout des éléments audio -->
-    <audio id="pointSound" src="SONORE/1point+.mp3" preload="auto"></audio>
-    <audio id="backgroundMusic" src="SONORE/ambiancegyro.mp3" loop preload="auto"></audio>
-    <audio id="wrongSound" src="SONORE/wronganswer.mp3" preload="auto"></audio>
-    
-    <!-- Cages rectangulaires -->
-    <div id="cage-top-1" class="cage cage-top">
-      <div class="cage-corner corner-left"></div>
-      <div class="cage-corner corner-right"></div>
-    </div>
-    <div id="cage-top-2" class="cage cage-top">
-      <div class="cage-corner corner-left"></div>
-      <div class="cage-corner corner-right"></div>
-    </div>
-    
-    <div id="cage-bottom-1" class="cage cage-bottom">
-      <div class="cage-corner corner-left"></div>
-      <div class="cage-corner corner-right"></div>
-    </div>
-    <div id="cage-bottom-2" class="cage cage-bottom">
-      <div class="cage-corner corner-left"></div>
-      <div class="cage-corner corner-right"></div>
-    </div>
-    
-    <div id="cage-left-1" class="cage cage-left">
-      <div class="cage-corner corner-top"></div>
-      <div class="cage-corner corner-bottom"></div>
-    </div>
-    <div id="cage-left-2" class="cage cage-left">
-      <div class="cage-corner corner-top"></div>
-      <div class="cage-corner corner-bottom"></div>
-    </div>
-    <div id="cage-left-3" class="cage cage-left">
-      <div class="cage-corner corner-top"></div>
-      <div class="cage-corner corner-bottom"></div>
-    </div>
-    
-    <div id="cage-right-1" class="cage cage-right">
-      <div class="cage-corner corner-top"></div>
-      <div class="cage-corner corner-bottom"></div>
-    </div>
-    <div id="cage-right-2" class="cage cage-right">
-      <div class="cage-corner corner-top"></div>
-      <div class="cage-corner corner-bottom"></div>
-    </div>
-    <div id="cage-right-3" class="cage cage-right">
-      <div class="cage-corner corner-top"></div>
-      <div class="cage-corner corner-bottom"></div>
-    </div>
+  <button id="start-btn">Activer le gyroscope</button>
+  <div id="ball"></div>
+  <div id="info"></div>
+  
+  <!-- Ajout des éléments audio -->
+  <audio id="pointSound" src="SONORE/1point+.mp3" preload="auto"></audio>
+  <audio id="backgroundMusic" src="SONORE/ambiancegyro.mp3" loop preload="auto"></audio>
+  <audio id="wrongSound" src="SONORE/wronganswer.mp3" preload="auto"></audio>
+  
+  <!-- Cages rectangulaires -->
+  <div id="cage-top-1" class="cage cage-top">
+    <div class="cage-corner corner-left"></div>
+    <div class="cage-corner corner-right"></div>
+  </div>
+  <div id="cage-top-2" class="cage cage-top">
+    <div class="cage-corner corner-left"></div>
+    <div class="cage-corner corner-right"></div>
+  </div>
+  
+  <div id="cage-bottom-1" class="cage cage-bottom">
+    <div class="cage-corner corner-left"></div>
+    <div class="cage-corner corner-right"></div>
+  </div>
+  <div id="cage-bottom-2" class="cage cage-bottom">
+    <div class="cage-corner corner-left"></div>
+    <div class="cage-corner corner-right"></div>
+  </div>
+  
+  <div id="cage-left-1" class="cage cage-left">
+    <div class="cage-corner corner-top"></div>
+    <div class="cage-corner corner-bottom"></div>
+  </div>
+  <div id="cage-left-2" class="cage cage-left">
+    <div class="cage-corner corner-top"></div>
+    <div class="cage-corner corner-bottom"></div>
+  </div>
+  <div id="cage-left-3" class="cage cage-left">
+    <div class="cage-corner corner-top"></div>
+    <div class="cage-corner corner-bottom"></div>
+  </div>
+  
+  <div id="cage-right-1" class="cage cage-right">
+    <div class="cage-corner corner-top"></div>
+    <div class="cage-corner corner-bottom"></div>
+  </div>
+  <div id="cage-right-2" class="cage cage-right">
+    <div class="cage-corner corner-top"></div>
+    <div class="cage-corner corner-bottom"></div>
+  </div>
+  <div id="cage-right-3" class="cage cage-right">
+    <div class="cage-corner corner-top"></div>
+    <div class="cage-corner corner-bottom"></div>
   </div>
 
   <script>
@@ -691,10 +670,7 @@
 
     // Afficher le tutoriel au chargement de la page
     window.addEventListener("DOMContentLoaded", () => {
-      // Configuraton pour stabilité sur mobile à exécuter en premier
-      setupMobileStability();
-      
-      // Afficher le tutoriel avec un léger délai
+      // Attendre un peu avant d'afficher pour permettre le chargement complet
       setTimeout(() => {
         tutorialOverlay.classList.add("active");
       }, 500);
@@ -704,47 +680,6 @@
     tutorialCloseBtn.addEventListener("click", () => {
       tutorialOverlay.classList.remove("active");
     });
-
-    // Empêcher explicitement les événements de défilement/scroll
-    function preventScroll(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    }
-    
-    // Ajouter des écouteurs pour bloquer le défilement sur mobile
-    window.addEventListener('touchmove', preventScroll, { passive: false });
-    window.addEventListener('scroll', preventScroll, { passive: false });
-    document.addEventListener('touchmove', preventScroll, { passive: false });
-
-    // Fonction pour assurer la stabilité sur appareils Android
-    function setupMobileStability() {
-      // Verrouiller la taille du viewport
-      const viewportMeta = document.querySelector('meta[name="viewport"]');
-      if (viewportMeta) {
-        viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover');
-      } else {
-        const meta = document.createElement('meta');
-        meta.name = 'viewport';
-        meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover';
-        document.getElementsByTagName('head')[0].appendChild(meta);
-      }
-      
-      // Ajuster la taille de la div de jeu pour qu'elle corresponde exactement à la fenêtre
-      const gameContainer = document.getElementById('game-container');
-      function adjustGameContainer() {
-        gameContainer.style.width = window.innerWidth + 'px';
-        gameContainer.style.height = window.innerHeight + 'px';
-      }
-      
-      // Ajuster au chargement et au redimensionnement
-      adjustGameContainer();
-      window.addEventListener('resize', adjustGameContainer);
-      window.addEventListener('orientationchange', function() {
-        // Attendre que l'orientation soit complètement changée
-        setTimeout(adjustGameContainer, 100);
-      });
-    }
 
     // Dégradés cycliques prédéfinis
     const gradients = [
@@ -923,30 +858,24 @@
     let lastColorChange = 0;
     const colorChangeDelay = 300; // Délai minimum entre les changements de couleur (ms)
 
-    // Fonction de détection des collisions mise à jour pour respecter les limites de l'écran
     function updateBallPosition() {
       posX += velX;
       posY += velY;
 
-      // Récupérer les dimensions réelles du conteneur de jeu pour le confinement
-      const containerRect = document.getElementById('game-container').getBoundingClientRect();
-      const maxX = containerRect.width - ballSize;
-      const maxY = containerRect.height - ballSize;
-
-      // Vérifier les collisions avec les bords de l'écran avec bornes strictes
-      if (posX < 0) {
+      // Vérifier les collisions avec les bords de l'écran
+      if (posX <= 0) {
         posX = 0;
         velX *= -0.7;
-      } else if (posX > maxX) {
-        posX = maxX;
+      } else if (posX >= window.innerWidth - ballSize) {
+        posX = window.innerWidth - ballSize;
         velX *= -0.7;
       }
 
-      if (posY < 0) {
+      if (posY <= 0) {
         posY = 0;
         velY *= -0.7;
-      } else if (posY > maxY) {
-        posY = maxY;
+      } else if (posY >= window.innerHeight - ballSize) {
+        posY = window.innerHeight - ballSize;
         velY *= -0.7;
       }
 
@@ -954,7 +883,7 @@
       checkCageCollisions();
 
       velX *= friction;
-      velY *= friction;
+      velY *= friction; (1.2);
 
       // Effet de vitesse (motion blur) selon la vitesse de la balle
       const speed = Math.sqrt(velX * velX + velY * velY);
@@ -1304,23 +1233,14 @@
     }
 
     function enableGyro() {
-      // Amélioration pour la compatibilité avec les appareils Android
-      const handleOrientation = (event) => {
-        let gamma = event.gamma || 0;  // Rotation autour de l'axe Y (-90 à 90)
-        let beta = event.beta || 0;    // Rotation autour de l'axe X (-180 à 180)
-        
-        // Limiter les valeurs pour éviter les mouvements excessifs
-        gamma = Math.min(Math.max(gamma, -25), 25);
-        beta = Math.min(Math.max(beta, -25), 25);
-        
-        // Réduire davantage la sensibilité pour les appareils Android
-        const androidAdjustment = /Android/i.test(navigator.userAgent) ? 0.8 : 1.0;
-        
-        velX += gamma * accelerationFactor * androidAdjustment;
-        velY += beta * accelerationFactor * androidAdjustment;
-      };
+      window.addEventListener("deviceorientation", (event) => {
+        const gamma = event.gamma || 0;
+        const beta = event.beta || 0;
 
-      window.addEventListener("deviceorientation", handleOrientation);
+        velX += gamma * accelerationFactor;
+        velY += beta * accelerationFactor;
+      });
+
       updateBallPosition();
     }
 

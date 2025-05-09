@@ -320,14 +320,25 @@
 
 <canvas id="canvas" style="display: block;"></canvas>
 <audio id="sound" src="2019.mp3" preload="auto"></audio>
-<audio id="backgroundMusic" src="SONORE/ambiance page principale.mp3" loop preload="auto" autoplay></audio>
+<audio id="backgroundMusic" src="SONORE/CHROMEA Theme.mp3" loop preload="auto" autoplay></audio>
 
 <!-- Ajouter un bouton pour basculer le mode performance -->
 <button id="performance-toggle">Mode performance: ON</button>
 
 <script>
   // Essaye de jouer la musique dès que possible
-  document.getElementById('backgroundMusic').play().catch(() => {});
+  document.addEventListener('click', function() {
+    document.getElementById('backgroundMusic').play().catch(() => {
+      console.log("Impossible de lire automatiquement l'audio, attente d'une interaction utilisateur");
+    });
+  }, { once: true });
+
+  // Essai de lecture au chargement (pourrait être bloqué par le navigateur)
+  window.addEventListener('load', function() {
+    setTimeout(() => {
+      document.getElementById('backgroundMusic').play().catch(() => {});
+    }, 1000);
+  });
 
   // Fonction pour obtenir la géolocalisation de l'utilisateur
   function getUserLocation() {

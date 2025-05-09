@@ -1122,26 +1122,6 @@
             }
           }
 
-          // Comparer le gradient de la balle avec celui de la cage (code existant)
-          const computedStyle = window.getComputedStyle(cage);
-          const cageGradient = computedStyle.backgroundImage;
-          const cageColors = cageGradient.match(/(#[0-9A-Fa-f]{6}|rgb\([^)]+\))/gi);
-
-          const ballStyle = window.getComputedStyle(ball);
-          const ballGradient = ballStyle.backgroundImage;
-          const ballColors = ballGradient.match(/(#[0-9A-Fa-f]{6}|rgb\([^)]+\))/gi);
-
-          // Créer un effet visuel pour montrer le changement de score
-          const scoreEffect = document.createElement("div");
-          scoreEffect.style.position = "absolute";
-          scoreEffect.style.left = `${ballCenterX}px`;
-          scoreEffect.style.top = `${ballCenterY - 30}px`;
-          scoreEffect.style.fontFamily = "sans-serif";
-          scoreEffect.style.fontSize = "20px";
-          scoreEffect.style.fontWeight = "bold";
-          scoreEffect.style.zIndex = "20";
-          scoreEffect.style.transition = "transform 0.5s, opacity 0.5s";
-
           // Comparer les gradients en utilisant l'apparence visuelle (similaire)
           if (cageColors && ballColors &&
               areSimilarColors(cageColors[0], ballColors[0]) &&
@@ -1158,6 +1138,17 @@
             scoreEffect.style.color = "#FF0000";
             wrongSound.play(); // Jouer le son d'erreur pour la mauvaise couleur
           }
+
+          // Créer un effet visuel pour montrer le changement de score
+          const scoreEffect = document.createElement("div");
+          scoreEffect.style.position = "absolute";
+          scoreEffect.style.left = `${ballCenterX}px`;
+          scoreEffect.style.top = `${ballCenterY - 30}px`;
+          scoreEffect.style.fontFamily = "sans-serif";
+          scoreEffect.style.fontSize = "20px";
+          scoreEffect.style.fontWeight = "bold";
+          scoreEffect.style.zIndex = "20";
+          scoreEffect.style.transition = "transform 0.5s, opacity 0.5s";
 
           document.body.appendChild(scoreEffect);
 

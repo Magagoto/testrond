@@ -320,21 +320,21 @@
 
     .tutorial-container {
       position: relative;
-      width: 96%;
-      max-width: 700px; /* Augmenté de 500px à 700px */
+      width: 92%;
+      max-width: 500px;
       max-height: 85vh;
       overflow-y: auto;
       background: linear-gradient(145deg, #182c4c 0%, #111 100%);
       border: 2px solid #00ffcc;
       border-radius: 16px;
-      padding: 30px; /* Augmenté de 20px à 30px */
+      padding: 20px;
       color: white;
       box-shadow: 0 0 30px #00ffcc44, 0 0 15px #2a489966;
     }
 
     .tutorial-header {
       text-align: center;
-      margin-bottom: 30px; /* Augmenté de 20px à 30px */
+      margin-bottom: 20px;
       color: #00ffcc;
       text-shadow: 0 0 10px #00ffcc66;
       font-family: 'Fira Mono', 'Consolas', monospace;
@@ -342,47 +342,47 @@
     }
 
     .tutorial-header h2 {
-      font-size: 2.2em; /* Augmenté de 1.8em à 2.2em */
+      font-size: 1.8em;
       font-weight: 600;
       margin: 0.5em 0;
     }
 
     .tutorial-content {
-      margin-bottom: 30px; /* Augmenté de 24px à 30px */
-      line-height: 1.7; /* Augmenté de 1.6 à 1.7 */
+      margin-bottom: 24px;
+      line-height: 1.6;
       font-family: sans-serif;
-      font-size: 18px; /* Augmenté de 16px à 18px */
+      font-size: 16px;
     }
 
     .tutorial-step {
       display: flex;
-      margin-bottom: 25px; /* Augmenté de 20px à 25px */
+      margin-bottom: 20px;
       align-items: flex-start;
     }
 
     .step-number {
       background: #00ffcc;
       color: #111;
-      width: 40px; /* Augmenté de 36px à 40px */
-      height: 40px; /* Augmenté de 36px à 40px */
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
       font-weight: bold;
-      margin-right: 18px; /* Augmenté de 15px à 18px */
+      margin-right: 15px;
       flex-shrink: 0;
       font-family: 'Fira Mono', 'Consolas', monospace;
-      font-size: 20px; /* Augmenté de 18px à 20px */
+      font-size: 18px;
     }
 
     .tutorial-btn {
-      padding: 1.2em 2em; /* Augmenté de 1em à 1.2em */
-      font-size: 1.3em; /* Augmenté de 1.2em à 1.3em */
+      padding: 1em 2em;
+      font-size: 1.2em;
       background: rgba(0,255,204,0.13);
       color: #00ffcc;
       border: 2px solid #00ffcc;
-      border-radius: 14px; /* Augmenté de 12px à 14px */
+      border-radius: 12px;
       cursor: pointer;
       font-family: 'Fira Mono', 'Consolas', monospace;
       font-weight: 600;
@@ -394,7 +394,7 @@
       margin: 0 auto;
       text-align: center;
       width: 100%;
-      max-width: 320px; /* Augmenté de 280px à 320px */
+      max-width: 280px;
     }
 
     .highlight {
@@ -403,129 +403,63 @@
       text-shadow: 0 0 6px #00ffcc33;
     }
 
-    /* Ajustements responsifs spécifiques */
-    /* Pour écrans desktop et tablettes */
-    @media (min-width: 769px) {
-      .tutorial-content {
-        column-count: 1; /* Une colonne sur les grands écrans */
-        column-gap: 40px;
-      }
-      
-      .tutorial-step {
-        break-inside: avoid; /* Évite la coupure d'une étape entre deux colonnes */
-      }
-      
+    /* Ajustements spécifiques pour mobile */
+    @media (max-width: 600px) {
       .tutorial-container {
-        display: flex;
-        flex-direction: column;
-      }
-    }
-
-    /* Ajustements spécifiques pour mobile - FORTEMENT AUGMENTÉS */
-    @media (max-width: 768px) {
-      .tutorial-container {
-        padding: 25px;
-        width: 96%;
-        max-height: 95vh; /* Presque tout l'écran */
-        max-width: 95vw; /* S'adapte à presque toute la largeur de l'écran */
+        padding: 20px;
+        width: 95%;
+        max-height: 90vh;
       }
       
       .tutorial-header h2 {
-        font-size: 2.4em;
-        margin-bottom: 0.8em;
+        font-size: 2.2em;
       }
       
       .tutorial-content {
-        font-size: 1.6em !important;
+        font-size: 1.3em;
         line-height: 1.5;
       }
       
       .step-number {
-        width: 50px;
-        height: 50px;
-        font-size: 25px;
-        margin-right: 20px;
+        width: 44px;
+        height: 44px;
+        font-size: 22px;
+        margin-right: 18px;
       }
       
       .tutorial-btn {
-        margin-top: 20px;
-        padding: 1.4em 1em;
-        font-size: 1.6em;
-        max-width: 90%; /* S'adapte à 90% de la largeur du conteneur */
+        margin-top: 15px;
+        padding: 1.2em 1em;
+        font-size: 1.4em;
+        max-width: 320px;
       }
       
       /* Ajuster l'espacement des paragraphes pour une meilleure lisibilité */
       .tutorial-step p {
-        margin: 1.1em 0;
+        margin: 0.9em 0;
       }
       
       /* Augmenter l'espace entre les étapes */
       .tutorial-step {
-        margin-bottom: 35px;
-        padding-bottom: 15px;
-      }
-      
-      /* S'assurer que le bouton est toujours visible */
-      .tutorial-btn {
-        position: relative;
-        bottom: 0;
-        margin-top: 30px;
-      }
-      
-      /* Augmenter taille de la police pour highlight */
-      .highlight {
-        font-size: 1.05em;
+        margin-bottom: 30px;
+        padding-bottom: 10px;
       }
     }
 
-    /* Pour les très petits écrans mobiles */
+    /* Ajustements pour les très petits écrans */
     @media (max-width: 380px) {
       .tutorial-container {
-        padding: 20px 15px;
-        width: 98%;
-        max-width: 100vw; /* S'adapte à toute la largeur de l'écran */
+        padding: 18px;
       }
       
       .tutorial-content {
-        font-size: 1.5em !important;
+        font-size: 1.1em;
       }
       
       .step-number {
-        width: 45px;
-        height: 45px;
-        margin-right: 15px;
-      }
-      
-      .tutorial-btn {
-        font-size: 1.5em;
-      }
-    }
-
-    /* Pour les grands écrans */
-    @media (min-width: 1200px) {
-      .tutorial-container {
-        max-width: 900px; /* Encore plus large sur écrans larges */
-        padding: 40px;
-      }
-      
-      .tutorial-content {
-        font-size: 1.2em;
-      }
-      
-      .tutorial-header h2 {
-        font-size: 2.4em;
-      }
-      
-      .tutorial-btn {
-        max-width: 400px;
-        font-size: 1.4em;
-      }
-    }
-
-    /* Pour s'assurer que la taille de police est lisible sur tous les appareils */
-    @media (max-width: 1000px) and (min-width: 769px) {
-      .tutorial-content {
-        font-size: 1.1em;
+        width: 40px;
+        height: 40px;
+        margin-right: 14px;
       }
     }
 

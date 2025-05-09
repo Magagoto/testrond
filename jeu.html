@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="Css/style.css">
   <link rel="stylesheet" href="Css/cgu-style.css">
+  <!-- Préchargement des ressources critiques -->
+  <link rel="preload" href="Js/orleans-poi.js" as="script">
+  <link rel="preload" href="Js/script.js" as="script">
+  <link rel="preload" href="2019.mp3" as="audio">
+  <!-- Désactiver la détection de numéro de téléphone pour éviter les surlignages -->
+  <meta name="format-detection" content="telephone=no">
   <!-- Ajouter le script des POI d'Orléans avant le script principal -->
   <script src="Js/orleans-poi.js"></script>
   <script src="Js/script.js" defer></script>
@@ -194,6 +200,26 @@
         padding: 4px 8px;
         font-size: 10px;
       }
+
+      canvas {
+        /* Utiliser le GPU pour le rendu */
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        perspective: 1000px;
+        will-change: transform;
+      }
+      
+      /* Simplifier les animations sur mobile */
+      #circle-coord-display {
+        transition: none; /* Désactiver les transitions sur mobile */
+      }
+      
+      /* Réduire la taille des éléments sur mobile pour de meilleures performances */
+      #circle-coord-display {
+        font-size: 10px;
+        padding: 6px 8px;
+        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+      }
     }
 
     /* Styles pour l'affichage du POI */
@@ -233,17 +259,22 @@
       color: white;
       text-shadow: 0 0 8px rgba(0, 255, 204, 0.8);
     }
-    
-    /* Adaptation pour mobile */
-    @media (max-width: 600px) {
-      #circle-coord-display {
-        font-size: 11px;
-        padding: 8px 10px;
-      }
-      
-      #circle-coord-display .poi-name-container {
-        font-size: 12px;
-      }
+
+    /* Performance toggle button */
+    #performance-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0, 40, 30, 0.8);
+      border: 1px solid rgba(0, 255, 204, 0.6);
+      color: #00ffcc;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: 'Fira Mono', monospace;
+      z-index: 1000;
+      cursor: pointer;
+      display: none; /* Hidden by default, shown on mobile */
     }
   </style>
 </head>
@@ -290,6 +321,9 @@
 <canvas id="canvas" style="display: block;"></canvas>
 <audio id="sound" src="2019.mp3" preload="auto"></audio>
 <audio id="backgroundMusic" src="SONORE/ambiance page principale.mp3" loop preload="auto" autoplay></audio>
+
+<!-- Ajouter un bouton pour basculer le mode performance -->
+<button id="performance-toggle">Mode performance: ON</button>
 
 <script>
   // Essaye de jouer la musique dès que possible
@@ -550,6 +584,47 @@
       associatePOIsToCircles();
     } else {
       console.error("Les POI d'Orléans ne sont pas chargés correctement");
+    }
+
+    // Ajouter le toggle de performance sur mobile
+    if (isMobile) {
+      const perfToggle = document.getElementById('performance-toggle');
+      perfToggle.style.display = 'block';
+      
+      perfToggle.addEventListener('click', function() {
+        // Accéder à la variable dans window pour communiquer avec le script principal
+        window.isPerformanceMode = !window.isPerformanceMode;
+        this.textContent = `Mode performance: ${window.isPerformanceMode ? 'ON' : 'OFF'}`;
+        
+        // Communiquer le changement au script principal
+        if (typeof isPerformanceMode !== 'undefined') {
+          isPerformanceMode = window.isPerformanceMode;
+          
+          // Reset des compteurs
+          skipFramesCount = 0;
+          
+          // Ajuster le seuil de saut de frames
+          skipFramesThreshold = isPerformanceMode ? 2 : 0;
+        }
+      });
+    }
+    
+    // Optimisation pour le chargement des audios sur mobile
+    if (isMobile) {
+      // Précharger les sons seulement après interaction utilisateur
+      document.addEventListener('touchstart', function() {
+        setTimeout(() => {
+          const backgroundMusic = document.getElementById('backgroundMusic');
+          const sound = document.getElementById('sound');
+          
+          // Charger mais ne pas jouer
+          backgroundMusic.load();
+          sound.load();
+          
+          // Réduire le volume sur mobile pour économiser la batterie
+          backgroundMusic.volume = 0.6;
+        }, 1000);
+      }, { once: true });
     }
   });
 </script>

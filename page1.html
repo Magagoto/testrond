@@ -296,6 +296,129 @@
       animation: blink 1.2s infinite alternate;
     }
 
+    /* Style pour le pop-up du tutoriel */
+    .tutorial-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    .tutorial-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .tutorial-container {
+      position: relative;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+      background: linear-gradient(145deg, #182c4c 0%, #111 100%);
+      border: 2px solid #00ffcc;
+      border-radius: 16px;
+      padding: 20px;
+      color: white;
+      box-shadow: 0 0 30px #00ffcc44, 0 0 15px #2a489966;
+    }
+
+    .tutorial-header {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #00ffcc;
+      text-shadow: 0 0 10px #00ffcc66;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      letter-spacing: 1px;
+    }
+
+    .tutorial-header h2 {
+      font-size: 1.8em;
+      font-weight: 600;
+    }
+
+    .tutorial-content {
+      margin-bottom: 24px;
+      line-height: 1.6;
+      font-family: sans-serif;
+    }
+
+    .tutorial-step {
+      display: flex;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .step-number {
+      background: #00ffcc;
+      color: #111;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      margin-right: 15px;
+      flex-shrink: 0;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+    }
+
+    .tutorial-image {
+      width: 100%;
+      border-radius: 8px;
+      margin: 10px 0;
+      border: 1px solid #2a4899;
+    }
+
+    .tutorial-btn {
+      padding: 0.8em 2em;
+      font-size: 1.1em;
+      background: rgba(0,255,204,0.13);
+      color: #00ffcc;
+      border: 2px solid #00ffcc;
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      font-weight: 600;
+      box-shadow: 0 2px 16px #00ffcc22, 0 1px 8px #0004;
+      backdrop-filter: blur(2px);
+      letter-spacing: 1px;
+      transition: background 0.3s, color 0.3s, border 0.3s, box-shadow 0.3s;
+      display: block;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .tutorial-btn:hover {
+      background: #00ffcc;
+      color: #111;
+      border: 2px solid #00ffcc;
+      box-shadow: 0 0 24px #00ffcc88;
+    }
+
+    .highlight {
+      color: #00ffcc;
+      font-weight: bold;
+      text-shadow: 0 0 6px #00ffcc33;
+    }
+
+    @media (max-width: 600px) {
+      .tutorial-container {
+        padding: 15px;
+        width: 95%;
+      }
+    }
+
     /* Responsive : bannière plus large sur mobile */
     @media (max-width: 600px) {
       #game-banner {
@@ -321,6 +444,53 @@
       <span id="gyro-status"></span>
     </div>
   </div>
+
+  <!-- Pop-up du tutoriel -->
+  <div class="tutorial-overlay" id="tutorial-overlay">
+    <div class="tutorial-container">
+      <div class="tutorial-header">
+        <h2>Rite d'Alignement Énergétique</h2>
+      </div>
+      <div class="tutorial-content">
+        <div class="tutorial-step">
+          <div class="step-number">1</div>
+          <div>
+            <p>Bienvenue, Raffineur.</p>
+            <p>Tu t'apprêtes à entamer un <span class="highlight">rite d'alignement énergétique</span>.</p>
+            <p>Pour ce faire, saisis ton artefact — ton téléphone — et incline-le pour guider l'énergie jusqu'à son réceptacle.</p>
+          </div>
+        </div>
+        
+        <div class="tutorial-step">
+          <div class="step-number">2</div>
+          <div>
+            <p>Observe sa teinte : elle t'indique la cage qui lui correspond. Il te suffit d'amener l'énergie dans un réceptacle de même couleur.</p>
+            <p>Ton objectif est simple : faire correspondre la couleur de l'énergie avec celle des cages.</p>
+            <p>Si les énergies s'accordent, tu gagnes <span class="highlight">+2 points</span>. En cas de dissonance, tu perds <span class="highlight">-1 point</span>.</p>
+          </div>
+        </div>
+        
+        <div class="tutorial-step">
+          <div class="step-number">3</div>
+          <div>
+            <p>À chaque contact, l'énergie change de forme — une <span class="highlight">transmutation aléatoire</span>.</p>
+            <p>Les réceptacles eux aussi sont instables : leurs dimensions fluctuent au fil du temps.</p>
+          </div>
+        </div>
+        
+        <div class="tutorial-step">
+          <div class="step-number">4</div>
+          <div>
+            <p><span class="highlight">⏱ Tu as 1 minute et 10 secondes</span> pour affiner ta trajectoire et récolter un maximum de points.</p>
+            <p>Respire. Ressens. Laisse-toi guider par l'équilibre.</p>
+            <p>Bonne chance, Raffineur.</p>
+          </div>
+        </div>
+      </div>
+      <button class="tutorial-btn" id="tutorial-close-btn">J'ai compris, commencer le rite</button>
+    </div>
+  </div>
+
   <button id="start-btn">Activer le gyroscope</button>
   <div id="ball"></div>
   <div id="info"></div>
@@ -381,6 +551,23 @@
     const pointSound = document.getElementById("pointSound");
     const backgroundMusic = document.getElementById("backgroundMusic"); // Ajout de la référence à la musique
     const gyroStatus = document.getElementById("gyro-status");
+    
+    // Éléments du tutoriel
+    const tutorialOverlay = document.getElementById("tutorial-overlay");
+    const tutorialCloseBtn = document.getElementById("tutorial-close-btn");
+
+    // Afficher le tutoriel au chargement de la page
+    window.addEventListener("DOMContentLoaded", () => {
+      // Attendre un peu avant d'afficher pour permettre le chargement complet
+      setTimeout(() => {
+        tutorialOverlay.classList.add("active");
+      }, 500);
+    });
+
+    // Fermer le tutoriel quand le bouton est cliqué
+    tutorialCloseBtn.addEventListener("click", () => {
+      tutorialOverlay.classList.remove("active");
+    });
 
     // Dégradés cycliques prédéfinis
     const gradients = [
@@ -847,13 +1034,13 @@
           if (cageColors && ballColors &&
               areSimilarColors(cageColors[0], ballColors[0]) &&
               areSimilarColors(cageColors[1], ballColors[1])) {
-            // Même gradient, +1 point
-            score += 1;
-            scoreEffect.textContent = "+1";
+            // Même gradient, +2 points (au lieu de +1)
+            score += 2;
+            scoreEffect.textContent = "+2";
             scoreEffect.style.color = "#00FF00";
             pointSound.play(); // Jouer le son lors d'un point gagné
           } else {
-            // Gradient différent, -1 point
+            // Gradient différent, -1 point (inchangé)
             score -= 1;
             scoreEffect.textContent = "-1";
             scoreEffect.style.color = "#FF0000";
@@ -975,7 +1162,6 @@
         }
     }
 
-    // À ajouter après updateTimer()
     function endGame() {
         clearInterval(timerInterval);
         gameActive = false;
@@ -997,5 +1183,7 @@
         // Indiquer que c'est le jeu de la page 1 qui est terminé
         localStorage.setItem("game-page", "page1");
         localStorage.setItem("game-state", "finished");
-    }  </script>
-  </script></body></html>
+    }
+  </script>
+</body>
+</html>

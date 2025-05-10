@@ -238,44 +238,71 @@ async function initCamera() {
         // Montrer le placeholder pendant le chargement
         videoPlaceholder.style.display = 'flex';
 
-        // Détection spécifique pour iPhone/iPad
+        // Détection plus précise pour les appareils mobiles
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isAndroid = /Android/.test(navigator.userAgent);
+        const isMobile = isIOS || isAndroid || /webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         
-        let constraints;
+        // Configuration optimisée des contraintes
+        let constraints = {
+            audio: false,
+            video: { facingMode: facingMode }
+        };
         
         if (isIOS) {
-            // Paramètres spécifiques pour iOS qui ont tendance à mieux fonctionner
-            constraints = {
-                audio: false,
-                video: {
-                    facingMode: facingMode,
-                    width: { ideal: 480 },
-                    height: { ideal: 360 }
-                }
+            // Contraintes simplifiées pour iOS pour éviter les problèmes
+            constraints.video = { 
+                facingMode: facingMode,
+                width: { ideal: 640 }, 
+                height: { ideal: 480 }
+            };
+        } else if (isAndroid) {
+            // Contraintes spécifiques pour Android
+            constraints.video = {
+                facingMode: facingMode,
+                width: { ideal: 800 },
+                height: { ideal: 600 }
             };
         } else if (isMobile) {
-            constraints = {
-                audio: false,
-                video: {
-                    facingMode: facingMode,
-                    width: { ideal: 640 },
-                    height: { ideal: 480 }
-                }
+            // Autres appareils mobiles
+            constraints.video = {
+                facingMode: facingMode,
+                width: { ideal: 640 },
+                height: { ideal: 480 }
             };
         } else {
-            constraints = {
-                audio: false,
-                video: {
-                    facingMode: facingMode,
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                }
+            // Desktop
+            constraints.video = {
+                facingMode: facingMode,
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
             };
         }
 
         console.log("Tentative d'accès à la caméra avec les contraintes:", constraints);
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        try {
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
+        } catch (initialError) {
+            console.warn("Première tentative échouée, essai avec des contraintes minimales:", initialError);
+            
+            // Deuxième tentative avec des contraintes minimales
+            constraints.video = { facingMode: facingMode };
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+            } catch (fallbackError) {
+                // Si la caméra arrière échoue sur mobile, essayer la caméra avant
+                if (facingMode === 'environment' && isMobile) {
+                    console.warn("Tentative avec caméra frontale comme solution de secours");
+                    constraints.video = { facingMode: 'user' };
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                } else {
+                    // Remonter l'erreur si aucune solution ne fonctionne
+                    throw fallbackError;
+                }
+            }
+        }
         
         // S'assurer que l'élément vidéo est visible et correctement configuré
         video.style.display = 'block';
@@ -293,7 +320,7 @@ async function initCamera() {
             if (isIOS) {
                 statusMessage.textContent = "Touchez l'écran pour activer la caméra";
                 document.body.addEventListener('touchstart', function iosVideoFix() {
-                    video.play();
+                    video.play().catch(e => console.error("Échec play après toucher:", e));
                     document.body.removeEventListener('touchstart', iosVideoFix);
                 }, { once: true });
             }
@@ -494,13 +521,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(tempStream => {
                     // Arrêter immédiatement ce flux temporaire
                     tempStream.getTracks().forEach(track => track.stop());
-                    initCamera();
+                    setTimeout(() => {
+                        initCamera();
+                    }, 300);
                 })
                 .catch(err => {
                     console.error("Erreur lors de la demande de permission iOS:", err);
                     initCamera();
                 });
         }, { once: true });
+    } else {
+        // Configuration différée pour laisser le temps au DOM de se charger complètement
+        setTimeout(() => {
+            initCamera();
+        }, 300);
     }
     
     // Gérer les événements de visibilité pour économiser la batterie
@@ -539,8 +573,11 @@ document.addEventListener('DOMContentLoaded', function() {
 document.getElementById('switchCamera').addEventListener('click', () => {
     // Changer le mode de la caméra
     facingMode = facingMode === 'user' ? 'environment' : 'user';
+    statusMessage.textContent = 'Changement de caméra en cours...';
     // Réinitialiser la caméra avec la nouvelle orientation
-    initCamera();
+    setTimeout(() => {
+        initCamera();
+    }, 300);
 });
 
 // Rendre la fonction requestCameraAgain accessible globalement

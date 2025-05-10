@@ -88,22 +88,49 @@ let bubbleTextMap = new Map();
 // Pour stocker la forme et la taille de queue attribuées à chaque bulle spéciale (clé: `${x},${y}`)
 let bubbleShapeMap = new Map();
 
+// Vérifier immédiatement au chargement de la page s'il y a un score à récupérer
+window.addEventListener("load", () => {
+  // Vérifier si nous sommes sur un appareil à écran tactile et adapter l'interface
+  if (isMobile) {
+    document.body.classList.add('mobile');
+  }
+  
+  // Vérifier s'il y a un score à récupérer du mini-jeu gyroscope
+  const gyroscopeScore = localStorage.getItem("gyroscope-score");
+  const gameState = localStorage.getItem("game-state");
+  const gamePage = localStorage.getItem("game-page");
+  
+  if (gyroscopeScore && gameState === "finished" && gamePage === "page1") {
+    score = parseInt(gyroscopeScore, 10);
+    updateScoreDisplay();
+    console.log("Score récupéré du jeu gyroscope:", score);
+    
+    // Nettoyer le localStorage après récupération
+    localStorage.removeItem("gyroscope-score");
+    localStorage.setItem("game-state", "undefined");
+    localStorage.removeItem("game-page");
+  }
+});
+
+// Modifier le setInterval pour éviter les conflits avec la vérification au chargement
 setInterval(() => {
   // Vérifier si le jeu du gyroscope (page1) est terminé
   let gameState = localStorage.getItem("game-state");
   let gamePage = localStorage.getItem("game-page");
   
   if (gameState === "finished" && gamePage === "page1") {
-    // Récupérer le score du jeu gyroscope
+    // Récupérer le score du jeu gyroscope - si non déjà récupéré au chargement
     const gyroscopeScore = localStorage.getItem("gyroscope-score");
     if (gyroscopeScore) {
       score = parseInt(gyroscopeScore, 10);
       updateScoreDisplay();
-      // Supprimer le score du localStorage après l'avoir récupéré
+      console.log("Score récupéré du gyroscope dans l'intervalle:", score);
+      
+      // Nettoyer le localStorage
       localStorage.removeItem("gyroscope-score");
     }
     
-    // Réinitialiser immédiatement pour éviter les traitements multiples
+    // Réinitialiser pour éviter les traitements multiples
     localStorage.setItem("game-state", "undefined");
     localStorage.removeItem("game-page");
     
@@ -1122,6 +1149,13 @@ const gyroStatus = document.getElementById('gyro-status');
 function updateScoreDisplay() {
     if (scoreDisplay) {
         scoreDisplay.textContent = score;
+    } else {
+        console.error("Élément scoreDisplay non trouvé");
+        // Essayer de récupérer l'élément s'il n'est pas défini
+        const scoreDisplayElem = document.getElementById('score-display');
+        if (scoreDisplayElem) {
+            scoreDisplayElem.textContent = score;
+        }
     }
 }
 

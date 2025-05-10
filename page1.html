@@ -516,13 +516,152 @@
         padding: 0 8px;
       }
     }
+
+    /* Style pour l'affichage du score final */
+    .score-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 1s, background-color 1s;
+      pointer-events: none;
+    }
+
+    .score-overlay.active {
+      opacity: 1;
+      background-color: rgba(0, 0, 0, 0.85);
+      pointer-events: all;
+    }
+
+    .score-container {
+      position: relative;
+      width: 95%;
+      max-width: 500px;
+      background: linear-gradient(145deg, #182c4c 0%, #111 100%);
+      border: 2px solid #00ffcc;
+      border-radius: 16px;
+      padding: 30px;
+      color: white;
+      box-shadow: 0 0 30px #00ffcc44, 0 0 15px #2a489966;
+      text-align: center;
+      transform: translateY(30px);
+      opacity: 0;
+      transition: transform 0.8s ease-out, opacity 0.8s ease-out;
+    }
+
+    .score-overlay.active .score-container {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .score-header {
+      margin-bottom: 30px;
+      color: #00ffcc;
+      text-shadow: 0 0 10px #00ffcc66;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      letter-spacing: 1px;
+    }
+
+    .score-header h2 {
+      font-size: 2.2em;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .score-content {
+      margin-bottom: 30px;
+    }
+
+    .final-score {
+      font-size: 3.5em;
+      font-weight: bold;
+      margin: 20px 0;
+      color: #00ffcc;
+      text-shadow: 0 0 15px #00ffcc88;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .score-label {
+      font-size: 0.4em;
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .score-message {
+      font-size: 1.3em;
+      opacity: 0.9;
+      margin-top: 20px;
+    }
+
+    .score-btn {
+      padding: 1em 2em;
+      font-size: 1.2em;
+      background: rgba(0,255,204,0.13);
+      color: #00ffcc;
+      border: 2px solid #00ffcc;
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      font-weight: 600;
+      box-shadow: 0 2px 16px #00ffcc22, 0 1px 8px #0004;
+      backdrop-filter: blur(2px);
+      letter-spacing: 1px;
+      transition: background 0.3s, color 0.3s, border 0.3s, box-shadow 0.3s;
+      display: block;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .score-btn:hover {
+      background: #00ffcc;
+      color: #111;
+      border: 2px solid #00ffcc;
+      box-shadow: 0 0 24px #00ffcc88;
+    }
+
+    @media (max-width: 600px) {
+      .score-container {
+        width: 90%;
+        padding: 25px;
+      }
+      
+      .score-header h2 {
+        font-size: 2em;
+      }
+      
+      .final-score {
+        font-size: 3em;
+      }
+      
+      .score-message {
+        font-size: 1.1em;
+      }
+      
+      .score-btn {
+        font-size: 1.1em;
+        padding: 0.9em 1.5em;
+      }
+    }
   </style>
 </head>
 <body>
   <!-- Bannière du jeu -->
   <div id="game-banner">
     <div id="banner-content">
-      <span id="timer-display">01:10</span>
+      <span id="timer-display">00:05</span>
       <span id="score-display">Score: 0</span>
       <span id="gyro-status"></span>
     </div>
@@ -574,16 +713,31 @@
     </div>
   </div>
 
+  <!-- Ajout de la superposition pour l'affichage du score final -->
+  <div class="score-overlay" id="score-overlay">
+    <div class="score-container">
+      <div class="score-header">
+        <h2>Raffinage Terminé</h2>
+      </div>
+      <div class="score-content">
+        <div class="final-score">
+          <span id="final-score-value">0</span>
+          <span class="score-label">points</span>
+        </div>
+        <p class="score-message">Ton alignement énergétique est achevé.</p>
+      </div>
+      <button class="score-btn" id="restart-btn">Retourner à la page principale</button>
+    </div>
+  </div>
+
   <button id="start-btn">Activer le gyroscope</button>
   <div id="ball"></div>
   <div id="info"></div>
   
-  <!-- Ajout des éléments audio avec PLUSIEURS INSTANCES pour éviter les conflits -->
-  <audio id="pointSound1" src="SONORE/1point+.mp3" preload="auto"></audio>
-  <audio id="pointSound2" src="SONORE/1point+.mp3" preload="auto"></audio>
-  <audio id="wrongSound1" src="SONORE/wrong.mp3" preload="auto"></audio>
-  <audio id="wrongSound2" src="SONORE/wrong.mp3" preload="auto"></audio>
+  <!-- Ajout des éléments audio -->
+  <audio id="pointSound" src="SONORE/1point+.mp3" preload="auto"></audio>
   <audio id="backgroundMusic" src="SONORE/ambiancegyro.mp3" loop preload="auto"></audio>
+  <audio id="endGameSound" src="SONORE/Fin de raffinage.mp3" preload="auto"></audio>
   
   <!-- Cages rectangulaires -->
   <div id="cage-top-1" class="cage cage-top">
@@ -634,44 +788,19 @@
     const ball = document.getElementById("ball");
     const startBtn = document.getElementById("start-btn");
     const info = document.getElementById("info");
-    // Récupérer toutes les instances de sons
-    const pointSound1 = document.getElementById("pointSound1");
-    const pointSound2 = document.getElementById("pointSound2");
-    const wrongSound1 = document.getElementById("wrongSound1");
-    const wrongSound2 = document.getElementById("wrongSound2");
-    const backgroundMusic = document.getElementById("backgroundMusic");
+    const pointSound = document.getElementById("pointSound");
+    const backgroundMusic = document.getElementById("backgroundMusic"); // Ajout de la référence à la musique
+    const endGameSound = document.getElementById("endGameSound"); // Ajout de la référence au son de fin
     const gyroStatus = document.getElementById("gyro-status");
-    
-    // Variables pour alterner entre les instances de sons
-    let useFirstPointSound = true;
-    let useFirstWrongSound = true;
-    
-    // Fonction simplifiée pour jouer les sons alternativement
-    function playPointSound() {
-      if (useFirstPointSound) {
-        pointSound1.currentTime = 0;
-        pointSound1.play();
-      } else {
-        pointSound2.currentTime = 0;
-        pointSound2.play();
-      }
-      useFirstPointSound = !useFirstPointSound;
-    }
-    
-    function playWrongSound() {
-      if (useFirstWrongSound) {
-        wrongSound1.currentTime = 0;
-        wrongSound1.play();
-      } else {
-        wrongSound2.currentTime = 0;
-        wrongSound2.play();
-      }
-      useFirstWrongSound = !useFirstWrongSound;
-    }
     
     // Éléments du tutoriel
     const tutorialOverlay = document.getElementById("tutorial-overlay");
     const tutorialCloseBtn = document.getElementById("tutorial-close-btn");
+
+    // Éléments pour l'affichage du score final
+    const scoreOverlay = document.getElementById("score-overlay");
+    const finalScoreValue = document.getElementById("final-score-value");
+    const restartBtn = document.getElementById("restart-btn");
 
     // Afficher le tutoriel au chargement de la page
     window.addEventListener("DOMContentLoaded", () => {
@@ -684,6 +813,19 @@
     // Fermer le tutoriel quand le bouton est cliqué
     tutorialCloseBtn.addEventListener("click", () => {
       tutorialOverlay.classList.remove("active");
+    });
+
+    // Écouteur d'événement pour le bouton de redémarrage
+    restartBtn.addEventListener("click", () => {
+      scoreOverlay.classList.remove("active");
+      startBtn.style.display = "block";
+      // Réinitialiser la position de la balle
+      posX = window.innerWidth / 2;
+      posY = window.innerHeight / 2;
+      velX = 0;
+      velY = 0;
+      ball.style.left = posX + "px";
+      ball.style.top = posY + "px";
     });
 
     // Dégradés cycliques prédéfinis
@@ -705,7 +847,7 @@
 
     let score = 0;
     let gameActive = false;
-    let timerSeconds = 70; // Durée de la partie en secondes
+    let timerSeconds = 5; // Durée de la partie en secondes (réduite à 5 secondes)
     let timerInterval;
     updateScoreDisplay();
 
@@ -1155,13 +1297,12 @@
             score += 2;
             scoreEffect.textContent = "+2";
             scoreEffect.style.color = "#00FF00";
-            playPointSound(); // Utiliser la nouvelle fonction
+            pointSound.play(); // Jouer le son lors d'un point gagné
           } else {
             // Gradient différent, -1 point (inchangé)
             score -= 1;
             scoreEffect.textContent = "-1";
             scoreEffect.style.color = "#FF0000";
-            playWrongSound(); // Utiliser la nouvelle fonction
           }
 
           document.body.appendChild(scoreEffect);
@@ -1233,12 +1374,12 @@
         setGyroStatusActive();
 
         // Afficher le timer dès le début
-        timerDisplay.textContent = "01:10";
+        timerDisplay.textContent = "00:05";
         timerDisplay.style.color = "white";
         timerDisplay.style.animation = "none";
 
         // Démarrer le timer et les animations
-        timerSeconds = 70; // 70 secondes pour chaque partie
+        timerSeconds = 5; // 5 secondes pour chaque partie
         timerInterval = setInterval(updateTimer, 1000);
         initCageAnimations();
 
@@ -1284,17 +1425,45 @@
         clearInterval(timerInterval);
         gameActive = false;
         
+        // 1. Animation de disparition des cages
+        const cages = document.querySelectorAll('.cage');
+        cages.forEach((cage, index) => {
+            setTimeout(() => {
+                cage.style.transition = "opacity 0.5s ease-out, transform 0.5s ease-out";
+                cage.style.opacity = "0";
+                cage.style.transform = "scale(0.8)";
+            }, index * 50); // Délai progressif pour effet en cascade
+        });
+        
+        // 2. Animation de disparition des coins des cages
+        const corners = document.querySelectorAll('.cage-corner');
+        corners.forEach((corner, index) => {
+            setTimeout(() => {
+                corner.style.transition = "opacity 0.5s ease-out";
+                corner.style.opacity = "0";
+            }, index * 30); // Délai plus court pour les coins
+        });
+        
         backgroundMusic.pause();
         backgroundMusic.currentTime = 0;
         
-        // Afficher le score final
-        alert(`Temps écoulé! Score final: ${score}`);
+        // Jouer le son de fin de raffinage
+        endGameSound.play();
+        
+        // Préparer l'affichage du score
+        finalScoreValue.textContent = score;
+        
+        // Attendre que les animations de disparition soient terminées avant d'afficher le score
+        setTimeout(() => {
+            // Afficher l'overlay du score après la disparition des cages
+            scoreOverlay.classList.add("active");
+        }, 700); // Délai pour laisser le temps aux animations de disparition de se terminer
         
         // Réinitialiser le jeu
         score = 0;
         updateScoreDisplay();
-        timerSeconds = 70; // Remettre à 70 secondes pour la prochaine partie
-        timerDisplay.textContent = "01:10";
+        timerSeconds = 5; // Remettre à 5 secondes pour la prochaine partie
+        timerDisplay.textContent = "00:05";
         timerDisplay.style.color = "white";
         timerDisplay.style.animation = "none";
         

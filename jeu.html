@@ -182,53 +182,6 @@
       background: #00ffcc;
       color: #111;
     }
-
-    /* ===== STYLE POUR L'ENCART DE SCORE ===== */
-    #score-container {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: rgba(0, 255, 204, 0.2);
-      padding: 12px;
-      border-radius: 12px;
-      color: #00ffcc;
-      box-shadow: 0 2px 16px rgba(0, 255, 204, 0.3), 0 1px 8px rgba(0, 0, 0, 0.5);
-      z-index: 1000;
-      border: 2px solid rgba(0, 255, 204, 0.5);
-      backdrop-filter: blur(19px);
-      font-family: 'Fira Mono', 'Consolas', monospace;
-      text-align: center;
-      transition: all 0.3s ease-in-out;
-      min-width: 100px;
-    }
-
-    #score-container .score-header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-      border-bottom: 1px solid rgba(0, 255, 204, 0.3);
-      padding-bottom: 5px;
-      justify-content: center;
-    }
-
-    #score-container .score-icon {
-      color: #00ffcc;
-      margin-right: 8px;
-      font-size: 16px;
-    }
-
-    #score-container .score-title {
-      font-weight: bold;
-      color: #00ffcc;
-      font-size: 14px;
-      letter-spacing: 0.5px;
-    }
-
-    #score-container .score-value {
-      font-size: 24px;
-      font-weight: bold;
-      color: #00ffcc;
-    }
     
     /* ===== ADAPTATION POUR MOBILE ===== */
     @media (max-width: 600px) {
@@ -266,21 +219,6 @@
       #user-location-box .location-refresh {
         padding: 4px 8px;
         font-size: 10px;
-      }
-
-      /* Version mobile de l'encart de score */
-      #score-container {
-        top: 10px;
-        right: 10px;
-        padding: 8px;
-      }
-      
-      #score-container .score-title {
-        font-size: 12px;
-      }
-      
-      #score-container .score-value {
-        font-size: 20px;
       }
 
       /* Optimisations de performance pour le canvas sur mobile */
@@ -371,14 +309,6 @@
 </head>
 <body>
 
-<!-- Ajout de l'encart de score -->
-<div id="score-container">
-  <div class="score-header">
-    <span class="score-icon">🎮</span>
-    <span class="score-title">Score</span>
-  </div>
-  <div class="score-value" id="score-display">0</div>
-</div>
 
 <div id="mobile-info">
   Bonjour Raffineur numéro 587 ! Dépêchez-vous d'aller rafinner !

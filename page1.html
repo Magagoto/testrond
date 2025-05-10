@@ -320,16 +320,17 @@
 
     .tutorial-container {
       position: relative;
-      width: 92%;
-      max-width: 500px;
-      max-height: 85vh;
+      width: 95%;
+      max-width: 800px; /* augmenté de 500px à 800px */
+      max-height: 88vh;
       overflow-y: auto;
       background: linear-gradient(145deg, #182c4c 0%, #111 100%);
       border: 2px solid #00ffcc;
       border-radius: 16px;
-      padding: 20px;
+      padding: 24px;
       color: white;
       box-shadow: 0 0 30px #00ffcc44, 0 0 15px #2a489966;
+      margin: 0 10px;
     }
 
     .tutorial-header {
@@ -342,7 +343,7 @@
     }
 
     .tutorial-header h2 {
-      font-size: 1.8em;
+      font-size: 2em;
       font-weight: 600;
       margin: 0.5em 0;
     }
@@ -351,29 +352,30 @@
       margin-bottom: 24px;
       line-height: 1.6;
       font-family: sans-serif;
-      font-size: 16px;
+      font-size: 18px; /* augmenté de 16px */
     }
 
     .tutorial-step {
       display: flex;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
+      padding-bottom: 8px;
       align-items: flex-start;
     }
 
     .step-number {
       background: #00ffcc;
       color: #111;
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
       font-weight: bold;
-      margin-right: 15px;
+      margin-right: 18px;
       flex-shrink: 0;
       font-family: 'Fira Mono', 'Consolas', monospace;
-      font-size: 18px;
+      font-size: 20px;
     }
 
     .tutorial-btn {
@@ -394,7 +396,7 @@
       margin: 0 auto;
       text-align: center;
       width: 100%;
-      max-width: 280px;
+      max-width: 320px; /* augmenté de 280px */
     }
 
     .highlight {
@@ -403,14 +405,15 @@
       text-shadow: 0 0 6px #00ffcc33;
     }
 
-    /* Ajustements spécifiques pour mobile */
-    @media (max-width: 600px) {
+    /* Ajustements spécifiques pour mobile et tablette */
+    @media (max-width: 800px) {
       .tutorial-container {
         padding: 24px;
         width: 98%;
+        max-width: none; /* prend toute la largeur disponible */
         max-height: 94vh;
         border-radius: 12px;
-        margin: 10px;
+        margin: 10px auto;
       }
       
       .tutorial-header h2 {
@@ -434,7 +437,7 @@
         margin-top: 20px;
         padding: 1.2em 1em;
         font-size: 1.6em;
-        max-width: 340px;
+        max-width: 90%; /* prend 90% de la largeur du conteneur */
         border-radius: 14px;
       }
       
@@ -450,11 +453,15 @@
       }
     }
 
-    /* Ajustements pour les très petits écrans */
-    @media (max-width: 380px) {
+    /* Ajustements pour les téléphones */
+    @media (max-width: 480px) {
       .tutorial-container {
         padding: 20px;
-        width: 98%;
+        width: 100%;
+        max-height: 96vh;
+        border-radius: 10px;
+        margin: 5px 0;
+        border-width: 1px;
       }
       
       .tutorial-content {
@@ -465,6 +472,33 @@
         width: 46px;
         height: 46px;
         margin-right: 16px;
+      }
+      
+      .tutorial-btn {
+        max-width: 100%;
+        margin-top: 10px;
+      }
+    }
+
+    /* Ajustements pour les très petits écrans */
+    @media (max-width: 320px) {
+      .tutorial-container {
+        padding: 15px;
+      }
+      
+      .tutorial-header h2 {
+        font-size: 2em;
+      }
+      
+      .tutorial-content {
+        font-size: 1.2em;
+      }
+      
+      .step-number {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+        margin-right: 12px;
       }
     }
 

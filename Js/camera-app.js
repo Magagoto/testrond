@@ -224,7 +224,91 @@ function stopRealtimeColorAnalysis() {
     }
 }
 
-// Initialiser la caméra
+// Nouvelle fonction pour vérifier et demander les permissions de caméra
+async function checkAndRequestPermission() {
+    try {
+        statusMessage.textContent = 'Demande d\'accès à la caméra...';
+        
+        // Vérifier si l'API Permissions est disponible
+        if (navigator.permissions && navigator.permissions.query) {
+            try {
+                // Essayer de vérifier l'état actuel des permissions
+                const permissionStatus = await navigator.permissions.query({ name: 'camera' });
+                
+                if (permissionStatus.state === 'denied') {
+                    throw new Error('L\'accès à la caméra a été bloqué. Veuillez modifier les paramètres de votre navigateur.');
+                }
+                
+                console.log('État des permissions caméra:', permissionStatus.state);
+            } catch (permErr) {
+                // L'API Permissions peut ne pas fonctionner pour la caméra sur certains navigateurs
+                console.warn('Impossible de vérifier les permissions via l\'API:', permErr);
+            }
+        }
+        
+        // Demande explicite d'accès à la caméra avec des contraintes minimales
+        // Cette demande déclenche la boîte de dialogue d'autorisation
+        const testStream = await navigator.mediaDevices.getUserMedia({ 
+            video: true, 
+            audio: false 
+        });
+        
+        // Si on arrive ici, c'est que la permission a été accordée
+        console.log('Permission caméra accordée');
+        
+        // Libérer immédiatement ce flux de test
+        testStream.getTracks().forEach(track => track.stop());
+        
+        // Continuer avec l'initialisation de la caméra
+        return true;
+    } catch (error) {
+        console.error('Erreur lors de la vérification des permissions:', error);
+        
+        let errorMessage = "Impossible d'accéder à la caméra.";
+        
+        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+            errorMessage = "L'accès à la caméra a été refusé. Veuillez autoriser l'accès dans les paramètres de votre navigateur.";
+        } else if (error.name === 'NotFoundError') {
+            errorMessage = "Aucune caméra n'a été détectée sur votre appareil.";
+        } else if (error.name === 'NotReadableError') {
+            errorMessage = "La caméra est déjà utilisée par une autre application.";
+        } else if (error.name === 'OverconstrainedError') {
+            errorMessage = "La configuration demandée n'est pas supportée par votre caméra.";
+        } else if (error.name === 'AbortError') {
+            errorMessage = "La demande d'accès à la caméra a été interrompue.";
+        }
+        
+        statusMessage.textContent = errorMessage;
+        videoPlaceholder.style.display = 'flex';
+        videoPlaceholder.innerHTML = `
+            <div style="text-align: center; padding: 20px;">
+                <p>${errorMessage}</p>
+                <p style="margin-top: 10px; font-size: 0.9em;">Message technique: ${error.message}</p>
+                <button onclick="forceRequestPermission()" style="margin-top: 15px; padding: 8px 15px; background: rgba(0,255,204,0.2); color: #00ffcc; border: 1px solid #00ffcc; border-radius: 8px;">
+                    Réessayer
+                </button>
+            </div>
+        `;
+        
+        return false;
+    }
+}
+
+// Fonction pour forcer une nouvelle demande de permission
+async function forceRequestPermission() {
+    videoPlaceholder.innerHTML = 'Nouvelle demande d\'accès à la caméra...';
+    statusMessage.textContent = 'Tentative d\'accès à la caméra...';
+    
+    // Petite pause pour assurer que l'interface est mise à jour
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Réessayer la demande de permission puis initialiser la caméra
+    if (await checkAndRequestPermission()) {
+        initCamera();
+    }
+}
+
+// Modifier la fonction initCamera pour d'abord vérifier les permissions
 async function initCamera() {
     try {
         if (stream) {
@@ -237,6 +321,7 @@ async function initCamera() {
 
         // Montrer le placeholder pendant le chargement
         videoPlaceholder.style.display = 'flex';
+        videoPlaceholder.textContent = 'Initialisation de la caméra...';
 
         // Détection plus précise pour les appareils mobiles
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -479,8 +564,6 @@ document.getElementById('clearAllBtn').addEventListener('click', () => {
 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     statusMessage.textContent = 'Votre navigateur ne prend pas en charge l\'accès à la caméra.';
     videoPlaceholder.textContent = 'Votre navigateur ne prend pas en charge l\'accès à la caméra.';
-} else {
-    initCamera();
 }
 
 // Arrêter l'analyse de couleur lorsque l'utilisateur quitte la page
@@ -512,28 +595,25 @@ window.addEventListener('orientationchange', function() {
 document.addEventListener('DOMContentLoaded', function() {
     // Pour iOS: demander la permission audio/vidéo au chargement
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    
     if (isIOS) {
-        // En iOS 13+, les permissions audio/vidéo nécessitent une interaction utilisateur
-        document.body.addEventListener('touchstart', function iosPermissionFix() {
+        // En iOS, les permissions nécessitent une interaction utilisateur
+        statusMessage.textContent = "Touchez l'écran pour activer la caméra";
+        document.body.addEventListener('touchstart', async function iosPermissionFix() {
             document.body.removeEventListener('touchstart', iosPermissionFix);
-            // Juste pour forcer une demande de permission
-            navigator.mediaDevices.getUserMedia({audio: false, video: true})
-                .then(tempStream => {
-                    // Arrêter immédiatement ce flux temporaire
-                    tempStream.getTracks().forEach(track => track.stop());
-                    setTimeout(() => {
-                        initCamera();
-                    }, 300);
-                })
-                .catch(err => {
-                    console.error("Erreur lors de la demande de permission iOS:", err);
+            
+            if (await checkAndRequestPermission()) {
+                setTimeout(() => {
                     initCamera();
-                });
+                }, 300);
+            }
         }, { once: true });
     } else {
-        // Configuration différée pour laisser le temps au DOM de se charger complètement
-        setTimeout(() => {
-            initCamera();
+        // Sur les autres appareils, demander directement la permission
+        setTimeout(async () => {
+            if (await checkAndRequestPermission()) {
+                initCamera();
+            }
         }, 300);
     }
     
@@ -564,8 +644,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         statusMessage.textContent = 'Votre navigateur ne prend pas en charge l\'accès à la caméra.';
         videoPlaceholder.textContent = 'Votre navigateur ne prend pas en charge l\'accès à la caméra.';
-    } else {
-        initCamera();
     }
 });
 
@@ -580,5 +658,6 @@ document.getElementById('switchCamera').addEventListener('click', () => {
     }, 300);
 });
 
-// Rendre la fonction requestCameraAgain accessible globalement
+// Rendre les fonctions de permission accessibles globalement
 window.requestCameraAgain = requestCameraAgain;
+window.forceRequestPermission = forceRequestPermission;

@@ -43,32 +43,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 60px 20px 10px;
-        }
-        
-        #app-banner {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            min-width: 340px;
-            max-width: 100vw;
-            height: 50px;
-            background: linear-gradient(180deg, #182c4c 0%, #111 100%) !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            box-shadow: 0 2px 8px #0008;
-        }
-        
-        #banner-content {
-            width: 100%;
-            max-width: 900px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0 15px;
+            padding: 15px 20px 10px;
         }
         
         h1 {
@@ -80,7 +55,8 @@
             text-shadow: 
                 0 0 8px rgba(0, 255, 204, 0.4),
                 0 0 16px rgba(0, 255, 204, 0.2);
-            margin: 0;
+            margin: 0 0 15px 0;
+            text-align: center;
         }
         
         .container {
@@ -93,7 +69,7 @@
             padding: 15px;
             box-shadow: var(--shadow-soft);
             border: 2px solid rgba(0, 255, 204, 0.13);
-            max-height: calc(100vh - 120px);
+            max-height: calc(100vh - 80px);
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
@@ -110,175 +86,162 @@
             z-index: 10;
         }
         
-        .mode-btn {
-            flex: 1;
-            padding: 12px 20px;
-            border: none;
-            background: rgba(0, 0, 0, 0.2);
-            color: var(--primary-accent);
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-            font-family: 'Fira Mono', 'Consolas', monospace;
-            letter-spacing: 1px;
-        }
-        
-        .mode-btn.active {
-            background: var(--primary-accent);
-            color: var(--text-dark);
-            box-shadow: 0 2px 10px rgba(0, 255, 204, 0.4);
-        }
-        
-        .target-color-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .color-target {
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #FF0000, #00FF00);
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
-            margin-bottom: 10px;
-            border: 3px solid var(--text-light);
-        }
-        
-        .target-instruction {
-            font-size: 0.95rem;
-            color: var(--primary-accent);
-            text-align: center;
-            margin-top: 8px;
-        }
-        
-        #videoContainerChallenge {
-            position: relative;
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
             width: 100%;
-            max-width: 500px;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--shadow-soft);
-            background-color: #131c50;
-            aspect-ratio: 4/3;
-            margin: 0 auto 10px;
-            border: 2px solid rgba(0, 255, 204, 0.2);
         }
         
-        #videoChallenge, #canvasChallenge {
+        .gallery-item {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            aspect-ratio: 1/1;
+            border: 1px solid rgba(0, 255, 204, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .gallery-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            border-color: var(--primary-accent);
+        }
+        
+        .gallery-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: calc(var(--border-radius) - 2px);
         }
         
-        #focus-grid-challenge {
+        .delete-btn {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 40%;
-            height: 40%;
-            border: 2px dashed rgba(0, 255, 204, 0.7);
-            z-index: 2;
-            pointer-events: none;
-            border-radius: 8px;
-            box-shadow: 0 0 12px rgba(0, 255, 204, 0.3);
-        }
-        
-        #realtime-color-challenge {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(7, 17, 77, 0.8);
-            backdrop-filter: blur(5px);
+            top: 8px;
+            right: 8px;
+            background: rgba(255, 76, 76, 0.8);
             color: white;
-            padding: 10px;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            font-size: 14px;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        
+        .delete-btn:hover {
+            background: rgba(255, 50, 50, 1);
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 76, 76, 0.6);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 8px 18px;
+            font-size: 0.85rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        .primary {
+            background: rgba(0, 255, 204, 0.13);
+            color: var(--primary-accent);
+            border: 2px solid var(--primary-accent);
+            box-shadow: 0 2px 16px rgba(0, 255, 204, 0.2), 0 1px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .secondary {
+            background: var(--primary-accent);
+            color: var(--text-dark);
+            border: 2px solid var(--primary-accent);
+            box-shadow: 0 2px 16px rgba(0, 255, 204, 0.2), 0 1px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .danger {
+            background: rgba(255, 76, 76, 0.13);
+            color: #FF4C4C;
+            border: 2px solid #FF4C4C;
+            box-shadow: 0 2px 16px rgba(255, 76, 76, 0.2), 0 1px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+        }
+        
+        button.primary:hover {
+            background: var(--primary-accent);
+            color: var(--text-dark);
+        }
+        
+        button.danger:hover {
+            background: #FF4C4C;
+            color: white;
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .status-message {
+            margin: 10px auto;
+            padding: 8px 15px;
+            border-radius: 12px;
+            background: rgba(0, 255, 204, 0.07);
+            backdrop-filter: blur(5px);
+            max-width: 80%;
+            font-size: 0.85rem;
+            color: var(--primary-accent);
+            border: 1px solid rgba(0, 255, 204, 0.2);
+            animation: pulse 2s infinite ease-in-out;
             font-family: 'Fira Mono', 'Consolas', monospace;
             letter-spacing: 0.5px;
-            border-top: 1px solid rgba(0, 255, 204, 0.2);
-            z-index: 5;
         }
         
-        #color-preview-challenge {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            margin-right: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
-        }
-        
-        .challenge-result {
-            background: rgba(24, 44, 76, 0.3);
-            border-radius: var(--border-radius);
-            padding: 15px;
-            margin-top: 15px;
-            box-shadow: var(--shadow-soft);
-            border: 2px solid rgba(0, 255, 204, 0.2);
-            text-align: center;
-        }
-        
-        .color-comparison {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 15px 0;
-        }
-        
-        .color-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .color-sample {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin-bottom: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-            border: 2px solid var(--text-light);
-        }
-        
-        .score-display {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .score-value {
-            font-size: 3.5rem;
-            font-weight: bold;
-            color: var(--primary-accent);
-            margin-bottom: -10px;
-            text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
-            font-family: 'Mikodacs', serif;
-        }
-        
-        .feedback-message {
-            color: var(--primary-accent);
-            font-size: 1.1rem;
-            margin-top: 15px;
-            padding: 10px;
+        @keyframes pulse {
+            0% { opacity: 0.8; box-shadow: 0 0 5px rgba(0, 255, 204, 0.1); }
+            50% { opacity: 1; box-shadow: 0 0 12px rgba(0, 255, 204, 0.3); }
+            100% { opacity: 0.8; box-shadow: 0 0 5px rgba(0, 255, 204, 0.1); }
         }
         
         @media (max-width: 768px) {
             h1 {
                 font-size: 1.2rem;
+                margin-bottom: 10px;
             }
             
             .container {
                 padding: 10px;
                 margin: 0 5px 10px;
-                max-height: calc(100vh - 100px);
+                max-height: calc(100vh - 60px);
             }
             
             .color-target {
@@ -333,11 +296,7 @@
     </style>
 </head>
 <body>
-    <div id="app-banner">
-        <div id="banner-content">
-            <h1>Défi Couleur Chroméa</h1>
-        </div>
-    </div>
+    <h1>Défi Couleur Chroméa</h1>
     
     <div class="mode-toggle">
         <button class="mode-btn active" id="challengeMode">Défi Couleur</button>
@@ -407,20 +366,6 @@
         <p id="challengeStatus" class="status-message">Initialisation du défi...</p>
     </div>
 
-    <div class="container hidden" id="galleryModeContainer">
-        <h2>Images Capturées</h2>
-        <div class="gallery" id="photoGallery"></div>
-        <div class="button-group">
-            <button id="clearAllBtn" class="danger">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-                </svg>
-                Supprimer toutes les images
-            </button>
-        </div>
-    </div>
-
     <script>
         let facingMode = 'user';
         let photos = JSON.parse(localStorage.getItem('capturedPhotos')) || [];
@@ -437,7 +382,6 @@
         const challengeMode = document.getElementById('challengeMode');
         const galleryMode = document.getElementById('galleryMode');
         const challengeModeContainer = document.getElementById('challengeModeContainer');
-        const galleryModeContainer = document.getElementById('galleryModeContainer');
         const videoChallenge = document.getElementById('videoChallenge');
         const canvasChallenge = document.getElementById('canvasChallenge');
         const ctxChallenge = canvasChallenge.getContext('2d');
@@ -452,7 +396,6 @@
         const feedbackMessage = document.getElementById('feedbackMessage');
         const challengeStatus = document.getElementById('challengeStatus');
         const videoPlaceholderChallenge = document.getElementById('videoPlaceholderChallenge');
-        const photoGallery = document.getElementById('photoGallery');
         
         let currentTargetColor = { r: 0, g: 0, b: 0 };
         
@@ -460,7 +403,6 @@
             challengeMode.classList.add('active');
             galleryMode.classList.remove('active');
             challengeModeContainer.classList.remove('hidden');
-            galleryModeContainer.classList.add('hidden');
             
             if (!streamChallenge) {
                 initChallengeCamera();
@@ -469,15 +411,108 @@
         });
 
         galleryMode.addEventListener('click', () => {
+            if (streamChallenge) {
+                streamChallenge.getTracks().forEach(track => track.stop());
+                stopChallengeColorAnalysis();
+            }
+            
             galleryMode.classList.add('active');
             challengeMode.classList.remove('active');
-            challengeModeContainer.classList.add('hidden');
-            galleryModeContainer.classList.remove('hidden');
             
-            stopChallengeColorAnalysis();
-            
-            loadGallery();
+            openGalleryView();
         });
+        
+        function openGalleryView() {
+            challengeModeContainer.classList.add('hidden');
+            
+            const galleryView = document.createElement('div');
+            galleryView.className = 'container';
+            galleryView.id = 'galleryModeContainer';
+            
+            let galleryContent = `
+                <h2>Images Capturées</h2>
+                <div class="gallery" id="photoGallery">
+            `;
+            
+            if (photos.length === 0) {
+                galleryContent += '<p>Aucune photo dans la galerie. Prenez des photos pour les voir ici.</p>';
+            } else {
+                photos.forEach((photo, index) => {
+                    const dominantColor = photo.dominantColor || { rgb: 'rgb(128, 128, 128)', hex: '#808080' };
+                    const targetColorDisplay = photo.targetColor ? 
+                        `<div class="color-swatch" style="background-color: ${photo.targetColor}"></div>` : '';
+                    
+                    galleryContent += `
+                        <div class="gallery-item">
+                            <img class="gallery-img" src="${photo.url}" alt="Photo ${index + 1}">
+                            <button class="delete-btn" data-id="${photo.id}">✕</button>
+                            <div class="color-info">
+                                ${targetColorDisplay}
+                                <div class="color-swatch" style="background-color: ${dominantColor.rgb}"></div>
+                                <span>${dominantColor.hex}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            galleryContent += `
+                </div>
+                <div class="button-group">
+                    <button id="backToChallengeBtn" class="primary">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5z"/>
+                        </svg>
+                        Retour au défi
+                    </button>
+                    <button id="clearAllBtn" class="danger">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                            <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                        </svg>
+                        Supprimer toutes les images
+                    </button>
+                </div>
+            `;
+            
+            galleryView.innerHTML = galleryContent;
+            
+            document.body.appendChild(galleryView);
+            
+            document.getElementById('backToChallengeBtn').addEventListener('click', () => {
+                document.body.removeChild(galleryView);
+                challengeMode.click();
+            });
+            
+            document.getElementById('clearAllBtn').addEventListener('click', () => {
+                if (confirm('Êtes-vous sûr de vouloir supprimer toutes les photos?')) {
+                    photos = [];
+                    localStorage.setItem('capturedPhotos', JSON.stringify(photos));
+                    document.getElementById('photoGallery').innerHTML = '<p>Aucune photo dans la galerie. Prenez des photos pour les voir ici.</p>';
+                }
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const photoId = e.target.dataset.id;
+                    deletePhoto(photoId, e.target.closest('.gallery-item'));
+                });
+            });
+        }
+        
+        function deletePhoto(photoId, element) {
+            photos = photos.filter(photo => photo.id !== photoId);
+            localStorage.setItem('capturedPhotos', JSON.stringify(photos));
+            
+            if (element) {
+                element.remove();
+                
+                const gallery = document.getElementById('photoGallery');
+                if (gallery && gallery.children.length === 0) {
+                    gallery.innerHTML = '<p>Aucune photo dans la galerie. Prenez des photos pour les voir ici.</p>';
+                }
+            }
+        }
         
         switchCameraChallenge.addEventListener('click', () => {
             facingMode = facingMode === 'user' ? 'environment' : 'user';
@@ -746,56 +781,6 @@
             });
             localStorage.setItem('capturedPhotos', JSON.stringify(photos));
         }
-        
-        function loadGallery() {
-            photoGallery.innerHTML = '';
-            
-            if (photos.length === 0) {
-                photoGallery.innerHTML = '<p>Aucune photo dans la galerie. Prenez des photos pour les voir ici.</p>';
-                return;
-            }
-            
-            photos.forEach((photo, index) => {
-                const photoElement = document.createElement('div');
-                photoElement.className = 'gallery-item';
-                
-                const dominantColor = photo.dominantColor || { rgb: 'rgb(128, 128, 128)', hex: '#808080' };
-                const targetColorDisplay = photo.targetColor ? 
-                    `<div class="color-swatch" style="background-color: ${photo.targetColor}"></div>` : '';
-                
-                photoElement.innerHTML = `
-                    <img class="gallery-img" src="${photo.url}" alt="Photo ${index + 1}">
-                    <button class="delete-btn" data-id="${photo.id}">✕</button>
-                    <div class="color-info">
-                        ${targetColorDisplay}
-                        <div class="color-swatch" style="background-color: ${dominantColor.rgb}"></div>
-                        <span>${dominantColor.hex}</span>
-                    </div>
-                `;
-                photoGallery.appendChild(photoElement);
-            });
-
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const photoId = e.target.dataset.id;
-                    deletePhoto(photoId);
-                });
-            });
-        }
-
-        function deletePhoto(photoId) {
-            photos = photos.filter(photo => photo.id !== photoId);
-            localStorage.setItem('capturedPhotos', JSON.stringify(photos));
-            loadGallery();
-        }
-
-        document.getElementById('clearAllBtn').addEventListener('click', () => {
-            if (confirm('Êtes-vous sûr de vouloir supprimer toutes les photos?')) {
-                photos = [];
-                localStorage.setItem('capturedPhotos', JSON.stringify(photos));
-                loadGallery();
-            }
-        });
         
         newChallengeBtn.addEventListener('click', generateTargetColor);
         

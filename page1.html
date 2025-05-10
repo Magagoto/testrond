@@ -23,7 +23,7 @@
       width: 80px;
       height: 80px;
       border-radius: 50%;
-      background: #e0f5016e;
+      background: #0b03fc6e;
       background-size: 150% 150%;
       background-position: center;
       transition: background 0.3s, box-shadow 0.3s;
@@ -580,7 +580,7 @@
   
   <!-- Ajout des éléments audio -->
   <audio id="pointSound" src="SONORE/1point+.mp3" preload="auto"></audio>
-  <audio id="wrongSound" src="SONORE/wronganswer.mp3" preload="auto"></audio>
+  <audio id="wrongSound" src="SONORE/wrong.mp3" preload="auto"></audio>
   <audio id="backgroundMusic" src="SONORE/ambiancegyro.mp3" loop preload="auto"></audio>
   
   <!-- Cages rectangulaires -->
@@ -634,8 +634,21 @@
     const info = document.getElementById("info");
     const pointSound = document.getElementById("pointSound");
     const wrongSound = document.getElementById("wrongSound");
-    const backgroundMusic = document.getElementById("backgroundMusic"); // Ajout de la référence à la musique
+    const backgroundMusic = document.getElementById("backgroundMusic");
     const gyroStatus = document.getElementById("gyro-status");
+    
+    // Fonction pour jouer un son - permet de jouer des sons multiples simultanément
+    function playSound(sound) {
+      // Créer un clone de l'élément audio
+      const soundClone = sound.cloneNode();
+      soundClone.volume = sound.volume;
+      soundClone.play();
+      
+      // Supprimer le clone après la lecture pour éviter de surcharger le DOM
+      soundClone.addEventListener('ended', function() {
+        this.remove();
+      });
+    }
     
     // Éléments du tutoriel
     const tutorialOverlay = document.getElementById("tutorial-overlay");
@@ -1123,13 +1136,13 @@
             score += 2;
             scoreEffect.textContent = "+2";
             scoreEffect.style.color = "#00FF00";
-            pointSound.play(); // Jouer le son lors d'un point gagné
+            playSound(pointSound); // Utiliser la nouvelle fonction pour jouer le son
           } else {
             // Gradient différent, -1 point (inchangé)
             score -= 1;
             scoreEffect.textContent = "-1";
             scoreEffect.style.color = "#FF0000";
-            wrongSound.play(); // Jouer le son lors d'une mauvaise correspondance
+            playSound(wrongSound); // Utiliser la nouvelle fonction pour jouer le son
           }
 
           document.body.appendChild(scoreEffect);

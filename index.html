@@ -307,7 +307,7 @@ body {
 </head>
 <body>
 <canvas id="canvas"></canvas>
-<audio id="backgroundMusic" src="SONORE/ambiance page principale.mp3" loop preload="auto" autoplay></audio>
+<audio id="backgroundMusic" src="SONORE/CHROMEA Theme.mp3" loop autoplay></audio>
 
 <!-- Titre principal Chroméa juste au-dessus du cadre CGU -->
 <div style="width:100%;text-align:center;z-index:10;position:relative;">
@@ -385,6 +385,13 @@ body {
   </div>
 </div>
 <script>
+// Jouer la musique directement, sans condition ni bouton
+document.addEventListener('DOMContentLoaded', function() {
+  const backgroundMusic = document.getElementById('backgroundMusic');
+  backgroundMusic.volume = 0.8;
+  backgroundMusic.play();
+});
+
 // Fonction pour gérer l'acceptation des CGU
 let cguFullyScrolled = false;
 
@@ -406,7 +413,6 @@ function acceptCGU() {
     return;
   }
   window.location.href = "jeu.html";
-  // document.getElementById('backgroundMusic').play();
 }
 
 function refuseCGU() {

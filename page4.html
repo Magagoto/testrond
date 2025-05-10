@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chroméa - Capture d'image</title>
+    <title>Chroméa - Défi Couleur</title>
     <style>
         :root {
             --primary-bg: #111;
@@ -35,16 +35,14 @@
         html, body {
             margin: 0;
             height: 100%;
-            overflow: hidden; /* Empêche tout scroll */
+            overflow: hidden;
             font-family: 'Fira Mono', 'Consolas', monospace, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
             background: var(--primary-bg);
             color: var(--text-light);
-            /* SVG de fond : réduction de la taille des motifs à 60px comme sur la page 1 */
             background-image: url('data:image/svg+xml;utf8,<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><circle cx="15" cy="15" r="8" fill="none" stroke="%23222" stroke-width="1.2"/><circle cx="45" cy="15" r="8" fill="none" stroke="%23222" stroke-width="1.2"/><circle cx="15" cy="45" r="8" fill="none" stroke="%23222" stroke-width="1.2"/><circle cx="45" cy="45" r="8" fill="none" stroke="%23222" stroke-width="1.2"/><polyline points="45,0 45,15 15,15 15,45 45,45 45,60" fill="none" stroke="%23222" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/></svg>');
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* Réajuster le padding pour avoir une meilleure disposition verticale */
             padding: 60px 20px 10px;
         }
         
@@ -55,7 +53,7 @@
             width: 100vw;
             min-width: 340px;
             max-width: 100vw;
-            height: 50px; /* Hauteur réduite */
+            height: 50px;
             background: linear-gradient(180deg, #182c4c 0%, #111 100%) !important;
             display: flex;
             align-items: center;
@@ -68,21 +66,21 @@
             width: 100%;
             max-width: 900px;
             display: flex;
-            justify-content: center; /* Centrer le titre au lieu de space-between */
+            justify-content: center;
             align-items: center;
             padding: 0 15px;
         }
         
         h1 {
             font-family: 'Mikodacs', serif;
-            font-size: 1.5rem; /* Taille réduite */
+            font-size: 1.5rem;
             color: var(--primary-accent);
             font-weight: 700;
             letter-spacing: 0.04em;
             text-shadow: 
                 0 0 8px rgba(0, 255, 204, 0.4),
                 0 0 16px rgba(0, 255, 204, 0.2);
-            margin: 0; /* Enlever les marges */
+            margin: 0;
         }
         
         .container {
@@ -95,21 +93,19 @@
             padding: 15px;
             box-shadow: var(--shadow-soft);
             border: 2px solid rgba(0, 255, 204, 0.13);
-            /* Hauteur maximum pour s'assurer de tout contenir */
-            max-height: calc(100vh - 130px);
+            max-height: calc(100vh - 120px);
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch; /* Pour iOS */
+            -webkit-overflow-scrolling: touch;
         }
         
         .mode-toggle {
             display: flex;
             border-radius: 30px;
             overflow: hidden;
-            margin: 0 auto 25px;
-            width: 300px;
+            margin: 0 auto 15px;
+            width: 280px;
             border: 2px solid var(--primary-accent);
             box-shadow: 0 2px 16px rgba(0, 255, 204, 0.2);
-            /* Assurer que le bouton est bien visible et accessible */
             position: relative;
             z-index: 10;
         }
@@ -134,425 +130,28 @@
             box-shadow: 0 2px 10px rgba(0, 255, 204, 0.4);
         }
         
-        #videoContainer, #photoContainer {
-            position: relative;
-            width: 100%;
-            max-width: 500px;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--shadow-soft);
-            background-color: #131c50; /* Sera remplacé par un dégradé aléatoire */
-            aspect-ratio: 4/3;
-            margin: 0 auto 10px; /* Marge réduite */
-            border: 2px solid rgba(0, 255, 204, 0.2);
-        }
-        
-        /* Nouveau style pour le placeholder de la caméra avec dégradé */
-        #videoPlaceholder {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: rgba(255, 255, 255, 0.6);
-            font-family: 'Fira Mono', 'Consolas', monospace;
-            font-size: 0.9rem;
-            text-align: center;
-            padding: 0 20px;
-            background: linear-gradient(135deg, #00A993, #E68B4A); /* Sera défini dynamiquement */
-        }
-        
-        #video, #canvas, #photo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: calc(var(--border-radius) - 2px);
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 15px;
-            margin-top: 15px; /* Marge réduite */
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
-        button {
-            padding: 8px 18px; /* Padding réduit */
-            font-size: 0.85rem; /* Taille réduite */
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-family: 'Fira Mono', 'Consolas', monospace;
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
-        
-        .primary {
-            background: rgba(0, 255, 204, 0.13);
-            color: var(--primary-accent);
-            border: 2px solid var(--primary-accent);
-            box-shadow: 0 2px 16px rgba(0, 255, 204, 0.2), 0 1px 8px rgba(0, 0, 0, 0.3);
-        }
-        
-        .secondary {
-            background: var(--primary-accent);
-            color: var(--text-dark);
-            border: 2px solid var(--primary-accent);
-            box-shadow: 0 2px 16px rgba(0, 255, 204, 0.2), 0 1px 8px rgba(0, 0, 0, 0.3);
-        }
-        
-        .danger {
-            background: rgba(255, 76, 76, 0.13);
-            color: #FF4C4C;
-            border: 2px solid #FF4C4C;
-            box-shadow: 0 2px 16px rgba(255, 76, 76, 0.2), 0 1px 8px rgba(0, 0, 0, 0.3);
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
-        }
-        
-        button.primary:hover {
-            background: var(--primary-accent);
-            color: var(--text-dark);
-        }
-        
-        button.danger:hover {
-            background: #FF4C4C;
-            color: white;
-        }
-        
-        button:active {
-            transform: translateY(1px);
-        }
-        
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 30px;
-            width: 100%;
-        }
-        
-        .gallery-item {
-            position: relative;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            aspect-ratio: 1/1;
-            border: 1px solid rgba(0, 255, 204, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .gallery-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-            border-color: var(--primary-accent);
-        }
-        
-        .gallery-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .delete-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(255, 76, 76, 0.8);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-            transition: all 0.2s ease;
-            z-index: 10;
-        }
-        
-        .delete-btn:hover {
-            background: rgba(255, 50, 50, 1);
-            transform: scale(1.1);
-            box-shadow: 0 0 15px rgba(255, 76, 76, 0.6);
-        }
-        
-        .hidden {
-            display: none;
-        }
-        
-        .status-message {
-            margin: 10px auto; /* Marge réduite */
-            padding: 8px 15px; /* Padding réduit */
-            border-radius: 12px;
-            background: rgba(0, 255, 204, 0.07);
-            backdrop-filter: blur(5px);
-            max-width: 80%;
-            font-size: 0.85rem; /* Taille réduite */
-            color: var(--primary-accent);
-            border: 1px solid rgba(0, 255, 204, 0.2);
-            animation: pulse 2s infinite ease-in-out;
-            font-family: 'Fira Mono', 'Consolas', monospace;
-            letter-spacing: 0.5px;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 0.8; box-shadow: 0 0 5px rgba(0, 255, 204, 0.1); }
-            50% { opacity: 1; box-shadow: 0 0 12px rgba(0, 255, 204, 0.3); }
-            100% { opacity: 0.8; box-shadow: 0 0 5px rgba(0, 255, 204, 0.1); }
-        }
-        
-        .effects-panel {
-            display: flex;
-            gap: 10px;
-            margin: 20px auto;
-            flex-wrap: wrap;
-            justify-content: center;
-            max-width: 500px;
-        }
-        
-        .effect-btn {
-            padding: 8px 15px;
-            font-size: 0.85rem;
-            border: 1px solid rgba(0, 255, 204, 0.3);
-            border-radius: 20px;
-            background: rgba(0, 255, 204, 0.05);
-            color: var(--primary-accent);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Fira Mono', 'Consolas', monospace;
-            letter-spacing: 0.5px;
-        }
-        
-        .effect-btn.active {
-            background: var(--primary-accent);
-            color: var(--text-dark);
-            box-shadow: 0 0 16px rgba(0, 255, 204, 0.4);
-        }
-        
-        .color-info {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(7, 17, 77, 0.8);
-            backdrop-filter: blur(5px);
-            color: white;
-            padding: 8px;
-            font-size: 12px;
-            border-top: 1px solid rgba(0, 255, 204, 0.2);
-            font-family: 'Fira Mono', 'Consolas', monospace;
-            letter-spacing: 0.5px;
-        }
-        
-        .color-swatch {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            margin-right: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
-        }
-        
-        h2 {
-            color: var(--primary-accent);
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            text-shadow: 0 0 8px rgba(0, 255, 204, 0.2);
-            font-family: 'Fira Mono', 'Consolas', monospace;
-            letter-spacing: 1px;
-        }
-        
-        @keyframes blink {
-            from { opacity: 1; }
-            to { opacity: 0.3; }
-        }
-        
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 1.2rem;
-            }
-            
-            .container {
-                padding: 10px;
-                margin: 0 5px 10px;
-                max-height: calc(100vh - 100px);
-                overflow-y: auto; /* Permettre le défilement si nécessaire */
-            }
-            
-            .mode-toggle {
-                width: 90%;
-                max-width: 320px;
-                margin: 0 auto 15px;
-                position: sticky; /* Garder le menu visible lors du défilement */
-                top: 65px; /* Juste en dessous de la bannière */
-                z-index: 15;
-            }
-            
-            .mode-btn {
-                padding: 10px 5px; /* Réduire le padding horizontal */
-                font-size: 0.85rem; /* Réduire légèrement la taille de police */
-            }
-            
-            .button-group {
-                gap: 8px;
-                margin-top: 10px;
-            }
-            
-            button {
-                padding: 6px 12px;
-                font-size: 0.8rem;
-            }
-            
-            .gallery {
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            }
-            
-            #app-banner {
-                height: 60px;
-                min-width: 100vw;
-                padding-left: 0;
-                padding-right: 0;
-                position: fixed; /* S'assurer qu'il reste en haut */
-                top: 0;
-                z-index: 20;
-            }
-            
-            html, body {
-                padding-top: 70px;
-                padding-bottom: 5px;
-                height: 100%;
-                overflow-x: hidden;
-                position: relative;
-            }
-            
-            /* Ajustements pour les petits téléphones */
-            @media (max-width: 380px) {
-                .mode-toggle {
-                    max-width: 95%;
-                }
-                
-                .mode-btn {
-                    padding: 8px 5px;
-                    font-size: 0.8rem;
-                }
-                
-                .button-group {
-                    flex-direction: column; /* Empiler les boutons sur petits écrans */
-                    align-items: center;
-                    width: 100%;
-                }
-                
-                button {
-                    width: 90%;
-                    max-width: 250px;
-                }
-                
-                #videoContainer, #photoContainer {
-                    max-height: 50vh; /* Limiter la hauteur sur petits écrans */
-                }
-                
-                .effects-panel {
-                    flex-wrap: nowrap;
-                    overflow-x: auto;
-                    padding-bottom: 5px;
-                    justify-content: flex-start;
-                    padding: 0 10px;
-                }
-                
-                .effect-btn {
-                    flex: 0 0 auto;
-                    white-space: nowrap;
-                }
-            }
-        }
-        
-        /* Pour assurer que la grille de focus soit correctement visible sur mobile */
-        #focus-grid {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 40%;
-            height: 40%;
-            border: 2px dashed rgba(0, 255, 204, 0.7);
-            z-index: 2;
-            pointer-events: none;
-            border-radius: 8px;
-            box-shadow: 0 0 12px rgba(0, 255, 204, 0.3);
-        }
-        
-        /* Ajustement du panneau en temps réel pour mobile */
-        #realtime-color {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(7, 17, 77, 0.8);
-            backdrop-filter: blur(5px);
-            color: white;
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Fira Mono', 'Consolas', monospace;
-            letter-spacing: 0.5px;
-            border-top: 1px solid rgba(0, 255, 204, 0.2);
-            z-index: 5;
-            opacity: 1;
-        }
-        
-        #color-preview {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            margin-right: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Styles pour le mode défi couleur */
         .target-color-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .color-target {
-            width: 150px;
-            height: 150px;
+            width: 130px;
+            height: 130px;
             border-radius: 50%;
             background: linear-gradient(135deg, #FF0000, #00FF00);
             box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             border: 3px solid var(--text-light);
         }
         
         .target-instruction {
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: var(--primary-accent);
             text-align: center;
-            margin-top: 10px;
+            margin-top: 8px;
         }
         
         #videoContainerChallenge {
@@ -619,8 +218,8 @@
         .challenge-result {
             background: rgba(24, 44, 76, 0.3);
             border-radius: var(--border-radius);
-            padding: 20px;
-            margin-top: 25px;
+            padding: 15px;
+            margin-top: 15px;
             box-shadow: var(--shadow-soft);
             border: 2px solid rgba(0, 255, 204, 0.2);
             text-align: center;
@@ -630,7 +229,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 20px 0;
+            margin: 15px 0;
         }
         
         .color-box {
@@ -672,22 +271,63 @@
         }
         
         @media (max-width: 768px) {
+            h1 {
+                font-size: 1.2rem;
+            }
+            
+            .container {
+                padding: 10px;
+                margin: 0 5px 10px;
+                max-height: calc(100vh - 100px);
+            }
+            
             .color-target {
-                width: 120px;
-                height: 120px;
+                width: 100px;
+                height: 100px;
             }
             
             .color-sample {
-                width: 60px;
-                height: 60px;
+                width: 50px;
+                height: 50px;
             }
             
             .score-value {
-                font-size: 2.5rem;
+                font-size: 2.2rem;
             }
             
             .feedback-message {
-                font-size: 0.9rem;
+                font-size: 0.85rem;
+                margin-top: 10px;
+                padding: 5px;
+            }
+            
+            #videoContainerChallenge {
+                max-height: 35vh;
+            }
+            
+            @media (max-height: 700px) {
+                .color-target {
+                    width: 80px;
+                    height: 80px;
+                }
+                
+                h2 {
+                    font-size: 1.2rem;
+                    margin-bottom: 10px;
+                }
+                
+                .button-group {
+                    margin-top: 8px;
+                }
+                
+                #videoContainerChallenge {
+                    max-height: 30vh;
+                }
+                
+                .status-message {
+                    padding: 5px 10px;
+                    font-size: 0.8rem;
+                }
             }
         }
     </style>
@@ -695,75 +335,16 @@
 <body>
     <div id="app-banner">
         <div id="banner-content">
-            <h1>Capteur d'Images Chroméa</h1>
+            <h1>Défi Couleur Chroméa</h1>
         </div>
     </div>
     
     <div class="mode-toggle">
-        <button class="mode-btn active" id="cameraMode">Mode Caméra</button>
+        <button class="mode-btn active" id="challengeMode">Défi Couleur</button>
         <button class="mode-btn" id="galleryMode">Galerie Photos</button>
-        <button class="mode-btn" id="challengeMode">Défi Couleur</button>
     </div>
 
-    <div class="container" id="cameraModeContainer">
-        <div id="videoContainer">
-            <video id="video" autoplay playsinline></video>
-            <canvas id="canvas" class="hidden"></canvas>
-            <div id="videoPlaceholder">En attente d'activation de la caméra...</div>
-            
-            <!-- Ajout de la grille de focus pour indiquer la zone centrale -->
-            <div id="focus-grid"></div>
-            
-            <!-- Ajout de l'affichage en temps réel de la couleur dominante -->
-            <div id="realtime-color" class="hidden">
-                <div id="color-preview"></div>
-                <span id="color-value">#000000</span>
-            </div>
-        </div>
-
-        <div class="effects-panel">
-            <button class="effect-btn active" data-filter="normal">Normal</button>
-            <button class="effect-btn" data-filter="grayscale">Noir & Blanc</button>
-            <button class="effect-btn" data-filter="sepia">Sépia</button>
-            <button class="effect-btn" data-filter="invert">Négatif</button>
-        </div>
-
-        <div class="button-group">
-            <button id="switchCamera" class="primary">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M8 3a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V8a6 6 0 0 1 6-6h4.5L10 4.5l.7.7L14.2 2l-3.5-3.2-.7.7L12.5 2H8z"/>
-                </svg>
-                Changer de caméra
-            </button>
-            <button id="captureBtn" class="secondary">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/>
-                    <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
-                </svg>
-                Capturer l'image
-            </button>
-        </div>
-        
-        <p id="statusMessage" class="status-message">Initialisation de la caméra...</p>
-    </div>
-
-    <div class="container hidden" id="galleryModeContainer">
-        <h2>Images Capturées</h2>
-        <div class="gallery" id="photoGallery"></div>
-        <div class="button-group">
-            <button id="clearAllBtn" class="danger">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-                </svg>
-                Supprimer toutes les images
-            </button>
-        </div>
-    </div>
-
-    <!-- Nouveau conteneur pour le mode défi couleur -->
-    <div class="container hidden" id="challengeModeContainer">
-        <h2>Défi Couleur</h2>
+    <div class="container" id="challengeModeContainer">
         <div class="target-color-container">
             <div id="targetColor" class="color-target"></div>
             <p class="target-instruction">Trouvez et photographiez une couleur similaire à celle-ci</p>
@@ -781,6 +362,12 @@
         </div>
         
         <div class="button-group">
+            <button id="switchCameraChallenge" class="primary">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 3a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V8a6 6 0 0 1 6-6h4.5L10 4.5l.7.7L14.2 2l-3.5-3.2-.7.7L12.5 2H8z"/>
+                </svg>
+                Changer de caméra
+            </button>
             <button id="captureChallengeBtn" class="secondary">
                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                     <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/>
@@ -796,7 +383,6 @@
             </button>
         </div>
         
-        <!-- Résultat du défi -->
         <div id="challengeResult" class="challenge-result hidden">
             <h3>Résultat</h3>
             <div class="color-comparison">
@@ -818,23 +404,29 @@
             </div>
         </div>
         
-        <p id="challengeStatus" class="status-message">Initialisez le défi pour commencer</p>
+        <p id="challengeStatus" class="status-message">Initialisation du défi...</p>
+    </div>
+
+    <div class="container hidden" id="galleryModeContainer">
+        <h2>Images Capturées</h2>
+        <div class="gallery" id="photoGallery"></div>
+        <div class="button-group">
+            <button id="clearAllBtn" class="danger">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                </svg>
+                Supprimer toutes les images
+            </button>
+        </div>
     </div>
 
     <script>
-        // Variables globales
-        let stream;
-        let currentFilter = 'normal';
-        let facingMode = 'user'; // Par défaut, caméra frontale
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const statusMessage = document.getElementById('statusMessage');
-        const photoGallery = document.getElementById('photoGallery');
-        const videoPlaceholder = document.getElementById('videoPlaceholder');
+        let facingMode = 'user';
         let photos = JSON.parse(localStorage.getItem('capturedPhotos')) || [];
+        let streamChallenge;
+        let challengeColorAnalysisInterval;
         
-        // Définir les dégradés possibles
         const gradientMap = {
             "#00A993": "#E68B4A", "#E68B4A": "#7A1619", "#7A1619": "#362777",
             "#362777": "#EB7AAE", "#EB7AAE": "#0069AA", "#0069AA": "#DC0C15",
@@ -842,222 +434,72 @@
             "#2A4899": "#00A993"
         };
         
-        // Fonction pour choisir un dégradé aléatoire
-        function setRandomGradient() {
-            const colors = Object.entries(gradientMap);
-            const randomIndex = Math.floor(Math.random() * colors.length);
-            const [startColor, endColor] = [colors[randomIndex][0], colors[randomIndex][1]];
-            videoPlaceholder.style.background = `linear-gradient(135deg, ${startColor}, ${endColor})`;
-        }
+        const challengeMode = document.getElementById('challengeMode');
+        const galleryMode = document.getElementById('galleryMode');
+        const challengeModeContainer = document.getElementById('challengeModeContainer');
+        const galleryModeContainer = document.getElementById('galleryModeContainer');
+        const videoChallenge = document.getElementById('videoChallenge');
+        const canvasChallenge = document.getElementById('canvasChallenge');
+        const ctxChallenge = canvasChallenge.getContext('2d');
+        const targetColor = document.getElementById('targetColor');
+        const captureChallengeBtn = document.getElementById('captureChallengeBtn');
+        const newChallengeBtn = document.getElementById('newChallengeBtn');
+        const switchCameraChallenge = document.getElementById('switchCameraChallenge');
+        const challengeResult = document.getElementById('challengeResult');
+        const targetColorResult = document.getElementById('targetColorResult');
+        const capturedColorResult = document.getElementById('capturedColorResult');
+        const scoreValue = document.getElementById('scoreValue');
+        const feedbackMessage = document.getElementById('feedbackMessage');
+        const challengeStatus = document.getElementById('challengeStatus');
+        const videoPlaceholderChallenge = document.getElementById('videoPlaceholderChallenge');
+        const photoGallery = document.getElementById('photoGallery');
         
-        // Appliquer un dégradé aléatoire au démarrage
-        setRandomGradient();
+        let currentTargetColor = { r: 0, g: 0, b: 0 };
         
-        // Changer de mode (caméra ou galerie)
-        document.getElementById('cameraMode').addEventListener('click', () => {
-            document.getElementById('cameraMode').classList.add('active');
-            document.getElementById('galleryMode').classList.remove('active');
-            document.getElementById('challengeMode').classList.remove('active');
-            document.getElementById('cameraModeContainer').classList.remove('hidden');
-            document.getElementById('galleryModeContainer').classList.add('hidden');
-            document.getElementById('challengeModeContainer').classList.add('hidden');
+        challengeMode.addEventListener('click', () => {
+            challengeMode.classList.add('active');
+            galleryMode.classList.remove('active');
+            challengeModeContainer.classList.remove('hidden');
+            galleryModeContainer.classList.add('hidden');
             
-            // Redémarrer l'analyse de couleur si nécessaire
-            if (stream && !colorAnalysisInterval) {
-                startRealtimeColorAnalysis();
+            if (!streamChallenge) {
+                initChallengeCamera();
+                generateTargetColor();
             }
         });
 
-        document.getElementById('galleryMode').addEventListener('click', () => {
-            document.getElementById('galleryMode').classList.add('active');
-            document.getElementById('cameraMode').classList.remove('active');
-            document.getElementById('challengeMode').classList.remove('active');
-            document.getElementById('cameraModeContainer').classList.add('hidden');
-            document.getElementById('galleryModeContainer').classList.remove('hidden');
-            document.getElementById('challengeModeContainer').classList.add('hidden');
+        galleryMode.addEventListener('click', () => {
+            galleryMode.classList.add('active');
+            challengeMode.classList.remove('active');
+            challengeModeContainer.classList.add('hidden');
+            galleryModeContainer.classList.remove('hidden');
             
-            // Arrêter l'analyse de couleur en mode galerie pour économiser les ressources
-            stopRealtimeColorAnalysis();
+            stopChallengeColorAnalysis();
             
             loadGallery();
         });
-
-        // Gestion des effets
-        document.querySelectorAll('.effect-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.effect-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentFilter = btn.dataset.filter;
-                applyVideoFilter();
-            });
+        
+        switchCameraChallenge.addEventListener('click', () => {
+            facingMode = facingMode === 'user' ? 'environment' : 'user';
+            initChallengeCamera();
         });
 
-        // Fonction pour appliquer les filtres à la vidéo
-        function applyVideoFilter() {
-            switch(currentFilter) {
-                case 'grayscale':
-                    video.style.filter = 'grayscale(100%)';
-                    break;
-                case 'sepia':
-                    video.style.filter = 'sepia(100%)';
-                    break;
-                case 'invert':
-                    video.style.filter = 'invert(100%)';
-                    break;
-                default:
-                    video.style.filter = 'none';
-            }
-        }
-
-        // Variables pour l'analyse en temps réel
-        const realtimeColor = document.getElementById('realtime-color');
-        const colorPreview = document.getElementById('color-preview');
-        const colorValue = document.getElementById('color-value');
-        const focusGrid = document.getElementById('focus-grid');
-        let colorAnalysisInterval;
-
-        // Fonction améliorée pour extraire la couleur dominante, privilégiant la zone centrale
-        function extractDominantColor(imageData, focusOnCenter = false) {
-            const data = imageData.data;
-            const width = imageData.width;
-            const height = imageData.height;
-            const colorCounts = {};
-            
-            // Déterminer la zone centrale (40% de l'image au centre)
-            const centerStartX = Math.floor(width * 0.3);
-            const centerEndX = Math.floor(width * 0.7);
-            const centerStartY = Math.floor(height * 0.3);
-            const centerEndY = Math.floor(height * 0.7);
-            
-            // Pas d'échantillonnage (plus petit = plus précis mais plus lent)
-            const step = 5;
-            
-            // Analyser les pixels
-            for (let y = 0; y < height; y += step) {
-                for (let x = 0; x < width; x += step) {
-                    // Si on se concentre sur le centre et que le pixel est hors de cette zone, on le saute
-                    if (focusOnCenter && (
-                        x < centerStartX || x > centerEndX || 
-                        y < centerStartY || y > centerEndY
-                    )) {
-                        continue;
-                    }
-                    
-                    const i = (y * width + x) * 4;
-                    
-                    // Ignorer les pixels transparents ou trop sombres
-                    if (data[i + 3] < 128 || (data[i] < 30 && data[i + 1] < 30 && data[i + 2] < 30)) {
-                        continue;
-                    }
-                    
-                    // Simplifier les valeurs RGB pour réduire le nombre total de couleurs
-                    const r = Math.floor(data[i] / 10) * 10;
-                    const g = Math.floor(data[i + 1] / 10) * 10;
-                    const b = Math.floor(data[i + 2] / 10) * 10;
-                    
-                    const colorKey = `${r},${g},${b}`;
-                    
-                    if (!colorCounts[colorKey]) {
-                        colorCounts[colorKey] = 0;
-                    }
-                    
-                    // Donner plus de poids aux couleurs vives
-                    const saturation = Math.max(r, g, b) - Math.min(r, g, b);
-                    const weight = 1 + saturation / 255;
-                    
-                    colorCounts[colorKey] += weight;
-                }
-            }
-            
-            // Trouver la couleur avec le plus grand nombre d'occurrences
-            let maxCount = 0;
-            let dominantColor = '0,0,0';
-            
-            for (const colorKey in colorCounts) {
-                if (colorCounts[colorKey] > maxCount) {
-                    maxCount = colorCounts[colorKey];
-                    dominantColor = colorKey;
-                }
-            }
-            
-            const [r, g, b] = dominantColor.split(',').map(Number);
-            return {
-                rgb: `rgb(${r}, ${g}, ${b})`,
-                hex: `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
-            };
-        }
-
-        // Fonction pour analyser en temps réel la couleur dominante
-        function startRealtimeColorAnalysis() {
-            if (colorAnalysisInterval) {
-                clearInterval(colorAnalysisInterval);
-            }
-            
-            // S'assurer que l'élément est visible dès le début
-            realtimeColor.classList.remove('hidden');
-            
-            // Créer un canvas temporaire pour l'analyse
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            
-            // Ajuster l'intervalle selon le type d'appareil
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const interval = isMobile ? 300 : 200; // Moins fréquent sur mobile pour économiser la batterie
-            
-            colorAnalysisInterval = setInterval(() => {
-                if (!stream || video.paused || video.ended || !video.videoWidth) {
-                    return;
+        async function initChallengeCamera() {
+            try {
+                if (streamChallenge) {
+                    streamChallenge.getTracks().forEach(track => track.stop());
+                    stopChallengeColorAnalysis();
                 }
                 
-                try {
-                    // Définir les dimensions du canvas temporaire
-                    if (tempCanvas.width !== video.videoWidth || tempCanvas.height !== video.videoHeight) {
-                        tempCanvas.width = video.videoWidth;
-                        tempCanvas.height = video.videoHeight;
-                    }
-                    
-                    // Dessiner la frame actuelle sur le canvas temporaire
-                    tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
-                    
-                    // Extraire la couleur dominante de la zone centrale
-                    const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-                    const dominantColor = extractDominantColor(imageData, true);
-                    
-                    // Mettre à jour l'affichage
-                    colorPreview.style.backgroundColor = dominantColor.rgb;
-                    colorValue.textContent = dominantColor.hex;
-                } catch (e) {
-                    console.error('Erreur dans l\'analyse de couleur:', e);
-                }
-            }, interval);
-        }
-
-        function stopRealtimeColorAnalysis() {
-            if (colorAnalysisInterval) {
-                clearInterval(colorAnalysisInterval);
-                colorAnalysisInterval = null;
-            }
-        }
-
-        // Initialiser la caméra
-        async function initCamera() {
-            try {
-                if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
-                    stopRealtimeColorAnalysis();
-                }
-
-                // Optimisations supplémentaires pour mobile
                 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                 let constraints;
                 
                 if (isMobile) {
-                    // Résolution réduite pour mobile avec plus d'options de compatibilité
                     constraints = {
                         audio: false,
                         video: {
                             facingMode: facingMode,
-                            width: { ideal: 640 }, // Encore plus réduit pour assurer la compatibilité
+                            width: { ideal: 640 },
                             height: { ideal: 480 }
                         }
                     };
@@ -1071,262 +513,6 @@
                         }
                     };
                 }
-
-                stream = await navigator.mediaDevices.getUserMedia(constraints);
-                video.srcObject = stream;
-                
-                // Masquer le placeholder une fois la caméra activée
-                videoPlaceholder.style.display = 'none';
-                
-                // Rendre la vidéo visible explicitement
-                video.style.display = 'block';
-                
-                // Utiliser un gestionnaire d'événement pour s'assurer que tout est prêt
-                video.onloadedmetadata = () => {
-                    // Forcer la vidéo à s'afficher
-                    video.play().catch(e => console.error('Erreur lors du démarrage de la vidéo:', e));
-                    
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    statusMessage.textContent = 'Caméra prête. Vous pouvez prendre une photo.';
-                    
-                    // Démarrer l'analyse de couleur une fois la caméra prête
-                    setTimeout(() => {
-                        startRealtimeColorAnalysis();
-                    }, 500);
-                };
-
-                // Deuxième gestionnaire d'événement pour s'assurer que tout fonctionne
-                video.onplaying = () => {
-                    statusMessage.textContent = 'Caméra active et fonctionnelle.';
-                };
-
-                applyVideoFilter();
-            } catch (error) {
-                statusMessage.textContent = `Erreur d'accès à la caméra: ${error.message}`;
-                console.error('Erreur d\'accès à la caméra:', error);
-                videoPlaceholder.style.display = 'flex';
-                videoPlaceholder.textContent = `Erreur d'accès à la caméra: ${error.message}`;
-                realtimeColor.classList.add('hidden');
-            }
-        }
-
-        // Changer de caméra
-        document.getElementById('switchCamera').addEventListener('click', () => {
-            facingMode = facingMode === 'user' ? 'environment' : 'user';
-            initCamera();
-        });
-
-        // Capturer une photo
-        document.getElementById('captureBtn').addEventListener('click', () => {
-            // Dessiner l'image actuelle de la vidéo sur le canvas
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            // Appliquer le même filtre au canvas
-            let filterCSS = '';
-            switch(currentFilter) {
-                case 'grayscale':
-                    filterCSS = 'grayscale(100%)';
-                    break;
-                case 'sepia':
-                    filterCSS = 'sepia(100%)';
-                    break;
-                case 'invert':
-                    filterCSS = 'invert(100%)';
-                    break;
-            }
-            
-            if (filterCSS) {
-                ctx.filter = filterCSS;
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                ctx.filter = 'none';
-            }
-            
-            // Extraire la couleur dominante avec focus sur la zone centrale
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const dominantColor = extractDominantColor(imageData, true);
-            
-            // Convertir en URL data
-            const photoDataUrl = canvas.toDataURL('image/jpeg');
-            
-            // Sauvegarder la photo avec la couleur dominante
-            savePhoto(photoDataUrl, dominantColor);
-            
-            // Afficher message de confirmation
-            statusMessage.textContent = 'Photo capturée et enregistrée!';
-            setTimeout(() => {
-                statusMessage.textContent = 'Caméra prête. Vous pouvez prendre une photo.';
-            }, 2000);
-        });
-
-        // Sauvegarder une photo
-        function savePhoto(dataUrl, dominantColor) {
-            const timestamp = new Date().toISOString();
-            photos.push({
-                id: Date.now().toString(),
-                url: dataUrl,
-                timestamp: timestamp,
-                dominantColor: dominantColor
-            });
-            localStorage.setItem('capturedPhotos', JSON.stringify(photos));
-        }
-
-        // Charger la galerie de photos
-        function loadGallery() {
-            photoGallery.innerHTML = '';
-            
-            if (photos.length === 0) {
-                photoGallery.innerHTML = '<p>Aucune photo dans la galerie. Prenez des photos pour les voir ici.</p>';
-                return;
-            }
-            
-            photos.forEach((photo, index) => {
-                const photoElement = document.createElement('div');
-                photoElement.className = 'gallery-item';
-                
-                // Vérifier si la photo a une couleur dominante (pour la compatibilité avec les anciennes photos)
-                const dominantColor = photo.dominantColor || { rgb: 'rgb(128, 128, 128)', hex: '#808080' };
-                
-                photoElement.innerHTML = `
-                    <img class="gallery-img" src="${photo.url}" alt="Photo ${index + 1}">
-                    <button class="delete-btn" data-id="${photo.id}">✕</button>
-                    <div class="color-info">
-                        <div class="color-swatch" style="background-color: ${dominantColor.rgb}"></div>
-                        <span>${dominantColor.hex}</span>
-                    </div>
-                `;
-                photoGallery.appendChild(photoElement);
-            });
-
-            // Ajouter des gestionnaires d'événements pour les boutons de suppression
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const photoId = e.target.dataset.id;
-                    deletePhoto(photoId);
-                });
-            });
-        }
-
-        // Supprimer une photo
-        function deletePhoto(photoId) {
-            photos = photos.filter(photo => photo.id !== photoId);
-            localStorage.setItem('capturedPhotos', JSON.stringify(photos));
-            loadGallery();
-        }
-
-        // Supprimer toutes les photos
-        document.getElementById('clearAllBtn').addEventListener('click', () => {
-            if (confirm('Êtes-vous sûr de vouloir supprimer toutes les photos?')) {
-                photos = [];
-                localStorage.setItem('capturedPhotos', JSON.stringify(photos));
-                loadGallery();
-            }
-        });
-
-        // Vérifier si le navigateur prend en charge getUserMedia
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            statusMessage.textContent = 'Votre navigateur ne prend pas en charge l\'accès à la caméra.';
-            videoPlaceholder.textContent = 'Votre navigateur ne prend pas en charge l\'accès à la caméra.';
-        } else {
-            initCamera();
-        }
-
-        // Arrêter l'analyse de couleur lorsque l'utilisateur quitte la page
-        window.addEventListener('beforeunload', () => {
-            stopRealtimeColorAnalysis();
-            stopChallengeColorAnalysis();
-        });
-
-        // Fonction pour détecter les changements d'orientation sur mobile
-        function handleOrientationChange() {
-            // Recalculer les dimensions si nécessaire
-            if (video.videoWidth && video.videoHeight) {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-            }
-            
-            // S'assurer que les panneaux s'adaptent correctement
-            const galleryContainer = document.getElementById('galleryModeContainer');
-            if (!galleryContainer.classList.contains('hidden')) {
-                loadGallery(); // Réorganiser la galerie après rotation
-            }
-        }
-        
-        // Ajouter des écouteurs pour les changements d'orientation
-        window.addEventListener('orientationchange', function() {
-            setTimeout(handleOrientationChange, 300); // Attendre que le navigateur termine le changement
-        });
-        
-        // Initialisation au chargement
-        document.addEventListener('DOMContentLoaded', function() {
-            // S'assurer que l'interface s'adapte correctement au chargement
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                statusMessage.textContent = 'Votre navigateur ne prend pas en charge l\'accès à la caméra.';
-                videoPlaceholder.textContent = 'Votre navigateur ne prend pas en charge l\'accès à la caméra.';
-            } else {
-                initCamera();
-            }
-        });
-
-        // Variables pour le mode défi couleur
-        const challengeMode = document.getElementById('challengeMode');
-        const challengeModeContainer = document.getElementById('challengeModeContainer');
-        const videoChallenge = document.getElementById('videoChallenge');
-        const canvasChallenge = document.getElementById('canvasChallenge');
-        const ctxChallenge = canvasChallenge.getContext('2d');
-        const targetColor = document.getElementById('targetColor');
-        const captureChallengeBtn = document.getElementById('captureChallengeBtn');
-        const newChallengeBtn = document.getElementById('newChallengeBtn');
-        const challengeResult = document.getElementById('challengeResult');
-        const targetColorResult = document.getElementById('targetColorResult');
-        const capturedColorResult = document.getElementById('capturedColorResult');
-        const scoreValue = document.getElementById('scoreValue');
-        const feedbackMessage = document.getElementById('feedbackMessage');
-        const challengeStatus = document.getElementById('challengeStatus');
-        const videoPlaceholderChallenge = document.getElementById('videoPlaceholderChallenge');
-        
-        let currentTargetColor = { r: 0, g: 0, b: 0 };
-        let streamChallenge;
-        let challengeColorAnalysisInterval;
-        let colorAnalysisInitialized = false;
-        
-        // Ajouter le gestionnaire d'événement pour le mode défi
-        challengeMode.addEventListener('click', () => {
-            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-            challengeMode.classList.add('active');
-            
-            document.querySelectorAll('.container').forEach(container => container.classList.add('hidden'));
-            challengeModeContainer.classList.remove('hidden');
-            
-            // Arrêter le stream existant s'il y en a un
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stopRealtimeColorAnalysis();
-            }
-            
-            // Initialiser la caméra pour le défi
-            initChallengeCamera();
-            
-            // Générer une nouvelle couleur cible
-            generateTargetColor();
-        });
-        
-        // Initialiser la caméra pour le mode défi
-        async function initChallengeCamera() {
-            try {
-                if (streamChallenge) {
-                    streamChallenge.getTracks().forEach(track => track.stop());
-                    stopChallengeColorAnalysis();
-                }
-                
-                const constraints = {
-                    audio: false,
-                    video: {
-                        facingMode: facingMode,
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    }
-                };
                 
                 streamChallenge = await navigator.mediaDevices.getUserMedia(constraints);
                 videoChallenge.srcObject = streamChallenge;
@@ -1341,7 +527,6 @@
                     canvasChallenge.height = videoChallenge.videoHeight;
                     challengeStatus.textContent = 'Caméra prête. Trouvez une couleur similaire à la cible.';
                     
-                    // Démarrer l'analyse de couleur pour le défi
                     setTimeout(() => {
                         startChallengeColorAnalysis();
                     }, 500);
@@ -1358,49 +543,104 @@
             }
         }
         
-        // Générer une nouvelle couleur cible aléatoire
+        function extractDominantColor(imageData, focusOnCenter = false) {
+            const data = imageData.data;
+            const width = imageData.width;
+            const height = imageData.height;
+            const colorCounts = {};
+            
+            const centerStartX = Math.floor(width * 0.3);
+            const centerEndX = Math.floor(width * 0.7);
+            const centerStartY = Math.floor(height * 0.3);
+            const centerEndY = Math.floor(height * 0.7);
+            
+            const step = 5;
+            
+            for (let y = 0; y < height; y += step) {
+                for (let x = 0; x < width; x += step) {
+                    if (focusOnCenter && (
+                        x < centerStartX || x > centerEndX || 
+                        y < centerStartY || y > centerEndY
+                    )) {
+                        continue;
+                    }
+                    
+                    const i = (y * width + x) * 4;
+                    
+                    if (data[i + 3] < 128 || (data[i] < 30 && data[i + 1] < 30 && data[i + 2] < 30)) {
+                        continue;
+                    }
+                    
+                    const r = Math.floor(data[i] / 10) * 10;
+                    const g = Math.floor(data[i + 1] / 10) * 10;
+                    const b = Math.floor(data[i + 2] / 10) * 10;
+                    
+                    const colorKey = `${r},${g},${b}`;
+                    
+                    if (!colorCounts[colorKey]) {
+                        colorCounts[colorKey] = 0;
+                    }
+                    
+                    const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+                    const weight = 1 + saturation / 255;
+                    
+                    colorCounts[colorKey] += weight;
+                }
+            }
+            
+            let maxCount = 0;
+            let dominantColor = '0,0,0';
+            
+            for (const colorKey in colorCounts) {
+                if (colorCounts[colorKey] > maxCount) {
+                    maxCount = colorCounts[colorKey];
+                    dominantColor = colorKey;
+                }
+            }
+            
+            const [r, g, b] = dominantColor.split(',').map(Number);
+            return {
+                rgb: `rgb(${r}, ${g}, ${b})`,
+                hex: `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+            };
+        }
+        
         function generateTargetColor() {
-            // Générer des couleurs vives mais pas trop claires ni trop foncées
-            const r = Math.floor(Math.random() * 200) + 25; // entre 25 et 225
+            const r = Math.floor(Math.random() * 200) + 25;
             const g = Math.floor(Math.random() * 200) + 25;
             const b = Math.floor(Math.random() * 200) + 25;
             
             currentTargetColor = { r, g, b };
             
-            // Convertir en hex pour l'affichage
             const hex = rgbToHex(r, g, b);
             
-            // Mettre à jour l'affichage
             targetColor.style.background = `rgb(${r}, ${g}, ${b})`;
             
-            // Cacher le résultat précédent
             challengeResult.classList.add('hidden');
             
-            // Mettre à jour l'état
             challengeStatus.textContent = 'Nouvelle couleur générée. Trouvez une couleur similaire dans votre environnement.';
         }
         
-        // Fonction pour convertir RGB en Hex
         function rgbToHex(r, g, b) {
             return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
         }
         
-        // Fonction pour analyser la couleur en temps réel dans le mode défi
         function startChallengeColorAnalysis() {
             if (challengeColorAnalysisInterval) {
                 clearInterval(challengeColorAnalysisInterval);
             }
             
-            // Référencer les éléments d'affichage
             const realtimeColorChallenge = document.getElementById('realtime-color-challenge');
             const colorPreviewChallenge = document.getElementById('color-preview-challenge');
             const colorValueChallenge = document.getElementById('color-value-challenge');
             
             realtimeColorChallenge.classList.remove('hidden');
             
-            // Créer un canvas temporaire pour l'analyse
             const tempCanvas = document.createElement('canvas');
             const tempCtx = tempCanvas.getContext('2d');
+            
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const interval = isMobile ? 300 : 200;
             
             challengeColorAnalysisInterval = setInterval(() => {
                 if (!streamChallenge || videoChallenge.paused || videoChallenge.ended || !videoChallenge.videoWidth) {
@@ -1408,26 +648,22 @@
                 }
                 
                 try {
-                    // Définir les dimensions du canvas temporaire
                     if (tempCanvas.width !== videoChallenge.videoWidth || tempCanvas.height !== videoChallenge.videoHeight) {
                         tempCanvas.width = videoChallenge.videoWidth;
                         tempCanvas.height = videoChallenge.videoHeight;
                     }
                     
-                    // Dessiner la frame actuelle
                     tempCtx.drawImage(videoChallenge, 0, 0, tempCanvas.width, tempCanvas.height);
                     
-                    // Extraire la couleur dominante de la zone centrale
                     const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
                     const dominantColor = extractDominantColor(imageData, true);
                     
-                    // Mettre à jour l'affichage
                     colorPreviewChallenge.style.backgroundColor = dominantColor.rgb;
                     colorValueChallenge.textContent = dominantColor.hex;
                 } catch (e) {
                     console.error('Erreur dans l\'analyse de couleur du défi:', e);
                 }
-            }, 200);
+            }, interval);
         }
         
         function stopChallengeColorAnalysis() {
@@ -1437,22 +673,19 @@
             }
         }
         
-        // Capturer une couleur pour le défi
         captureChallengeBtn.addEventListener('click', () => {
-            // Dessiner l'image actuelle sur le canvas
             ctxChallenge.drawImage(videoChallenge, 0, 0, canvasChallenge.width, canvasChallenge.height);
             
-            // Extraire la couleur dominante
             const imageData = ctxChallenge.getImageData(0, 0, canvasChallenge.width, canvasChallenge.height);
             const dominantColor = extractDominantColor(imageData, true);
             
-            // Analyser la couleur et calculer le score
             evaluateColorMatch(dominantColor);
+            
+            const photoDataUrl = canvasChallenge.toDataURL('image/jpeg');
+            savePhoto(photoDataUrl, dominantColor);
         });
         
-        // Calculer la proximité entre la couleur capturée et la couleur cible
         function evaluateColorMatch(capturedColor) {
-            // Extraire les composants RGB de la couleur capturée
             const rgbMatch = capturedColor.rgb.match(/rgb\((\d+), (\d+), (\d+)\)/);
             if (!rgbMatch) return;
             
@@ -1460,38 +693,28 @@
             const capturedG = parseInt(rgbMatch[2]);
             const capturedB = parseInt(rgbMatch[3]);
             
-            // Calculer la distance euclidienne entre les couleurs (dans l'espace RGB)
             const distance = Math.sqrt(
                 Math.pow(currentTargetColor.r - capturedR, 2) +
                 Math.pow(currentTargetColor.g - capturedG, 2) +
                 Math.pow(currentTargetColor.b - capturedB, 2)
             );
             
-            // La distance maximale théorique est sqrt(3 * 255^2) = 441.67
-            // Convertir cette distance en score sur 10 (inversement proportionnel)
             let score = 10 - (distance / 441.67) * 10;
             
-            // Assurer que le score est entre 0 et 10
             score = Math.max(0, Math.min(10, score));
-            score = Math.round(score * 10) / 10; // Arrondir à 1 décimale
+            score = Math.round(score * 10) / 10;
             
-            // Si le score est vraiment excellent (>9.5), arrondir à 10
             if (score > 9.5) score = 10;
             
-            // Afficher les résultats
             displayChallengeResults(capturedColor, score);
         }
         
-        // Afficher les résultats du défi
         function displayChallengeResults(capturedColor, score) {
-            // Afficher les couleurs
             targetColorResult.style.backgroundColor = `rgb(${currentTargetColor.r}, ${currentTargetColor.g}, ${currentTargetColor.b})`;
             capturedColorResult.style.backgroundColor = capturedColor.rgb;
             
-            // Afficher le score
             scoreValue.textContent = score.toString();
             
-            // Déterminer le message de retour en fonction du score
             let feedback;
             if (score >= 9) {
                 feedback = "Parfait ! Vous avez un œil exceptionnel pour les couleurs !";
@@ -1507,15 +730,104 @@
             
             feedbackMessage.textContent = feedback;
             
-            // Afficher le résultat
             challengeResult.classList.remove('hidden');
             
-            // Mise à jour du statut
             challengeStatus.textContent = "Couleur capturée et évaluée. Essayez à nouveau ou générez une nouvelle couleur.";
         }
         
-        // Générer une nouvelle couleur pour le défi
+        function savePhoto(dataUrl, dominantColor) {
+            const timestamp = new Date().toISOString();
+            photos.push({
+                id: Date.now().toString(),
+                url: dataUrl,
+                timestamp: timestamp,
+                dominantColor: dominantColor,
+                targetColor: `rgb(${currentTargetColor.r}, ${currentTargetColor.g}, ${currentTargetColor.b})`
+            });
+            localStorage.setItem('capturedPhotos', JSON.stringify(photos));
+        }
+        
+        function loadGallery() {
+            photoGallery.innerHTML = '';
+            
+            if (photos.length === 0) {
+                photoGallery.innerHTML = '<p>Aucune photo dans la galerie. Prenez des photos pour les voir ici.</p>';
+                return;
+            }
+            
+            photos.forEach((photo, index) => {
+                const photoElement = document.createElement('div');
+                photoElement.className = 'gallery-item';
+                
+                const dominantColor = photo.dominantColor || { rgb: 'rgb(128, 128, 128)', hex: '#808080' };
+                const targetColorDisplay = photo.targetColor ? 
+                    `<div class="color-swatch" style="background-color: ${photo.targetColor}"></div>` : '';
+                
+                photoElement.innerHTML = `
+                    <img class="gallery-img" src="${photo.url}" alt="Photo ${index + 1}">
+                    <button class="delete-btn" data-id="${photo.id}">✕</button>
+                    <div class="color-info">
+                        ${targetColorDisplay}
+                        <div class="color-swatch" style="background-color: ${dominantColor.rgb}"></div>
+                        <span>${dominantColor.hex}</span>
+                    </div>
+                `;
+                photoGallery.appendChild(photoElement);
+            });
+
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const photoId = e.target.dataset.id;
+                    deletePhoto(photoId);
+                });
+            });
+        }
+
+        function deletePhoto(photoId) {
+            photos = photos.filter(photo => photo.id !== photoId);
+            localStorage.setItem('capturedPhotos', JSON.stringify(photos));
+            loadGallery();
+        }
+
+        document.getElementById('clearAllBtn').addEventListener('click', () => {
+            if (confirm('Êtes-vous sûr de vouloir supprimer toutes les photos?')) {
+                photos = [];
+                localStorage.setItem('capturedPhotos', JSON.stringify(photos));
+                loadGallery();
+            }
+        });
+        
         newChallengeBtn.addEventListener('click', generateTargetColor);
+        
+        function handleOrientationChange() {
+            if (videoChallenge.videoWidth && videoChallenge.videoHeight) {
+                canvasChallenge.width = videoChallenge.videoWidth;
+                canvasChallenge.height = videoChallenge.videoHeight;
+            }
+            
+            const galleryContainer = document.getElementById('galleryModeContainer');
+            if (!galleryContainer.classList.contains('hidden')) {
+                loadGallery();
+            }
+        }
+        
+        window.addEventListener('orientationchange', function() {
+            setTimeout(handleOrientationChange, 300);
+        });
+        
+        window.addEventListener('beforeunload', () => {
+            stopChallengeColorAnalysis();
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                challengeStatus.textContent = 'Votre navigateur ne prend pas en charge l\'accès à la caméra.';
+                videoPlaceholderChallenge.textContent = 'Votre navigateur ne prend pas en charge l\'accès à la caméra.';
+            } else {
+                initChallengeCamera();
+                generateTargetColor();
+            }
+        });
     </script>
 </body>
 </html>

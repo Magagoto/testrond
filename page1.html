@@ -578,9 +578,11 @@
   <div id="ball"></div>
   <div id="info"></div>
   
-  <!-- Ajout des éléments audio -->
-  <audio id="pointSound" src="SONORE/1point+.mp3" preload="auto"></audio>
-  <audio id="wrongSound" src="SONORE/wrong.mp3" preload="auto"></audio>
+  <!-- Ajout des éléments audio avec PLUSIEURS INSTANCES pour éviter les conflits -->
+  <audio id="pointSound1" src="SONORE/1point+.mp3" preload="auto"></audio>
+  <audio id="pointSound2" src="SONORE/1point+.mp3" preload="auto"></audio>
+  <audio id="wrongSound1" src="SONORE/wrong.mp3" preload="auto"></audio>
+  <audio id="wrongSound2" src="SONORE/wrong.mp3" preload="auto"></audio>
   <audio id="backgroundMusic" src="SONORE/ambiancegyro.mp3" loop preload="auto"></audio>
   
   <!-- Cages rectangulaires -->
@@ -632,59 +634,39 @@
     const ball = document.getElementById("ball");
     const startBtn = document.getElementById("start-btn");
     const info = document.getElementById("info");
-    const pointSound = document.getElementById("pointSound");
-    const wrongSound = document.getElementById("wrongSound");
+    // Récupérer toutes les instances de sons
+    const pointSound1 = document.getElementById("pointSound1");
+    const pointSound2 = document.getElementById("pointSound2");
+    const wrongSound1 = document.getElementById("wrongSound1");
+    const wrongSound2 = document.getElementById("wrongSound2");
     const backgroundMusic = document.getElementById("backgroundMusic");
     const gyroStatus = document.getElementById("gyro-status");
     
-    // Système de pool de sons pour éviter les problèmes de lecture simultanée
-    const soundPool = {
-      point: [],
-      wrong: []
-    };
+    // Variables pour alterner entre les instances de sons
+    let useFirstPointSound = true;
+    let useFirstWrongSound = true;
     
-    // Précharger plusieurs instances de chaque son
-    function preloadSounds() {
-      // Créer 5 instances de chaque son
-      for (let i = 0; i < 5; i++) {
-        // Sons pour les points positifs
-        const pointSoundClone = new Audio("SONORE/1point+.mp3");
-        pointSoundClone.preload = "auto";
-        soundPool.point.push(pointSoundClone);
-        
-        // Sons pour les points négatifs
-        const wrongSoundClone = new Audio("SONORE/wrong.mp3");
-        wrongSoundClone.preload = "auto";
-        soundPool.wrong.push(wrongSoundClone);
+    // Fonction simplifiée pour jouer les sons alternativement
+    function playPointSound() {
+      if (useFirstPointSound) {
+        pointSound1.currentTime = 0;
+        pointSound1.play();
+      } else {
+        pointSound2.currentTime = 0;
+        pointSound2.play();
       }
+      useFirstPointSound = !useFirstPointSound;
     }
     
-    // Appeler cette fonction dès le chargement
-    preloadSounds();
-    
-    // Index pour suivre la rotation des sons
-    let pointSoundIndex = 0;
-    let wrongSoundIndex = 0;
-    
-    // Fonction améliorée pour jouer un son à partir du pool
-    function playPoolSound(type) {
-      if (type === 'point') {
-        // Utiliser le prochain son dans le pool des sons positifs
-        const sound = soundPool.point[pointSoundIndex];
-        sound.currentTime = 0; // Réinitialiser le son
-        sound.play();
-        
-        // Passer au prochain son dans la rotation
-        pointSoundIndex = (pointSoundIndex + 1) % soundPool.point.length;
-      } else if (type === 'wrong') {
-        // Utiliser le prochain son dans le pool des sons négatifs
-        const sound = soundPool.wrong[wrongSoundIndex];
-        sound.currentTime = 0; // Réinitialiser le son
-        sound.play();
-        
-        // Passer au prochain son dans la rotation
-        wrongSoundIndex = (wrongSoundIndex + 1) % soundPool.wrong.length;
+    function playWrongSound() {
+      if (useFirstWrongSound) {
+        wrongSound1.currentTime = 0;
+        wrongSound1.play();
+      } else {
+        wrongSound2.currentTime = 0;
+        wrongSound2.play();
       }
+      useFirstWrongSound = !useFirstWrongSound;
     }
     
     // Éléments du tutoriel
@@ -1173,13 +1155,13 @@
             score += 2;
             scoreEffect.textContent = "+2";
             scoreEffect.style.color = "#00FF00";
-            playPoolSound('point'); // Utiliser le système de pool pour le son positif
+            playPointSound(); // Utiliser la nouvelle fonction
           } else {
             // Gradient différent, -1 point (inchangé)
             score -= 1;
             scoreEffect.textContent = "-1";
             scoreEffect.style.color = "#FF0000";
-            playPoolSound('wrong'); // Utiliser le système de pool pour le son négatif
+            playWrongSound(); // Utiliser la nouvelle fonction
           }
 
           document.body.appendChild(scoreEffect);

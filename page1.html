@@ -637,17 +637,54 @@
     const backgroundMusic = document.getElementById("backgroundMusic");
     const gyroStatus = document.getElementById("gyro-status");
     
-    // Fonction pour jouer un son - permet de jouer des sons multiples simultanément
-    function playSound(sound) {
-      // Créer un clone de l'élément audio
-      const soundClone = sound.cloneNode();
-      soundClone.volume = sound.volume;
-      soundClone.play();
-      
-      // Supprimer le clone après la lecture pour éviter de surcharger le DOM
-      soundClone.addEventListener('ended', function() {
-        this.remove();
-      });
+    // Système de pool de sons pour éviter les problèmes de lecture simultanée
+    const soundPool = {
+      point: [],
+      wrong: []
+    };
+    
+    // Précharger plusieurs instances de chaque son
+    function preloadSounds() {
+      // Créer 5 instances de chaque son
+      for (let i = 0; i < 5; i++) {
+        // Sons pour les points positifs
+        const pointSoundClone = new Audio("SONORE/1point+.mp3");
+        pointSoundClone.preload = "auto";
+        soundPool.point.push(pointSoundClone);
+        
+        // Sons pour les points négatifs
+        const wrongSoundClone = new Audio("SONORE/wrong.mp3");
+        wrongSoundClone.preload = "auto";
+        soundPool.wrong.push(wrongSoundClone);
+      }
+    }
+    
+    // Appeler cette fonction dès le chargement
+    preloadSounds();
+    
+    // Index pour suivre la rotation des sons
+    let pointSoundIndex = 0;
+    let wrongSoundIndex = 0;
+    
+    // Fonction améliorée pour jouer un son à partir du pool
+    function playPoolSound(type) {
+      if (type === 'point') {
+        // Utiliser le prochain son dans le pool des sons positifs
+        const sound = soundPool.point[pointSoundIndex];
+        sound.currentTime = 0; // Réinitialiser le son
+        sound.play();
+        
+        // Passer au prochain son dans la rotation
+        pointSoundIndex = (pointSoundIndex + 1) % soundPool.point.length;
+      } else if (type === 'wrong') {
+        // Utiliser le prochain son dans le pool des sons négatifs
+        const sound = soundPool.wrong[wrongSoundIndex];
+        sound.currentTime = 0; // Réinitialiser le son
+        sound.play();
+        
+        // Passer au prochain son dans la rotation
+        wrongSoundIndex = (wrongSoundIndex + 1) % soundPool.wrong.length;
+      }
     }
     
     // Éléments du tutoriel
@@ -1136,13 +1173,13 @@
             score += 2;
             scoreEffect.textContent = "+2";
             scoreEffect.style.color = "#00FF00";
-            playSound(pointSound); // Utiliser la nouvelle fonction pour jouer le son
+            playPoolSound('point'); // Utiliser le système de pool pour le son positif
           } else {
             // Gradient différent, -1 point (inchangé)
             score -= 1;
             scoreEffect.textContent = "-1";
             scoreEffect.style.color = "#FF0000";
-            playSound(wrongSound); // Utiliser la nouvelle fonction pour jouer le son
+            playPoolSound('wrong'); // Utiliser le système de pool pour le son négatif
           }
 
           document.body.appendChild(scoreEffect);

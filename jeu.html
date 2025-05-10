@@ -592,11 +592,24 @@
       canvas.addEventListener("mouseout", handleHoverEnd);
     }
     
-    window.addEventListener("resize", debounce(resizeCanvas, 250));
-    resizeCanvas();
-    chooseSpecialCircles();
-    assignCircleNumbersAndCoords();
-    requestAnimationFrame(optimizeRendering);
+    // Supprimer l'écouteur de redimensionnement existant et le remplacer par notre version améliorée
+    window.removeEventListener("resize", debounce(resizeCanvas, 250));
+    window.addEventListener("resize", debounce(function() {
+      // Utiliser un flag pour éviter les redimensionnements multiples rapprochés
+      if (window.isResizing) return;
+      window.isResizing = true;
+      
+      resizeCanvas();
+      
+      setTimeout(function() {
+        window.isResizing = false;
+      }, 300);
+    }, 250));
+    
+    // Initialiser le canvas une seule fois au chargement
+    initialCanvas();
+    
+    // Charger la musique de fond
     document.getElementById('backgroundMusic').play().catch(() => {});
     
     // S'assurer que l'élément pour les coordonnées au survol existe
@@ -689,6 +702,27 @@
       }, 1000);
     }
   });
+  
+  // Nouvelle fonction pour initialiser le canvas une seule fois de manière optimale
+  function initialCanvas() {
+    // Définir le flag pour éviter les redimensionnements multiples
+    window.isResizing = true;
+    
+    // Appliquer immédiatement le bon DPR et les dimensions
+    resizeCanvas();
+    
+    // Initialiser les cercles et les coordonnées après le premier rendu
+    chooseSpecialCircles();
+    assignCircleNumbersAndCoords();
+    
+    // Démarrer le rendu
+    requestAnimationFrame(optimizeRendering);
+    
+    // Réinitialiser le flag après un court délai
+    setTimeout(function() {
+      window.isResizing = false;
+    }, 300);
+  }
 </script>
 </body>
 </html>

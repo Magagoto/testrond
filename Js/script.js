@@ -285,27 +285,45 @@ function generateRandomOrleansCoords() {
   };
 }
 
+// Ajouter cette variable pour suivre les changements de DPR et les redimensionnements
+let lastDpr = window.devicePixelRatio || 1;
+let canvasInitialized = false; // Nouveau flag pour suivre l'initialisation
+
 function resizeCanvas() {
-  const dpr = window.devicePixelRatio || 1; // Récupérer le ratio de pixels de l'appareil
+  // Éviter les redimensionnements inutiles si le canvas est déjà à la bonne taille
+  const currentDpr = window.devicePixelRatio || 1;
+  
+  // Récupérer les dimensions actuelles
+  const currentWidth = canvas.width;
+  const currentHeight = canvas.height;
+  
+  // Calculer les nouvelles dimensions
+  const newWidth = window.innerWidth * currentDpr;
+  const newHeight = window.innerHeight * currentDpr;
+  
+  // Vérifier si un redimensionnement est vraiment nécessaire
+  const needsResize = !canvasInitialized || 
+                      lastDpr !== currentDpr || 
+                      currentWidth !== newWidth || 
+                      currentHeight !== newHeight;
+  
+  if (!needsResize) return;
   
   // Définir la taille du canvas en tenant compte du DPR
-  canvas.width = window.innerWidth * dpr;
-  canvas.height = window.innerHeight * dpr;
+  canvas.width = newWidth;
+  canvas.height = newHeight;
   
   // Définir la taille CSS du canvas (dimensions visuelles)
   canvas.style.width = `${window.innerWidth}px`;
   canvas.style.height = `${window.innerHeight}px`;
   
-  // Appliquer la mise à l'échelle pour correspondre aux pixels physiques
-  ctx.scale(dpr, dpr);
-  
   // Réinitialiser le contexte pour éviter l'accumulation de transformations
-  if (lastDpr !== dpr) {
-    ctx.setTransform(1, 0, 0, 1, 0, 0); // Réinitialiser la transformation
-    ctx.scale(dpr, dpr); // Appliquer la nouvelle échelle
-    lastDpr = dpr;
-  }
-
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // Réinitialiser la transformation
+  ctx.scale(currentDpr, currentDpr); // Appliquer la nouvelle échelle
+  
+  // Mettre à jour le DPR stocké
+  lastDpr = currentDpr;
+  
   // Ajuster dynamiquement le rayon en fonction de la taille de l'écran
   if (isMobile) {
     const desiredCirclesWidth = window.innerWidth < 380 ? 12 : 15;
@@ -319,35 +337,39 @@ function resizeCanvas() {
   const cols = Math.ceil(window.innerWidth / diameter);
   const rows = Math.ceil(window.innerHeight / diameter);
 
-  colorGrid = new Array(rows).fill().map(() => new Array(cols).fill(null));
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-      const neighbors = getNeighborColors(x, y);
-      let chosenColor;
+  // Recréer la grille de couleurs seulement si nécessaire
+  if (!canvasInitialized || colorGrid.length !== rows || colorGrid[0].length !== cols) {
+    colorGrid = new Array(rows).fill().map(() => new Array(cols).fill(null));
+    
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const neighbors = getNeighborColors(x, y);
+        let chosenColor;
 
-      if (neighbors.length > 0 && Math.random() < 0.8) {
-        chosenColor = neighbors[Math.floor(Math.random() * neighbors.length)];
-      } else {
-        chosenColor = colors[Math.floor(Math.random() * colors.length)];
+        if (neighbors.length > 0 && Math.random() < 0.8) {
+          chosenColor = neighbors[Math.floor(Math.random() * neighbors.length)];
+        } else {
+          chosenColor = colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        colorGrid[y][x] = chosenColor;
       }
-
-      colorGrid[y][x] = chosenColor;
     }
+
+    chooseLinearGradientZones();
   }
 
-  chooseLinearGradientZones();
+  // Marquer le canvas comme initialisé
+  canvasInitialized = true;
 
-  // Réinitialiser la numérotation des cercles après redimensionnement
-  setTimeout(() => {
+  // Associer les POI et assigner les numéros seulement si nécessaire
+  if (needsResize) {
     // D'abord associer les POI aux cercles
     associatePOIsToCircles();
     // Puis compléter la numérotation et les coordonnées pour les cercles sans POI
     assignCircleNumbersAndCoords();
-  }, 100);
+  }
 }
-
-// Ajouter cette variable pour suivre les changements de DPR
-let lastDpr = window.devicePixelRatio || 1;
 
 function getNeighborColors(cx, cy) {
   const neighborColors = [];
@@ -520,12 +542,12 @@ let lastRenderTime = 0;
 function animate(time) {
   // Vérifier si le DPR a changé (par exemple lors d'un zoom du navigateur)
   const currentDpr = window.devicePixelRatio || 1;
-  if (currentDpr !== lastDpr) {
+  if (currentDpr !== lastDpr && !window.isResizing) {
     resizeCanvas(); // Redimensionner le canvas si le DPR a changé
   }
   
   // Effacer le canvas avec les dimensions correctes
-  ctx.clearRect(0, 0, canvas.width / currentDpr, canvas.height / currentDpr);
+  ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
   const t = time / 1000;
 
   // 1. Dessin de tous les cercles (normaux et spéciaux)

@@ -1460,8 +1460,9 @@
         }, 700); // Délai pour laisser le temps aux animations de disparition de se terminer
         
         // Réinitialiser le jeu
-        score = 0;
-        updateScoreDisplay();
+        // AJOUT: Stocker le score dans localStorage pour transmission à jeu.html
+        localStorage.setItem("gyroscope-score", score.toString());
+        
         timerSeconds = 5; // Remettre à 5 secondes pour la prochaine partie
         timerDisplay.textContent = "00:05";
         timerDisplay.style.color = "white";

@@ -94,6 +94,15 @@ setInterval(() => {
   let gamePage = localStorage.getItem("game-page");
   
   if (gameState === "finished" && gamePage === "page1") {
+    // Récupérer le score du jeu gyroscope
+    const gyroscopeScore = localStorage.getItem("gyroscope-score");
+    if (gyroscopeScore) {
+      score = parseInt(gyroscopeScore, 10);
+      updateScoreDisplay();
+      // Supprimer le score du localStorage après l'avoir récupéré
+      localStorage.removeItem("gyroscope-score");
+    }
+    
     // Réinitialiser immédiatement pour éviter les traitements multiples
     localStorage.setItem("game-state", "undefined");
     localStorage.removeItem("game-page");

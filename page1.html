@@ -813,7 +813,6 @@
     // Fermer le tutoriel quand le bouton est cliqué
     tutorialCloseBtn.addEventListener("click", () => {
       tutorialOverlay.classList.remove("active");
-      preloadSounds();
     });
 
     // Écouteur d'événement pour le bouton de redémarrage
@@ -1400,80 +1399,7 @@
       updateBallPosition();
     }
 
-    startBtn.addEventListener("click", () => {
-        startGyro();
-        preloadSounds();
-    });
-
-    // Précharger les sons dès que possible
-    function preloadSounds() {
-        // Forcer le préchargement des sons en les jouant avec volume à 0
-        backgroundMusic.volume = 0;
-        backgroundMusic.play().then(() => {
-            backgroundMusic.pause();
-            backgroundMusic.currentTime = 0;
-            backgroundMusic.volume = 1;
-        }).catch(e => console.log("Préchargement de la musique échoué"));
-
-        pointSound.volume = 0;
-        pointSound.play().then(() => {
-            pointSound.pause();
-            pointSound.currentTime = 0;
-            pointSound.volume = 1;
-        }).catch(e => console.log("Préchargement du son de point échoué"));
-
-        endGameSound.volume = 0;
-        endGameSound.play().then(() => {
-            endGameSound.pause();
-            endGameSound.currentTime = 0;
-            endGameSound.volume = 1;
-        }).catch(e => console.log("Préchargement du son de fin échoué"));
-    }
-
-    // Fonction pour jouer le son de fin avec plusieurs tentatives
-    function playEndGameSound() {
-        // Première tentative immédiate
-        endGameSound.play().catch(error => {
-            console.log("Première tentative échouée, nouvelle tentative dans 300ms");
-            
-            // Deuxième tentative après un délai
-            setTimeout(() => {
-                endGameSound.play().catch(error => {
-                    console.log("Deuxième tentative échouée, dernière tentative dans 500ms");
-                    
-                    // Dernière tentative avec un délai plus long
-                    setTimeout(() => {
-                        endGameSound.play().catch(e => {
-                            console.log("Toutes les tentatives ont échoué, ajout d'un bouton son");
-                            
-                            // Ajout d'un bouton spécial pour jouer le son
-                            const soundBtn = document.createElement("button");
-                            soundBtn.textContent = "🔊 Écouter le son de fin";
-                            soundBtn.style.position = "absolute";
-                            soundBtn.style.top = "10px";
-                            soundBtn.style.left = "50%";
-                            soundBtn.style.transform = "translateX(-50%)";
-                            soundBtn.style.zIndex = "2000";
-                            soundBtn.style.padding = "8px 16px";
-                            soundBtn.style.backgroundColor = "#00ffcc";
-                            soundBtn.style.color = "#111";
-                            soundBtn.style.border = "none";
-                            soundBtn.style.borderRadius = "8px";
-                            soundBtn.style.fontWeight = "bold";
-                            soundBtn.style.cursor = "pointer";
-                            
-                            soundBtn.addEventListener("click", () => {
-                                endGameSound.play();
-                                soundBtn.remove();
-                            });
-                            
-                            document.querySelector(".score-container").appendChild(soundBtn);
-                        });
-                    }, 500);
-                });
-            }, 300);
-        });
-    }
+    startBtn.addEventListener("click", startGyro);
 
     // Fonction pour mettre à jour le timer
     function updateTimer() {
@@ -1521,6 +1447,9 @@
         backgroundMusic.pause();
         backgroundMusic.currentTime = 0;
         
+        // Jouer le son de fin de raffinage
+        endGameSound.play();
+        
         // Préparer l'affichage du score
         finalScoreValue.textContent = score;
         
@@ -1528,11 +1457,6 @@
         setTimeout(() => {
             // Afficher l'overlay du score après la disparition des cages
             scoreOverlay.classList.add("active");
-            
-            // Attendre que l'overlay soit visible avant de jouer le son (délai de 800ms)
-            setTimeout(() => {
-                playEndGameSound();
-            }, 800);
         }, 700); // Délai pour laisser le temps aux animations de disparition de se terminer
         
         // Réinitialiser le jeu

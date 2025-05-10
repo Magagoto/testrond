@@ -692,27 +692,33 @@ function drawSpecialCircleMarkers(ctx, cx, cy, r, t) {
 
 // Fonction pour dessiner une bulle moderne à côté d'un cercle spécial
 function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleShape) {
-  // Positionnement de la bulle
-  const verticalOffset = r * 2.0; // Réduit légèrement
-  const offsetX = (x < colorGrid[0].length / 2) ? r * 2.6 : -r * 2.6;
+  // *** POSITIONNEMENT DE LA BULLE ***
+  // Cette section détermine où la bulle de texte sera placée par rapport au cercle
+  const verticalOffset = r * 1.8; // Distance verticale entre le cercle et la bulle
+  const offsetX = (x < colorGrid[0].length / 2) ? r * 2.4 : -r * 2.4; // Déplace la bulle à gauche ou à droite selon la position
   let bubbleX = cx + offsetX;
   let bubbleY = cy - verticalOffset;
   
-  // Ajouter un léger effet du rebond
-  const bounce = Math.sin(t * 2) * 3; // Réduit légèrement
+  // Effet de rebond léger pour l'animation
+  const bounce = Math.sin(t * 2) * 2; // Animation de rebond légère
   
-  // Configurer le texte
-  const fontSize = Math.round(r * 0.65); // Légèrement plus petit
+  // *** CONFIGURATION DU TEXTE ***
+  // Cette section définit la taille et le style du texte dans la bulle
+  const fontSize = Math.round(r * 0.55); // Taille de police réduite (valeur à modifier pour changer la taille du texte)
   ctx.font = `500 ${fontSize}px 'Fira Mono', 'Consolas', monospace`;
   let textMetrics = ctx.measureText(bubbleText);
   let textWidth = textMetrics.width;
   
-  // Ajouter de la marge pour une taille approximative du texte
-  const paddingX = r * 0.8; // Reduced padding
+  // *** DIMENSIONS DE LA BULLE ***
+  // Cette section calcule la largeur et hauteur de la bulle basées sur le texte
+  const paddingX = r * 0.3; // Espace horizontal entre le texte et le bord de la bulle (valeur à réduire pour rétrécir la bulle)
   
   // Calculer les dimensions de la bulle
   const rectWidth = textWidth + paddingX * 2;
-  let rectHeight = r * 4.6;                     // Hauteur sans coordonnées
+  
+  // Hauteur de la bulle - à réduire pour rendre les bulles plus compactes
+  const minRectHeight = fontSize * 1.3; // Hauteur minimale basée sur la taille du texte
+  let rectHeight = coords ? fontSize * 2.8 : minRectHeight; // Plus haute si contient des coordonnées
   
   // Limites pour éviter de sortir du cadre
   const minX = (rectWidth/2 + 4) / (window.devicePixelRatio || 1);
@@ -726,23 +732,22 @@ function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleSha
   if (bubbleY < minY) bubbleY = minY;
   if (bubbleY > maxY) bubbleY = maxY;
   
-  // Arrondi des coins - plus moderne
-  const cornerRadius = r * 0.7;
+  // *** APPARENCE VISUELLE DE LA BULLE ***
+  // Cette section définit le style graphique de la bulle
+  const cornerRadius = r * 0.35; // Arrondi des coins (valeur à réduire pour coins moins arrondis)
   const shape = bubbleShape?.shape || "ellipse";
   const tailSize = bubbleShape?.tailSize || 1;
   
-  // Fond avec transparence réduite et couleur plus foncée
-  ctx.fillStyle = 'rgba(0, 40, 30, 0.6)';
+  // Couleur de fond et effets d'ombre
+  ctx.fillStyle = 'rgba(0, 40, 30, 0.85)'; // Couleur de fond de la bulle
   ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-  ctx.shadowBlur = 20;
-  ctx.shadowOffsetY = 3;
+  ctx.shadowBlur = 10;
+  ctx.shadowOffsetY = 2;
   
   ctx.beginPath();
   
-  // Arrondir les coins pour un look moderne
-  const tailOffset = r * 0.4;
-  
-  // Dessiner le contour de la bulle avec des coins arrondis
+  // *** DESSIN DU CONTOUR DE LA BULLE ***
+  // Cette section dessine réellement la forme de la bulle
   ctx.moveTo(bubbleX - rectWidth/2 + cornerRadius, bubbleY + bounce - rectHeight/2);
   ctx.arcTo(bubbleX + rectWidth/2, bubbleY + bounce - rectHeight/2, bubbleX + rectWidth/2, bubbleY + bounce - rectHeight/2 + cornerRadius, cornerRadius);
   ctx.arcTo(bubbleX + rectWidth/2, bubbleY + bounce + rectHeight/2, bubbleX + rectWidth/2 - cornerRadius, bubbleY + bounce + rectHeight/2, cornerRadius);
@@ -750,11 +755,11 @@ function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleSha
   ctx.arcTo(bubbleX - rectWidth/2, bubbleY + bounce - rectHeight/2, bubbleX - rectWidth/2 + cornerRadius, bubbleY + bounce - rectHeight/2, cornerRadius);
   ctx.closePath();
   
-  // Appliquer le fond avec un super effet de flou
+  // Remplir la bulle avec la couleur de fond
   ctx.globalAlpha = 1.0;
   ctx.fill();
   
-  // Bordure discrète
+  // Dessiner le contour
   ctx.strokeStyle = 'rgba(0, 255, 204, 0.6)';
   ctx.lineWidth = 1;
   ctx.stroke();
@@ -764,27 +769,29 @@ function drawSpeechBubble(ctx, cx, cy, r, x, y, t, coords, bubbleText, bubbleSha
   ctx.shadowBlur = 0;
   ctx.shadowOffsetY = 0;
 
-  // Texte principal
+  // *** RENDU DU TEXTE PRINCIPAL ***
+  // Cette section dessine le texte dans la bulle
   ctx.font = `500 ${fontSize}px 'Fira Mono', 'Consolas', monospace`;
   ctx.fillStyle = '#00ffcc';
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   
-  // Positionnement du texte - centré si pas de coordonnées, sinon légèrement plus haut
-  let textYOffset = coords ? -rectHeight/5 : 0;
+  // Position verticale du texte - ajuster pour centrer dans l'espace réduit
+  let textYOffset = coords ? -fontSize * 0.7 : 0;
   ctx.fillText(bubbleText, bubbleX, bubbleY + bounce + textYOffset);
 
-  // Coordonnées
+  // *** RENDU DES COORDONNÉES (si présentes) ***
+  // Cette section ajoute les coordonnées géographiques sous le texte principal
   if (coords) {
-    const coordsFontSize = fontSize * 0.7; // Plus petit pour les coordonnées
+    const coordsFontSize = Math.max(fontSize * 0.6, 8); // Taille de police pour les coordonnées
     ctx.font = `400 ${Math.round(coordsFontSize)}px 'Fira Mono', 'Consolas', monospace`;
     ctx.fillStyle = '#00ffcc';
     
-    // Position des coordonnées - légèrement en dessous du texte principal
+    // Position des coordonnées - plus proches du texte principal pour compacter
     ctx.fillText(
       `${coords.lat.toFixed(4)}, ${coords.long.toFixed(4)}`,
       bubbleX,
-      bubbleY + bounce + rectHeight/4
+      bubbleY + bounce + fontSize * 0.8 // Distance entre le texte principal et les coordonnées
     );
   }
 

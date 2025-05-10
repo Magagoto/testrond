@@ -17,59 +17,64 @@
 
   <title>Zones de ronds regroupés</title>
   <style>
-    /* Style pour le rectangle de localisation, adapté au style existant avec moins de transparence */
+    /* ===== STYLES POUR LA BOÎTE DE GÉOLOCALISATION ===== */
+    /* Cette boîte affiche votre position actuelle en haut à gauche de l'écran */
     #user-location-box {
       position: fixed;
       top: 20px;
       left: 20px;
-      background: rgba(0, 255, 204, 0.2); /* Transparence réduite */
+      background: rgba(0, 255, 204, 0.2); /* Fond cyan transparent */
       padding: 12px;
       border-radius: 12px;
       font-size: 14px;
       color: #00ffcc;
-      box-shadow: 0 2px 16px rgba(0, 255, 204, 0.3), 0 1px 8px rgba(0, 0, 0, 0.5); /* Ombre plus prononcée */
+      box-shadow: 0 2px 16px rgba(0, 255, 204, 0.3), 0 1px 8px rgba(0, 0, 0, 0.5);
       z-index: 1000;
       width: 220px;
       max-width: 90vw;
-      display: none;
-      border: 2px solid rgba(0, 255, 204, 0.5); /* Bordure plus visible */
-      backdrop-filter: blur(19px); /* Effet de flou plus intense */
+      display: none; /* Masqué par défaut, s'affiche après géolocalisation */
+      border: 2px solid rgba(0, 255, 204, 0.5);
+      backdrop-filter: blur(19px);
       font-family: 'Fira Mono', 'Consolas', monospace;
       cursor: move; /* Indique que l'élément est déplaçable */
-      touch-action: none; /* Empêche l'action tactile par défaut */
-      transition: all 0.3s ease-in-out; /* Transition pour les animations */
+      touch-action: none;
+      transition: all 0.3s ease-in-out;
     }
     
-    /* Nouvelle classe pour l'état réduit */
+    /* Version minimisée de la boîte de géolocalisation (après clic sur le bouton "-") */
     #user-location-box.minimized {
       width: 40px;
       height: 40px;
       padding: 8px;
-      border-radius: 50%;
+      border-radius: 50%; /* Devient un cercle */
       overflow: hidden;
       opacity: 0.7;
       background: rgba(0, 255, 204, 0.3);
     }
     
+    /* Effet hover sur la boîte minimisée */
     #user-location-box.minimized:hover {
       opacity: 1;
     }
     
+    /* En-tête de la boîte avec titre et bouton réduire */
     #user-location-box .location-header {
       display: flex;
       align-items: center;
       margin-bottom: 10px;
       border-bottom: 1px solid rgba(0, 255, 204, 0.3);
       padding-bottom: 5px;
-      justify-content: space-between; /* Pour mettre le bouton à droite */
+      justify-content: space-between;
     }
     
+    /* Icône de localisation (📍) à côté du titre */
     #user-location-box .location-icon {
       color: #00ffcc;
       margin-right: 8px;
       font-size: 16px;
     }
     
+    /* Texte "Votre position" */
     #user-location-box .location-title {
       font-weight: bold;
       color: #00ffcc;
@@ -77,7 +82,7 @@
       letter-spacing: 0.5px;
     }
     
-    /* Style pour le bouton de réduction */
+    /* Bouton "-" pour minimiser la boîte */
     #user-location-box .location-minimize {
       background: none;
       border: none;
@@ -89,11 +94,12 @@
       margin-left: auto;
     }
     
+    /* Effet hover sur le bouton minimiser */
     #user-location-box .location-minimize:hover {
       color: #00ffcc;
     }
     
-    /* Icône à afficher quand la boîte est minimisée */
+    /* Icône d'expansion (📍) qui apparaît quand la boîte est minimisée */
     #user-location-box .location-expand {
       position: absolute;
       top: 0;
@@ -106,29 +112,34 @@
       font-size: 20px;
       color: #00ffcc;
       cursor: pointer;
-      opacity: 0;
+      opacity: 0; /* Invisible par défaut */
       transition: opacity 0.3s;
     }
     
+    /* Rendre visible l'icône d'expansion quand la boîte est minimisée */
     #user-location-box.minimized .location-expand {
       opacity: 1;
     }
     
+    /* Cacher le contenu quand la boîte est minimisée */
     #user-location-box.minimized .location-content {
       opacity: 0;
       pointer-events: none;
     }
     
+    /* Contenu principal de la boîte */
     #user-location-box .location-content {
       opacity: 1;
       transition: opacity 0.3s;
     }
     
+    /* Chaque groupe d'information (coordonnées/adresse) */
     #user-location-box .info-item {
       margin-bottom: 10px;
       font-size: 12px;
     }
     
+    /* Étiquette (Coordonnées/Adresse) */
     #user-location-box .info-label {
       font-weight: bold;
       color: rgba(255, 255, 255, 0.7);
@@ -138,17 +149,19 @@
       letter-spacing: 0.5px;
     }
     
+    /* Zone de valeur avec fond bleu foncé */
     #user-location-box .info-value {
-      background-color: rgba(7, 17, 77, 0.8); /* Fond plus foncé et moins transparent */
+      background-color: rgba(7, 17, 77, 0.8);
       padding: 6px 8px;
       border-radius: 4px;
       font-family: 'Fira Mono', monospace;
       font-size: 11px;
       word-break: break-all;
       color: #fff;
-      border: 1px solid rgba(0, 255, 204, 0.4); /* Bordure plus visible */
+      border: 1px solid rgba(0, 255, 204, 0.4);
     }
     
+    /* Bouton "Actualiser" en bas de la boîte */
     #user-location-box .location-refresh {
       background: rgba(0, 255, 204, 0.13);
       color: #00ffcc;
@@ -164,57 +177,64 @@
       transition: background 0.3s, color 0.3s;
     }
     
+    /* Effet hover sur le bouton Actualiser */
     #user-location-box .location-refresh:hover {
       background: #00ffcc;
       color: #111;
     }
     
-    /* Adaptation pour mobile */
+    /* ===== ADAPTATION POUR MOBILE ===== */
     @media (max-width: 600px) {
+      /* Version mobile de la boîte de géolocalisation */
       #user-location-box {
         max-width: 80vw;
-        width: 160px; /* Taille réduite sur mobile */
-        font-size: 11px; /* Police plus petite sur mobile */
-        padding: 8px; /* Padding réduit */
+        width: 160px; /* Plus étroite sur mobile */
+        font-size: 11px;
+        padding: 8px;
       }
       
+      /* Version minimisée sur mobile */
       #user-location-box.minimized {
         width: 32px;
         height: 32px;
       }
       
+      /* Titre plus petit sur mobile */
       #user-location-box .location-title {
         font-size: 12px;
       }
       
+      /* Étiquettes plus petites sur mobile */
       #user-location-box .info-label {
         font-size: 10px;
       }
       
+      /* Valeurs plus petites sur mobile */
       #user-location-box .info-value {
         font-size: 10px;
         padding: 4px 6px;
       }
       
+      /* Bouton Actualiser plus petit sur mobile */
       #user-location-box .location-refresh {
         padding: 4px 8px;
         font-size: 10px;
       }
 
+      /* Optimisations de performance pour le canvas sur mobile */
       canvas {
-        /* Utiliser le GPU pour le rendu */
         transform: translateZ(0);
         backface-visibility: hidden;
         perspective: 1000px;
         will-change: transform;
       }
       
-      /* Simplifier les animations sur mobile */
+      /* Désactiver les transitions sur mobile pour meilleure performance */
       #circle-coord-display {
-        transition: none; /* Désactiver les transitions sur mobile */
+        transition: none;
       }
       
-      /* Réduire la taille des éléments sur mobile pour de meilleures performances */
+      /* Version mobile de l'affichage des coordonnées au survol */
       #circle-coord-display {
         font-size: 10px;
         padding: 6px 8px;
@@ -222,45 +242,50 @@
       }
     }
 
-    /* Styles pour l'affichage du POI */
+    /* ===== BULLE D'INFORMATION AU SURVOL DES POI ===== */
+    /* Cette bulle apparaît quand vous survolez un cercle et montre ses coordonnées */
     #circle-coord-display {
       position: fixed;
-      background: rgba(0, 40, 30, 0.85);
+      background: rgba(0, 40, 30, 0.85); /* Fond vert foncé transparent */
       color: #00ffcc;
-      padding: 10px 12px;
+      padding: 10px 12px; /* Espace interne - À RÉDUIRE pour bulle plus compacte */
       border-radius: 8px;
       font-size: 12px;
       font-family: 'Fira Mono', monospace;
-      pointer-events: none;
+      pointer-events: none; /* Ne bloque pas les clics */
       z-index: 1000;
-      display: none;
+      display: none; /* Caché par défaut, visible au survol */
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
       border: 1px solid rgba(0, 255, 204, 0.5);
       max-width: 250px;
     }
     
+    /* Étiquettes "Lat:" et "Long:" dans la bulle de survol */
     #circle-coord-display .coord-label {
       color: rgba(0, 255, 204, 0.7);
       margin-right: 5px;
       font-weight: bold;
     }
     
+    /* Conteneur du nom du lieu en haut de la bulle de survol */
     #circle-coord-display .poi-name-container {
-      margin-bottom: 6px;
-      padding-bottom: 6px;
+      margin-bottom: 6px; /* Espace sous le nom - À RÉDUIRE pour bulle plus compacte */
+      padding-bottom: 6px; /* À RÉDUIRE pour bulle plus compacte */
       border-bottom: 1px solid rgba(0, 255, 204, 0.3);
       font-weight: bold;
       text-align: center;
       font-size: 14px;
-      display: block; /* Toujours visible */
+      display: block;
     }
     
+    /* Nom du lieu lui-même */
     #hover-poi-name {
       color: white;
       text-shadow: 0 0 8px rgba(0, 255, 204, 0.8);
     }
 
-    /* Performance toggle button */
+    /* ===== BOUTON DE MODE PERFORMANCE ===== */
+    /* Bouton en bas à droite pour basculer le mode performance sur mobile */
     #performance-toggle {
       position: fixed;
       bottom: 20px;
@@ -274,7 +299,7 @@
       font-family: 'Fira Mono', monospace;
       z-index: 1000;
       cursor: pointer;
-      display: none; /* Hidden by default, shown on mobile */
+      display: none; /* Masqué par défaut, visible seulement sur mobile */
     }
   </style>
 </head>

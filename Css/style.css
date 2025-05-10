@@ -5,11 +5,16 @@ html, body {
   overflow: hidden; /* Empêche le défilement de la page */
   background-color: rgb(19, 1, 60); /* Fond bleu foncé pour toute la page */
   touch-action: manipulation; /* Améliore la réactivité tactile sur les appareils mobiles */
+  -webkit-text-size-adjust: 100%; /* Évite le changement de taille de texte automatique */
 }
 
 /* Style pour l'élément canvas utilisé pour les animations/visualisations */
 canvas {
   display: block; /* Élimine l'espace supplémentaire sous le canvas */
+  image-rendering: -webkit-optimize-contrast; /* Améliore la netteté sur Webkit */
+  image-rendering: crisp-edges; /* Améliore la netteté sur Firefox */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Modal des Conditions Générales d'Utilisation */
@@ -286,6 +291,9 @@ canvas {
   
   .banner-content {
     padding: 3px 10px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   
   .banner-icon {
@@ -295,13 +303,29 @@ canvas {
   
   .banner-title {
     font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   
   .banner-description {
     font-size: 11px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   
   .banner-coords {
     font-size: 10px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  
+  /* Optimisations pour le canvas sur mobile */
+  canvas {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform;
   }
 }

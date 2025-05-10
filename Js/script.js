@@ -287,11 +287,24 @@ function generateRandomOrleansCoords() {
 
 function resizeCanvas() {
   const dpr = window.devicePixelRatio || 1; // Récupérer le ratio de pixels de l'appareil
+  
+  // Définir la taille du canvas en tenant compte du DPR
   canvas.width = window.innerWidth * dpr;
   canvas.height = window.innerHeight * dpr;
+  
+  // Définir la taille CSS du canvas (dimensions visuelles)
   canvas.style.width = `${window.innerWidth}px`;
   canvas.style.height = `${window.innerHeight}px`;
-  ctx.scale(dpr, dpr); // Adapter le contexte au ratio de pixels
+  
+  // Appliquer la mise à l'échelle pour correspondre aux pixels physiques
+  ctx.scale(dpr, dpr);
+  
+  // Réinitialiser le contexte pour éviter l'accumulation de transformations
+  if (lastDpr !== dpr) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // Réinitialiser la transformation
+    ctx.scale(dpr, dpr); // Appliquer la nouvelle échelle
+    lastDpr = dpr;
+  }
 
   // Ajuster dynamiquement le rayon en fonction de la taille de l'écran
   if (isMobile) {
@@ -303,8 +316,8 @@ function resizeCanvas() {
 
   diameter = radius * 2;
 
-  const cols = Math.ceil(canvas.width / diameter / dpr); // Diviser par le ratio pour compenser
-  const rows = Math.ceil(canvas.height / diameter / dpr);
+  const cols = Math.ceil(window.innerWidth / diameter);
+  const rows = Math.ceil(window.innerHeight / diameter);
 
   colorGrid = new Array(rows).fill().map(() => new Array(cols).fill(null));
   for (let y = 0; y < rows; y++) {
@@ -332,6 +345,9 @@ function resizeCanvas() {
     assignCircleNumbersAndCoords();
   }, 100);
 }
+
+// Ajouter cette variable pour suivre les changements de DPR
+let lastDpr = window.devicePixelRatio || 1;
 
 function getNeighborColors(cx, cy) {
   const neighborColors = [];
@@ -502,7 +518,14 @@ function optimizeRendering(time) {
 let lastRenderTime = 0;
 
 function animate(time) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Vérifier si le DPR a changé (par exemple lors d'un zoom du navigateur)
+  const currentDpr = window.devicePixelRatio || 1;
+  if (currentDpr !== lastDpr) {
+    resizeCanvas(); // Redimensionner le canvas si le DPR a changé
+  }
+  
+  // Effacer le canvas avec les dimensions correctes
+  ctx.clearRect(0, 0, canvas.width / currentDpr, canvas.height / currentDpr);
   const t = time / 1000;
 
   // 1. Dessin de tous les cercles (normaux et spéciaux)

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="Css/style.css">
   <link rel="stylesheet" href="Css/cgu-style.css">
   <!-- Préchargement des ressources critiques -->
@@ -227,6 +227,10 @@
         backface-visibility: hidden;
         perspective: 1000px;
         will-change: transform;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
       
       /* Désactiver les transitions sur mobile pour meilleure performance */
@@ -661,6 +665,28 @@
           backgroundMusic.volume = 0.6;
         }, 1000);
       }, { once: true });
+    }
+
+    // Optimisations spécifiques pour résoudre le problème de flou sur mobile
+    if (isMobile) {
+      // Forcer un redimensionnement pour s'assurer que le DPR est bien pris en compte
+      setTimeout(function() {
+        if (typeof resizeCanvas === 'function') {
+          window.dispatchEvent(new Event('resize'));
+        }
+      }, 300);
+      
+      // Vérifier régulièrement si le DPR change (rotation d'écran, zoom, etc.)
+      let currentDpr = window.devicePixelRatio || 1;
+      setInterval(function() {
+        const newDpr = window.devicePixelRatio || 1;
+        if (newDpr !== currentDpr) {
+          currentDpr = newDpr;
+          if (typeof resizeCanvas === 'function') {
+            resizeCanvas();
+          }
+        }
+      }, 1000);
     }
   });
 </script>

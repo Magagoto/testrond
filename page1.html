@@ -1252,28 +1252,20 @@
         backgroundMusic.pause();
         backgroundMusic.currentTime = 0;
         
-        // Indiquer que c'est le jeu de la page 1 qui est terminé
-        localStorage.setItem("game-page", "page1");
-        localStorage.setItem("game-score", score.toString());
-        localStorage.setItem("game-state", "finished");
-        
-        // Afficher le score final dans une alerte
+        // Afficher le score final
         alert(`Temps écoulé! Score final: ${score}`);
         
-        // Rediriger vers la page principale après un court délai
-        setTimeout(() => {
-            // Redirection vers la page principale (index.html ou la racine du site)
-            window.location.href = "index.html";
-        }, 500); // Un délai de 500ms pour s'assurer que l'alerte est bien vue
-        
-        // La réinitialisation du jeu n'est plus nécessaire puisqu'on change de page
-        // mais on la garde au cas où la redirection échoue
+        // Réinitialiser le jeu
         score = 0;
         updateScoreDisplay();
-        timerSeconds = 70;
+        timerSeconds = 70; // Remettre à 70 secondes pour la prochaine partie
         timerDisplay.textContent = "01:10";
         timerDisplay.style.color = "white";
         timerDisplay.style.animation = "none";
+        
+        // Indiquer que c'est le jeu de la page 1 qui est terminé
+        localStorage.setItem("game-page", "page1");
+        localStorage.setItem("game-state", "finished");
     }
   </script>
 </body>

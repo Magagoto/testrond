@@ -293,6 +293,202 @@
                 }
             }
         }
+
+        /* Styles pour le conteneur vidéo du défi et les éléments associés qui étaient manquants */
+        .target-color-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .color-target {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF0000, #00FF00);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+            margin-bottom: 10px;
+            border: 3px solid var(--text-light);
+        }
+        
+        .target-instruction {
+            font-size: 0.95rem;
+            color: var(--primary-accent);
+            text-align: center;
+            margin-top: 8px;
+        }
+        
+        #videoContainerChallenge {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+            background-color: #131c50;
+            aspect-ratio: 4/3;
+            margin: 0 auto 10px;
+            border: 2px solid rgba(0, 255, 204, 0.2);
+        }
+        
+        #videoChallenge, #canvasChallenge {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: calc(var(--border-radius) - 2px);
+        }
+        
+        #videoPlaceholderChallenge {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 0 20px;
+            background: linear-gradient(135deg, #00A993, #E68B4A);
+        }
+        
+        #focus-grid-challenge {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40%;
+            height: 40%;
+            border: 2px dashed rgba(0, 255, 204, 0.7);
+            z-index: 2;
+            pointer-events: none;
+            border-radius: 8px;
+            box-shadow: 0 0 12px rgba(0, 255, 204, 0.3);
+        }
+        
+        #realtime-color-challenge {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(7, 17, 77, 0.8);
+            backdrop-filter: blur(5px);
+            color: white;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            letter-spacing: 0.5px;
+            border-top: 1px solid rgba(0, 255, 204, 0.2);
+            z-index: 5;
+        }
+        
+        .challenge-result {
+            background: rgba(24, 44, 76, 0.3);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-top: 15px;
+            box-shadow: var(--shadow-soft);
+            border: 2px solid rgba(0, 255, 204, 0.2);
+            text-align: center;
+        }
+        
+        .color-comparison {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+        }
+        
+        .color-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .color-sample {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--text-light);
+        }
+        
+        .score-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .score-value {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: var(--primary-accent);
+            margin-bottom: -10px;
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+            font-family: 'Mikodacs', serif;
+        }
+        
+        .feedback-message {
+            color: var(--primary-accent);
+            font-size: 1.1rem;
+            margin-top: 15px;
+            padding: 10px;
+        }
+        
+        /* Correction du style pour le placeholder de la caméra */
+        #videoPlaceholderChallenge {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 0 20px;
+            background: linear-gradient(135deg, #00A993, #E68B4A);
+            z-index: 1;
+        }
+        
+        /* Style pour l'affichage des informations de couleur dans la galerie */
+        .color-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(7, 17, 77, 0.8);
+            backdrop-filter: blur(5px);
+            color: white;
+            padding: 8px;
+            font-size: 12px;
+            border-top: 1px solid rgba(0, 255, 204, 0.2);
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            letter-spacing: 0.5px;
+        }
+        
+        .color-swatch {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -423,14 +619,13 @@
         });
         
         function openGalleryView() {
-            challengeModeContainer.classList.add('hidden');
+            // Au lieu de créer un nouveau conteneur, nous allons modifier le contenu du conteneur existant
             
-            const galleryView = document.createElement('div');
-            galleryView.className = 'container';
-            galleryView.id = 'galleryModeContainer';
+            // Sauvegardons le contenu original du défi pour pouvoir le restaurer plus tard
+            const originalChallengeContent = challengeModeContainer.innerHTML;
             
+            // Préparons le contenu de la galerie
             let galleryContent = `
-                <h2>Images Capturées</h2>
                 <div class="gallery" id="photoGallery">
             `;
             
@@ -475,13 +670,25 @@
                 </div>
             `;
             
-            galleryView.innerHTML = galleryContent;
+            // Remplacer le contenu du conteneur de défi par celui de la galerie
+            challengeModeContainer.innerHTML = galleryContent;
             
-            document.body.appendChild(galleryView);
-            
+            // Ajouter les écouteurs d'événements pour les boutons
             document.getElementById('backToChallengeBtn').addEventListener('click', () => {
-                document.body.removeChild(galleryView);
-                challengeMode.click();
+                // Restaurer le contenu original du défi
+                challengeModeContainer.innerHTML = originalChallengeContent;
+                
+                // Réinitialiser les références aux éléments du DOM qui ont été perdues
+                // lors du remplacement du contenu HTML
+                reinitializeChallengeReferences();
+                
+                // Réactiver le mode défi
+                challengeMode.classList.add('active');
+                galleryMode.classList.remove('active');
+                
+                // Redémarrer la caméra
+                initChallengeCamera();
+                generateTargetColor();
             });
             
             document.getElementById('clearAllBtn').addEventListener('click', () => {
@@ -552,6 +759,7 @@
                 streamChallenge = await navigator.mediaDevices.getUserMedia(constraints);
                 videoChallenge.srcObject = streamChallenge;
                 
+                // S'assurer que le placeholder est masqué et que la vidéo est visible
                 videoPlaceholderChallenge.style.display = 'none';
                 videoChallenge.style.display = 'block';
                 
@@ -568,6 +776,9 @@
                 };
                 
                 videoChallenge.onplaying = () => {
+                    // S'assurer encore une fois que la vidéo est visible
+                    videoChallenge.style.display = 'block';
+                    videoPlaceholderChallenge.style.display = 'none';
                     challengeStatus.textContent = 'Défi actif. Trouvez une couleur similaire à la cible.';
                 };
             } catch (error) {
@@ -811,8 +1022,66 @@
             } else {
                 initChallengeCamera();
                 generateTargetColor();
+                
+                // Vérifier après quelques secondes si la vidéo est affichée
+                setTimeout(() => {
+                    if (videoChallenge && !videoChallenge.videoWidth) {
+                        console.log('Tentative de réinitialisation de la caméra...');
+                        initChallengeCamera();
+                    }
+                }, 3000);
             }
         });
+        
+        function reinitializeChallengeReferences() {
+            // Récupérer à nouveau les références aux éléments DOM du défi
+            const videoChallenge = document.getElementById('videoChallenge');
+            const canvasChallenge = document.getElementById('canvasChallenge');
+            const ctxChallenge = canvasChallenge.getContext('2d');
+            const targetColor = document.getElementById('targetColor');
+            const captureChallengeBtn = document.getElementById('captureChallengeBtn');
+            const newChallengeBtn = document.getElementById('newChallengeBtn');
+            const switchCameraChallenge = document.getElementById('switchCameraChallenge');
+            const challengeResult = document.getElementById('challengeResult');
+            const targetColorResult = document.getElementById('targetColorResult');
+            const capturedColorResult = document.getElementById('capturedColorResult');
+            const scoreValue = document.getElementById('scoreValue');
+            const feedbackMessage = document.getElementById('feedbackMessage');
+            const challengeStatus = document.getElementById('challengeStatus');
+            const videoPlaceholderChallenge = document.getElementById('videoPlaceholderChallenge');
+            
+            // Reconfigurer les gestionnaires d'événements
+            if (captureChallengeBtn) {
+                captureChallengeBtn.addEventListener('click', captureChallengeBtnHandler);
+            }
+            
+            if (newChallengeBtn) {
+                newChallengeBtn.addEventListener('click', generateTargetColor);
+            }
+            
+            if (switchCameraChallenge) {
+                switchCameraChallenge.addEventListener('click', () => {
+                    facingMode = facingMode === 'user' ? 'environment' : 'user';
+                    initChallengeCamera();
+                });
+            }
+        }
+        
+        function captureChallengeBtnHandler() {
+            const videoChallenge = document.getElementById('videoChallenge');
+            const canvasChallenge = document.getElementById('canvasChallenge');
+            const ctxChallenge = canvasChallenge.getContext('2d');
+            
+            ctxChallenge.drawImage(videoChallenge, 0, 0, canvasChallenge.width, canvasChallenge.height);
+            
+            const imageData = ctxChallenge.getImageData(0, 0, canvasChallenge.width, canvasChallenge.height);
+            const dominantColor = extractDominantColor(imageData, true);
+            
+            evaluateColorMatch(dominantColor);
+            
+            const photoDataUrl = canvasChallenge.toDataURL('image/jpeg');
+            savePhoto(photoDataUrl, dominantColor);
+        }
     </script>
 </body>
 </html>

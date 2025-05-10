@@ -817,15 +817,13 @@
 
     // Écouteur d'événement pour le bouton de redémarrage
     restartBtn.addEventListener("click", () => {
-      scoreOverlay.classList.remove("active");
-      startBtn.style.display = "block";
-      // Réinitialiser la position de la balle
-      posX = window.innerWidth / 2;
-      posY = window.innerHeight / 2;
-      velX = 0;
-      velY = 0;
-      ball.style.left = posX + "px";
-      ball.style.top = posY + "px";
+      // Stocker à nouveau le score dans localStorage juste avant de rediriger
+      localStorage.setItem("gyroscope-score", score.toString());
+      localStorage.setItem("game-page", "page1");
+      localStorage.setItem("game-state", "finished");
+      
+      // Redirection vers la page principale
+      window.location.href = "jeu.html";
     });
 
     // Dégradés cycliques prédéfinis
@@ -1453,24 +1451,23 @@
         // Préparer l'affichage du score
         finalScoreValue.textContent = score;
         
+        // IMPORTANT: Stocker le score dans localStorage immédiatement
+        // Ne pas attendre le clic sur le bouton pour le faire
+        localStorage.setItem("gyroscope-score", score.toString());
+        localStorage.setItem("game-page", "page1");
+        localStorage.setItem("game-state", "finished");
+        
         // Attendre que les animations de disparition soient terminées avant d'afficher le score
         setTimeout(() => {
             // Afficher l'overlay du score après la disparition des cages
             scoreOverlay.classList.add("active");
         }, 700); // Délai pour laisser le temps aux animations de disparition de se terminer
         
-        // Réinitialiser le jeu
-        // AJOUT: Stocker le score dans localStorage pour transmission à jeu.html
-        localStorage.setItem("gyroscope-score", score.toString());
-        
+        // Pas de réinitialisation du score ici pour éviter de perdre la valeur
         timerSeconds = 5; // Remettre à 5 secondes pour la prochaine partie
         timerDisplay.textContent = "00:05";
         timerDisplay.style.color = "white";
         timerDisplay.style.animation = "none";
-        
-        // Indiquer que c'est le jeu de la page 1 qui est terminé
-        localStorage.setItem("game-page", "page1");
-        localStorage.setItem("game-state", "finished");
     }
   </script>
 </body>

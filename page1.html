@@ -580,6 +580,7 @@
   
   <!-- Ajout des éléments audio -->
   <audio id="pointSound" src="SONORE/1point+.mp3" preload="auto"></audio>
+  <audio id="wrongSound" src="SONORE/wronganswer.mp3" preload="auto"></audio>
   <audio id="backgroundMusic" src="SONORE/ambiancegyro.mp3" loop preload="auto"></audio>
   
   <!-- Cages rectangulaires -->
@@ -632,6 +633,7 @@
     const startBtn = document.getElementById("start-btn");
     const info = document.getElementById("info");
     const pointSound = document.getElementById("pointSound");
+    const wrongSound = document.getElementById("wrongSound");
     const backgroundMusic = document.getElementById("backgroundMusic"); // Ajout de la référence à la musique
     const gyroStatus = document.getElementById("gyro-status");
     
@@ -1127,6 +1129,7 @@
             score -= 1;
             scoreEffect.textContent = "-1";
             scoreEffect.style.color = "#FF0000";
+            wrongSound.play(); // Jouer le son lors d'une mauvaise correspondance
           }
 
           document.body.appendChild(scoreEffect);

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="Css/style.css">
   <link rel="stylesheet" href="Css/cgu-style.css">
   <!-- Préchargement des ressources critiques -->
@@ -485,24 +485,35 @@
     // Sauvegarder l'état dans le localStorage pour le restaurer au rechargement
     const isMinimized = locationBox.classList.contains('minimized');
     localStorage.setItem('locationBoxMinimized', isMinimized);
+    
+    // Empêcher le déplacement pendant un court instant après la bascule
+    setTimeout(() => {
+      isDragging = false;
+    }, 50);
   }
 
   // Code pour rendre le rectangle de localisation déplaçable
   let isDragging = false;
   let offsetX, offsetY;
   const locationBox = document.getElementById('user-location-box');
+  
+  // Empêcher le déclenchement du drag sur les boutons interactifs
+  function isInteractiveElement(element) {
+    return element.classList.contains('location-minimize') || 
+           element.classList.contains('location-refresh') ||
+           element.classList.contains('location-expand');
+  }
 
   // Fonction pour démarrer le déplacement
   function startDrag(e) {
+    // Ne pas déclencher le drag si on clique sur les boutons
+    if (isInteractiveElement(e.target)) {
+      return;
+    }
+    
     const isTouch = e.type.startsWith('touch');
     const clientX = isTouch ? e.touches[0].clientX : e.clientX;
     const clientY = isTouch ? e.touches[0].clientY : e.clientY;
-    
-    // Ne pas déclencher le drag si on clique sur les boutons
-    if (e.target.classList.contains('location-minimize') || 
-        e.target.classList.contains('location-refresh')) {
-      return;
-    }
     
     const rect = locationBox.getBoundingClientRect();
     offsetX = clientX - rect.left;
@@ -561,18 +572,33 @@
     const minimizeBtn = document.querySelector('.location-minimize');
     const expandIcon = document.querySelector('.location-expand');
     
+    // Fonction pour gérer les clics sur tactile et souris
+    function handleMinimizeClick(e) {
+      e.preventDefault();
+      e.stopPropagation(); // Empêcher la propagation pour éviter le déplacement
+      toggleLocationBox();
+    }
+    
     if (minimizeBtn) {
-      minimizeBtn.addEventListener('click', toggleLocationBox);
+      minimizeBtn.addEventListener('click', handleMinimizeClick);
+      minimizeBtn.addEventListener('touchend', handleMinimizeClick, { passive: false });
     }
     
     if (expandIcon) {
-      expandIcon.addEventListener('click', toggleLocationBox);
+      expandIcon.addEventListener('click', handleMinimizeClick);
+      expandIcon.addEventListener('touchend', handleMinimizeClick, { passive: false });
     }
     
     // Restaurer l'état minimisé au chargement si c'était le cas
     const wasMinimized = localStorage.getItem('locationBoxMinimized') === 'true';
     if (wasMinimized && locationBox) {
       locationBox.classList.add('minimized');
+    }
+    
+    // Afficher la boîte après avoir configuré tous les événements
+    if (locationBox) {
+      locationBox.style.display = 'none'; // S'assurer qu'elle est cachée initialement
+      // La fonction getUserLocation l'affichera quand nécessaire
     }
   });
 

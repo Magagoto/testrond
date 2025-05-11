@@ -59,6 +59,9 @@
             max-height: calc(100vh - 50px);
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
         }
         
         .mode-toggle {
@@ -125,6 +128,12 @@
             border: 2px solid rgba(0, 255, 204, 0.2);
         }
         
+        #videoChallenge, #canvasChallenge {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
         /* Styles pour l'interface de capture des deux couleurs */
         .capture-progress {
             display: flex;
@@ -170,23 +179,26 @@
             .container {
                 padding: 8px;
                 margin: 0 auto 8px;
-                max-height: calc(100vh - 35px);
+                max-height: calc(100vh - 65px); /* Augmenté pour plus d'espace */
                 border-radius: 10px;
+                width: calc(100% - 10px); /* Optimisation de la largeur */
             }
             
             .mode-toggle {
                 width: 250px;
                 margin-bottom: 8px;
+                margin-top: 5px; /* Ajout d'une petite marge en haut */
             }
             
+            /* Réduction de la taille de certains éléments pour mobile */
             .color-target {
-                width: 90px;
-                height: 90px;
+                width: 80px;
+                height: 80px;
             }
             
             .color-component {
-                width: 35px;
-                height: 35px;
+                width: 30px;
+                height: 30px;
             }
             
             .color-sample {
@@ -194,40 +206,18 @@
                 height: 40px;
             }
             
-            .score-value {
-                font-size: 2rem;
-            }
-            
-            .feedback-message {
-                font-size: 0.8rem;
-                margin-top: 8px;
-                padding: 4px;
-            }
-            
-            #videoContainerChallenge {
-                max-height: 40vh;
-            }
-            
-            .button-group {
-                margin-top: 10px;
-                gap: 8px;
-            }
-            
-            button {
-                padding: 6px 12px;
-                font-size: 0.8rem;
-            }
-            
-            .target-instruction {
-                font-size: 0.8rem;
-            }
-            
             .capture-slot {
-                width: 40px;
-                height: 40px;
+                width: 35px;
+                height: 35px;
             }
             
-            @media (max-height: 600px) {
+            /* Optimisations pour les iPhone et autres appareils plus petits */
+            @media (max-width: 380px) {
+                .container {
+                    padding: 6px;
+                    max-height: calc(100vh - 50px);
+                }
+                
                 .color-target {
                     width: 70px;
                     height: 70px;
@@ -236,31 +226,131 @@
                 .color-component {
                     width: 25px;
                     height: 25px;
-                    margin: 3px 0;
-                }
-                
-                .button-group {
-                    margin-top: 6px;
-                    gap: 6px;
-                }
-                
-                .container {
-                    max-height: calc(100vh - 25px);
-                }
-                
-                #videoContainerChallenge {
-                    max-height: 45vh;
-                }
-                
-                .status-message {
-                    padding: 4px 8px;
-                    font-size: 0.75rem;
-                    margin: 6px auto;
+                    margin: 4px 0;
                 }
                 
                 .capture-slot {
                     width: 30px;
                     height: 30px;
+                }
+                
+                .button-group {
+                    gap: 5px;
+                }
+                
+                button {
+                    padding: 5px 10px;
+                    font-size: 0.75rem;
+                }
+                
+                .target-instruction {
+                    font-size: 0.75rem;
+                }
+                
+                .capture-instructions {
+                    font-size: 0.75rem;
+                }
+                
+                #videoContainerChallenge {
+                    max-height: 38vh;
+                }
+            }
+            
+            /* Optimisations pour écrans très courts (en hauteur) */
+            @media (max-height: 600px) {
+                body {
+                    padding: 3px 8px;
+                }
+                
+                .container {
+                    max-height: calc(100vh - 30px);
+                    margin: 0 auto 5px;
+                }
+                
+                .mode-toggle {
+                    margin-bottom: 5px;
+                }
+                
+                .color-target {
+                    width: 60px;
+                    height: 60px;
+                }
+                
+                .color-component {
+                    width: 22px;
+                    height: 22px;
+                    margin: 3px 0;
+                }
+                
+                .capture-slot {
+                    width: 25px;
+                    height: 25px;
+                }
+                
+                .button-group {
+                    margin-top: 6px;
+                    gap: 5px;
+                }
+                
+                button {
+                    padding: 4px 8px;
+                    font-size: 0.7rem;
+                }
+                
+                #videoContainerChallenge {
+                    max-height: 45vh;
+                    margin-bottom: 5px;
+                }
+                
+                .capture-progress {
+                    margin-top: 5px;
+                    gap: 10px;
+                }
+                
+                .capture-instructions, .target-instruction {
+                    font-size: 0.7rem;
+                    margin-bottom: 5px;
+                }
+                
+                .status-message {
+                    padding: 3px 6px;
+                    font-size: 0.7rem;
+                    margin: 5px auto;
+                }
+            }
+            
+            /* Optimisations pour les appareils en mode paysage */
+            @media (orientation: landscape) and (max-height: 500px) {
+                .container {
+                    max-height: calc(100vh - 20px);
+                }
+                
+                .color-target {
+                    width: 50px;
+                    height: 50px;
+                }
+                
+                .color-component {
+                    width: 20px;
+                    height: 20px;
+                    margin: 2px 0;
+                }
+                
+                .target-instruction {
+                    margin-top: 2px;
+                }
+                
+                #videoContainerChallenge {
+                    max-height: 65vh;
+                    aspect-ratio: 16/9;
+                }
+                
+                .capture-progress {
+                    margin-top: 3px;
+                }
+                
+                .button-group {
+                    flex-wrap: nowrap;
                 }
             }
         }

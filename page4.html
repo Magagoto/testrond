@@ -703,6 +703,9 @@
         function openGalleryView() {
             const originalChallengeContent = challengeModeContainer.innerHTML;
             
+            // Stocker l'élément challengeModeContainer original pour le retour
+            const originalContainer = challengeModeContainer;
+            
             let galleryContent = `
                 <div class="gallery" id="photoGallery">
             `;
@@ -749,6 +752,20 @@
             `;
             
             challengeModeContainer.innerHTML = galleryContent;
+            
+            // Réattacher l'écouteur d'événement au bouton "Défi Couleur" pour permettre le retour au défi
+            challengeMode.addEventListener('click', function() {
+                challengeMode.classList.add('active');
+                galleryMode.classList.remove('active');
+                
+                // Remettre le contenu original
+                challengeModeContainer.innerHTML = originalChallengeContent;
+                
+                // Réinitialiser les références et la caméra
+                reinitializeChallengeReferences();
+                initChallengeCamera();
+                generateTargetColor();
+            });
             
             document.getElementById('backToChallengeBtn').addEventListener('click', () => {
                 challengeModeContainer.innerHTML = originalChallengeContent;
@@ -1142,6 +1159,23 @@
                     }
                 }, 3000);
             }
+
+            // S'assurer que le bouton challengeMode a toujours son écouteur
+            const reattachMainButtonListeners = () => {
+                challengeMode.addEventListener('click', () => {
+                    challengeMode.classList.add('active');
+                    galleryMode.classList.remove('active');
+                    challengeModeContainer.classList.remove('hidden');
+                    
+                    if (!streamChallenge) {
+                        initChallengeCamera();
+                        generateTargetColor();
+                    }
+                });
+            };
+            
+            // Ajouter l'écouteur initial et le réattacher après chaque changement de vue
+            reattachMainButtonListeners();
         });
         
         function reinitializeChallengeReferences() {

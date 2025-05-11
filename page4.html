@@ -1086,8 +1086,6 @@
             }
         }
         
-        captureChallengeBtn.addEventListener('click', captureChallengeBtnHandler);
-        
         function captureChallengeBtnHandler() {
             ctxChallenge.drawImage(videoChallenge, 0, 0, canvasChallenge.width, canvasChallenge.height);
             
@@ -1117,19 +1115,21 @@
                 const photoDataUrl = canvasChallenge.toDataURL('image/jpeg');
                 savePhoto(photoDataUrl, dominantColor, true);
             } else {
-                evaluateBothColorsMatch(capturedColors);
-                
+                // Deuxième couleur capturée
                 const photoDataUrl = canvasChallenge.toDataURL('image/jpeg');
                 savePhoto(photoDataUrl, dominantColor, false);
                 
-                // Génération automatique d'une nouvelle couleur après avoir capturé les deux couleurs
-                setTimeout(() => {
-                    generateTargetColor();
-                }, 2000); // Délai de 2 secondes pour laisser le temps de voir le résultat
+                // Assurer que la fonction d'évaluation est appelée
+                evaluateBothColorsMatch(capturedColors);
             }
         }
         
         function evaluateBothColorsMatch(capturedColors) {
+            if (!capturedColors[0] || !capturedColors[1]) {
+                console.error("Les deux couleurs n'ont pas été capturées correctement");
+                return;
+            }
+            
             const dist1 = calculateColorDistance(capturedColors[0], targetColors[0]) + 
                          calculateColorDistance(capturedColors[1], targetColors[1]);
             
@@ -1149,19 +1149,40 @@
                 hex: rgbToHex(capturedColors[0].r, capturedColors[0].g, capturedColors[0].b)
             }, score);
             
-            // Ne pas réinitialiser les slots de capture ici car nous le ferons dans generateTargetColor()
-            // qui sera appelé automatiquement après un délai
-            
             // Ajout d'un message indiquant qu'une nouvelle couleur sera générée automatiquement
             challengeStatus.textContent = "Une nouvelle couleur sera générée dans un instant...";
+            
+            // Assurer que le délai est suffisant pour voir les résultats, mais pas trop long
+            setTimeout(() => {
+                generateTargetColor();
+            }, 3000); // 3 secondes au lieu de 2
         }
         
-        function calculateColorDistance(color1, color2) {
-            return Math.sqrt(
-                Math.pow(color1.r - color2.r, 2) +
-                Math.pow(color1.g - color2.g, 2) +
-                Math.pow(color1.b - color2.b, 2)
-            );
+        function rgbToHex(r, g, b) {
+            return '#' + [r, g, b].map(x => {
+                const hex = x.toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            }).join('');
+        }
+        
+        function displayChallengeResults(capturedColor, score) {
+            challengeResult.classList.remove('hidden');
+            
+            const targetColorHex = rgbToHex(currentTargetColor.r, currentTargetColor.g, currentTargetColor.b);
+            targetColorResult.style.backgroundColor = targetColorHex;
+            capturedColorResult.style.backgroundColor = capturedColor.rgb;
+            
+            scoreValue.textContent = score;
+            
+            if (score >= 9) {
+                feedbackMessage.textContent = "Excellent! Vous avez trouvé une correspondance parfaite!";
+            } else if (score >= 7) {
+                feedbackMessage.textContent = "Très bien! Vous avez trouvé une couleur très proche.";
+            } else if (score >= 5) {
+                feedbackMessage.textContent = "Bien! Vous vous rapprochez de la couleur cible.";
+            } else {
+                feedbackMessage.textContent = "Essayez encore pour mieux correspondre à la couleur cible.";
+            }
         }
         
         function savePhoto(dataUrl, dominantColor, isFirstColor) {
@@ -1230,7 +1251,6 @@
                 }, 3000);
             }
 
-            // S'assurer que le bouton challengeMode a toujours son écouteur
             const reattachMainButtonListeners = () => {
                 challengeMode.addEventListener('click', () => {
                     challengeMode.classList.add('active');
@@ -1244,7 +1264,6 @@
                 });
             };
             
-            // Ajouter l'écouteur initial et le réattacher après chaque changement de vue
             reattachMainButtonListeners();
         });
         

@@ -84,7 +84,7 @@
             background: var(--primary-bg);
             color: var(--text-light);
             font-family: inherit;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
@@ -115,7 +115,7 @@
             border-radius: 6px;
             border: none;
             font-family: inherit;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -204,7 +204,7 @@
             align-items: center;
             padding: 5px;
             background: rgba(0, 0, 0, 0.7);
-            font-size: 0.7rem;
+            font-size: 0.65rem;
         }
         
         .color-swatch {
@@ -222,7 +222,7 @@
             background: rgba(0, 0, 0, 0.2);
             border-radius: 5px;
             margin: 10px auto;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--primary-accent);
             max-width: 90%;
         }
@@ -306,9 +306,14 @@
         
         .capture-instructions {
             text-align: center;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             margin-bottom: 10px;
             color: var(--primary-accent);
+        }
+        
+        .target-instruction {
+            font-size: 0.8rem;
+            margin-top: 5px;
         }
         
         /* Styles pour les résultats du défi */
@@ -347,7 +352,7 @@
         }
         
         .score-value {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             font-weight: bold;
             color: var(--primary-accent);
         }
@@ -356,6 +361,7 @@
             text-align: center;
             margin-top: 10px;
             font-style: italic;
+            font-size: 0.8rem;
         }
         
         @media (max-width: 768px) {
@@ -394,6 +400,11 @@
                 height: 35px;
             }
             
+            button {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+            
             /* Optimisations pour les iPhone et autres appareils plus petits */
             @media (max-width: 380px) {
                 .container {
@@ -423,15 +434,15 @@
                 
                 button {
                     padding: 5px 10px;
-                    font-size: 0.75rem;
+                    font-size: 0.7rem;
                 }
                 
                 .target-instruction {
-                    font-size: 0.75rem;
+                    font-size: 0.7rem;
                 }
                 
                 .capture-instructions {
-                    font-size: 0.75rem;
+                    font-size: 0.7rem;
                 }
                 
                 #videoContainerChallenge {
@@ -477,7 +488,18 @@
                 
                 button {
                     padding: 4px 8px;
-                    font-size: 0.7rem;
+                    font-size: 0.65rem;
+                }
+                
+                .capture-instructions, .target-instruction {
+                    font-size: 0.65rem;
+                    margin-bottom: 5px;
+                }
+                
+                .status-message {
+                    padding: 3px 6px;
+                    font-size: 0.65rem;
+                    margin: 5px auto;
                 }
                 
                 #videoContainerChallenge {
@@ -488,17 +510,6 @@
                 .capture-progress {
                     margin-top: 5px;
                     gap: 10px;
-                }
-                
-                .capture-instructions, .target-instruction {
-                    font-size: 0.7rem;
-                    margin-bottom: 5px;
-                }
-                
-                .status-message {
-                    padding: 3px 6px;
-                    font-size: 0.7rem;
-                    margin: 5px auto;
                 }
             }
             

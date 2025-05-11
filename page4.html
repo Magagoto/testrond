@@ -409,29 +409,29 @@
             display: flex;
             align-items: center;
             background: rgba(0, 0, 0, 0.6);
-            padding: 5px;
-            border-radius: 5px;
+            padding: 8px;
+            border-radius: 8px;
             z-index: 5;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
         
         #color-preview-challenge {
-            width: 20px;
-            height: 20px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
-            margin-right: 5px;
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            margin-right: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
         }
         
         #color-value-challenge {
-            font-size: 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 500;
             color: var(--text-light);
         }
         
         @media (max-width: 768px) {
             .container {
-                padding: 8px;
-                margin: 0 auto 8px;
-                max-height: calc(100vh - 65px); /* Augmenté pour plus d'espace */
                 border-radius: 10px;
                 width: calc(100% - 10px); /* Optimisation de la largeur */
             }
@@ -937,6 +937,9 @@
                     canvasChallenge.height = videoChallenge.videoHeight;
                     challengeStatus.textContent = 'Caméra prête. Trouvez une couleur similaire à la cible.';
                     
+                    const realtimeColorChallenge = document.getElementById('realtime-color-challenge');
+                    realtimeColorChallenge.classList.remove('hidden');
+                    
                     setTimeout(() => {
                         startChallengeColorAnalysis();
                     }, 500);
@@ -1073,7 +1076,7 @@
             const tempCtx = tempCanvas.getContext('2d');
             
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const interval = isMobile ? 300 : 200;
+            const interval = isMobile ? 200 : 100;
             
             challengeColorAnalysisInterval = setInterval(() => {
                 if (!streamChallenge || videoChallenge.paused || videoChallenge.ended || !videoChallenge.videoWidth) {

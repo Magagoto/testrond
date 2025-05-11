@@ -75,106 +75,133 @@
             position: relative;
             z-index: 10;
         }
-        
-        .target-color-container {
+
+        .mode-btn {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            border: none;
+            padding: 10px 0;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            font-weight: 500;
+        }
+
+        .mode-btn.active {
+            background: var(--primary-accent);
+            color: var(--text-dark);
+            font-weight: 700;
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
+        }
+
+        .mode-btn:not(.active):hover {
+            background: rgba(0, 255, 204, 0.15);
+        }
+
+        .button-group {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        
-        .color-display {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 10px;
-        }
-        
-        .color-target {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #FF0000, #00FF00);
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
-            margin-bottom: 0;
-            border: 3px solid var(--text-light);
-        }
-        
-        .color-components {
-            display: flex;
-            flex-direction: column;
-            margin-left: 15px;
-        }
-        
-        .color-component {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin: 5px 0;
-            border: 2px solid var(--text-light);
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        #videoContainerChallenge {
-            position: relative;
-            width: 100%;
-            max-width: 500px;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--shadow-soft);
-            background-color: #131c50;
-            aspect-ratio: 4/3;
-            margin: 0 auto 8px;
-            border: 2px solid rgba(0, 255, 204, 0.2);
-        }
-        
-        #videoChallenge, #canvasChallenge {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        /* Styles pour l'interface de capture des deux couleurs */
-        .capture-progress {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 10px;
             gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
-        
-        .capture-slot {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: 2px dashed var(--primary-accent);
-            position: relative;
+
+        button {
+            padding: 8px 18px;
+            font-size: 0.85rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: rgba(0, 0, 0, 0.2);
+            gap: 8px;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            letter-spacing: 0.5px;
+            border: none;
+            text-transform: uppercase;
         }
-        
-        .capture-slot.filled {
-            border: 2px solid var(--primary-accent);
-        }
-        
-        .capture-slot::after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background-color: transparent;
-            border-radius: 50%;
-        }
-        
-        .capture-instructions {
-            text-align: center;
-            font-size: 0.85rem;
-            margin-bottom: 10px;
+
+        .primary {
+            background: rgba(0, 255, 204, 0.13);
             color: var(--primary-accent);
+            border: 2px solid var(--primary-accent);
+            box-shadow: 0 2px 16px rgba(0, 255, 204, 0.2), 0 1px 8px rgba(0, 0, 0, 0.3);
         }
-        
+
+        .secondary {
+            background: var(--primary-accent);
+            color: var(--text-dark);
+            border: 2px solid var(--primary-accent);
+            box-shadow: 0 2px 16px rgba(0, 255, 204, 0.2), 0 1px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .danger {
+            background: rgba(255, 76, 76, 0.13);
+            color: #FF4C4C;
+            border: 2px solid #FF4C4C;
+            box-shadow: 0 2px 16px rgba(255, 76, 76, 0.2), 0 1px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+        }
+
+        button.primary:hover {
+            background: var(--primary-accent);
+            color: var(--text-dark);
+        }
+
+        button.secondary:hover {
+            background: rgba(0, 255, 204, 0.85);
+            color: var(--text-dark);
+        }
+
+        button.danger:hover {
+            background: #FF4C4C;
+            color: white;
+        }
+
+        button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Style pour le bouton de suppression dans la galerie */
+        .delete-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255, 76, 76, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            transition: all 0.2s ease;
+            z-index: 10;
+            text-transform: none;
+            letter-spacing: 0;
+            padding: 0;
+        }
+
+        .delete-btn:hover {
+            background: rgba(255, 50, 50, 1);
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 76, 76, 0.6);
+        }
+
+        /* Ajustements pour mobile */
         @media (max-width: 768px) {
             .container {
                 padding: 8px;
@@ -211,6 +238,12 @@
                 height: 35px;
             }
             
+            button {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+                letter-spacing: 0.3px;
+            }
+            
             /* Optimisations pour les iPhone et autres appareils plus petits */
             @media (max-width: 380px) {
                 .container {
@@ -241,6 +274,7 @@
                 button {
                     padding: 5px 10px;
                     font-size: 0.75rem;
+                    letter-spacing: 0.2px;
                 }
                 
                 .target-instruction {
@@ -295,6 +329,7 @@
                 button {
                     padding: 4px 8px;
                     font-size: 0.7rem;
+                    letter-spacing: 0.1px;
                 }
                 
                 #videoContainerChallenge {

@@ -252,7 +252,8 @@
             background: linear-gradient(135deg, #FF0000, #00FF00);
             box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
             margin-bottom: 0;
-            border: 3px solid var(--text-light);
+            border: none; /* Suppression du contour blanc */
+            animation: pulse 2s infinite alternate; /* Animation de pulsation */
         }
         
         .color-components {
@@ -266,8 +267,30 @@
             height: 40px;
             border-radius: 50%;
             margin: 5px 0;
-            border: 2px solid var(--text-light);
+            border: none; /* Suppression du contour blanc */
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            animation: rotate 3s infinite alternate; /* Animation de rotation */
+        }
+        
+        /* Ajout des animations */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            }
+            100% {
+                transform: scale(1.05);
+                box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+            }
+        }
+        
+        @keyframes rotate {
+            0% {
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                transform: translateY(-5px) scale(1.1);
+            }
         }
         
         /* Styles pour l'interface de capture des deux couleurs */
@@ -289,79 +312,35 @@
             align-items: center;
             justify-content: center;
             background-color: rgba(0, 0, 0, 0.2);
+            animation: breathe 3s infinite alternate; /* Animation de "respiration" */
         }
         
         .capture-slot.filled {
-            border: 2px solid var(--primary-accent);
+            border: none; /* Suppression du contour lorsque rempli */
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.4);
+            animation: pulse 2s infinite alternate; /* Animation différente lorsque rempli */
         }
         
-        .capture-slot::after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background-color: transparent;
-            border-radius: 50%;
-        }
-        
-        .capture-instructions {
-            text-align: center;
-            font-size: 0.8rem;
-            margin-bottom: 10px;
-            color: var(--primary-accent);
-        }
-        
-        .target-instruction {
-            font-size: 0.8rem;
-            margin-top: 5px;
-        }
-        
-        /* Styles pour les résultats du défi */
-        .challenge-result {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: var(--border-radius);
-            padding: 15px;
-            margin-top: 10px;
-        }
-        
-        .color-comparison {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 10px 0;
-        }
-        
-        .color-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        /* Ajout d'une animation de "respiration" */
+        @keyframes breathe {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 5px rgba(0, 255, 204, 0.2);
+            }
+            100% {
+                transform: scale(1.05);
+                box-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
+            }
         }
         
         .color-sample {
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            border: 2px solid var(--text-light);
+            border: none; /* Suppression du contour blanc */
             margin-bottom: 5px;
-        }
-        
-        .score-display {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .score-value {
-            font-size: 2.2rem;
-            font-weight: bold;
-            color: var(--primary-accent);
-        }
-        
-        .feedback-message {
-            text-align: center;
-            margin-top: 10px;
-            font-style: italic;
-            font-size: 0.8rem;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            animation: pulse 2s infinite alternate; /* Animation de pulsation */
         }
         
         #videoContainerChallenge {
@@ -420,8 +399,9 @@
             height: 30px;
             border-radius: 50%;
             margin-right: 8px;
-            border: 2px solid rgba(255, 255, 255, 0.7);
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            border: none; /* Suppression du contour blanc */
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+            animation: pulse 1.5s infinite alternate; /* Animation de pulsation */
         }
         
         #color-value-challenge {
@@ -446,11 +426,13 @@
             .color-target {
                 width: 80px;
                 height: 80px;
+                animation: pulse 2.5s infinite alternate; /* Garder les animations mais ajuster leur intensité */
             }
             
             .color-component {
                 width: 30px;
                 height: 30px;
+                animation: rotate 3.5s infinite alternate; /* Animation moins prononcée sur petits écrans */
             }
             
             .color-sample {
@@ -485,12 +467,14 @@
                 .color-target {
                     width: 70px;
                     height: 70px;
+                    animation: pulse 2.5s infinite alternate; /* Garder les animations mais ajuster leur intensité */
                 }
                 
                 .color-component {
                     width: 25px;
                     height: 25px;
                     margin: 4px 0;
+                    animation: rotate 3.5s infinite alternate; /* Animation moins prononcée sur petits écrans */
                 }
                 
                 .capture-slot {
@@ -665,12 +649,6 @@
                 </svg>
                 Capturer cette couleur
             </button>
-            <button id="newChallengeBtn" class="primary">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M8 3a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V8a6 6 0 0 1 6-6h4.5L10 4.5l.7.7L14.2 2l-3.5-3.2-.7.7L12.5 2H8z"/>
-                </svg>
-                Nouvelle couleur
-            </button>
         </div>
 
         <div class="capture-instructions" id="captureInstructions">
@@ -740,7 +718,6 @@
         const ctxChallenge = canvasChallenge.getContext('2d');
         const targetColor = document.getElementById('targetColor');
         const captureChallengeBtn = document.getElementById('captureChallengeBtn');
-        const newChallengeBtn = document.getElementById('newChallengeBtn');
         const switchCameraChallenge = document.getElementById('switchCameraChallenge');
         const challengeResult = document.getElementById('challengeResult');
         const targetColorResult = document.getElementById('targetColorResult');
@@ -1144,6 +1121,11 @@
                 
                 const photoDataUrl = canvasChallenge.toDataURL('image/jpeg');
                 savePhoto(photoDataUrl, dominantColor, false);
+                
+                // Génération automatique d'une nouvelle couleur après avoir capturé les deux couleurs
+                setTimeout(() => {
+                    generateTargetColor();
+                }, 2000); // Délai de 2 secondes pour laisser le temps de voir le résultat
             }
         }
         
@@ -1167,7 +1149,11 @@
                 hex: rgbToHex(capturedColors[0].r, capturedColors[0].g, capturedColors[0].b)
             }, score);
             
-            resetCaptureSlots();
+            // Ne pas réinitialiser les slots de capture ici car nous le ferons dans generateTargetColor()
+            // qui sera appelé automatiquement après un délai
+            
+            // Ajout d'un message indiquant qu'une nouvelle couleur sera générée automatiquement
+            challengeStatus.textContent = "Une nouvelle couleur sera générée dans un instant...";
         }
         
         function calculateColorDistance(color1, color2) {
@@ -1207,8 +1193,6 @@
             captureSlot1.classList.remove('filled');
             captureSlot2.classList.remove('filled');
         }
-        
-        newChallengeBtn.addEventListener('click', generateTargetColor);
         
         function handleOrientationChange() {
             if (videoChallenge.videoWidth && videoChallenge.videoHeight) {
@@ -1270,7 +1254,6 @@
             const ctxChallenge = canvasChallenge.getContext('2d');
             const targetColor = document.getElementById('targetColor');
             const captureChallengeBtn = document.getElementById('captureChallengeBtn');
-            const newChallengeBtn = document.getElementById('newChallengeBtn');
             const switchCameraChallenge = document.getElementById('switchCameraChallenge');
             const challengeResult = document.getElementById('challengeResult');
             const targetColorResult = document.getElementById('targetColorResult');
@@ -1287,10 +1270,6 @@
             
             if (captureChallengeBtn) {
                 captureChallengeBtn.addEventListener('click', captureChallengeBtnHandler);
-            }
-            
-            if (newChallengeBtn) {
-                newChallengeBtn.addEventListener('click', generateTargetColor);
             }
             
             if (switchCameraChallenge) {

@@ -454,6 +454,35 @@
             font-size: 0.7rem;
         }
         
+        /* Styles pour le score */
+        .score-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 15px;
+        }
+        
+        .score-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-accent);
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+        }
+        
+        .color-comparison {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .color-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 border-radius: 10px;

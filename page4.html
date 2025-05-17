@@ -1380,6 +1380,9 @@
                 initChallengeCamera();
                 generateTargetColor();
                 
+                // Attacher l'écouteur d'événement au bouton de capture
+                captureChallengeBtn.addEventListener('click', captureChallengeBtnHandler);
+                
                 setTimeout(() => {
                     if (videoChallenge && !videoChallenge.videoWidth) {
                         console.log('Tentative de réinitialisation de la caméra...');

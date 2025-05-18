@@ -66,14 +66,18 @@
         
         .mode-toggle {
             display: flex;
+            flex-wrap: wrap;
             border-radius: 30px;
             overflow: hidden;
             margin: 0 auto 10px;
-            width: 280px;
+            width: auto;
+            min-width: 0;
+            max-width: 100%;
             border: 2px solid var(--primary-accent);
             box-shadow: 0 2px 16px rgba(0, 255, 204, 0.2);
             position: relative;
             z-index: 10;
+            gap: 0;
         }
         
         /* Styles pour les boutons de toggle mode */
@@ -490,9 +494,13 @@
             }
             
             .mode-toggle {
-                width: 250px;
+                width: auto;
+                min-width: 0;
+                max-width: 100%;
+                flex-wrap: wrap;
                 margin-bottom: 8px;
                 margin-top: 5px; /* Ajout d'une petite marge en haut */
+                gap: 0;
             }
             
             /* Réduction de la taille de certains éléments pour mobile */
@@ -702,6 +710,7 @@
     <div class="mode-toggle">
         <button class="mode-btn active" id="challengeMode">Défi Couleur</button>
         <button class="mode-btn" id="galleryMode">Galerie Photos</button>
+        <button class="mode-btn" id="scoreMode">Score</button>
     </div>
 
     <div class="container" id="challengeModeContainer">
@@ -780,10 +789,13 @@
         
         <p id="challengeStatus" class="status-message">Initialisation du défi...</p>
     </div>
+    <!-- Ajout du conteneur Score caché -->
+    <div class="container hidden" id="scoreModeContainer"></div>
 
     <script>
         let facingMode = 'user';
         let photos = JSON.parse(localStorage.getItem('capturedPhotos')) || [];
+        let challengeScores = JSON.parse(localStorage.getItem('challengeScores')) || [];
         let streamChallenge;
         let challengeColorAnalysisInterval;
         let nextChallengeBtn;
@@ -810,7 +822,9 @@
         
         const challengeMode = document.getElementById('challengeMode');
         const galleryMode = document.getElementById('galleryMode');
+        const scoreMode = document.getElementById('scoreMode');
         const challengeModeContainer = document.getElementById('challengeModeContainer');
+        const scoreModeContainer = document.getElementById('scoreModeContainer');
         const videoChallenge = document.getElementById('videoChallenge');
         const canvasChallenge = document.getElementById('canvasChallenge');
         const ctxChallenge = canvasChallenge.getContext('2d');
@@ -838,7 +852,9 @@
         challengeMode.addEventListener('click', () => {
             challengeMode.classList.add('active');
             galleryMode.classList.remove('active');
+            scoreMode.classList.remove('active');
             challengeModeContainer.classList.remove('hidden');
+            scoreModeContainer.classList.add('hidden');
             
             if (!streamChallenge) {
                 initChallengeCamera();
@@ -854,8 +870,24 @@
             
             galleryMode.classList.add('active');
             challengeMode.classList.remove('active');
+            scoreMode.classList.remove('active');
+            challengeModeContainer.classList.remove('hidden');
+            scoreModeContainer.classList.add('hidden');
             
             openGalleryView();
+        });
+
+        scoreMode.addEventListener('click', () => {
+            if (streamChallenge) {
+                streamChallenge.getTracks().forEach(track => track.stop());
+                stopChallengeColorAnalysis();
+            }
+            scoreMode.classList.add('active');
+            galleryMode.classList.remove('active');
+            challengeMode.classList.remove('active');
+            challengeModeContainer.classList.add('hidden');
+            scoreModeContainer.classList.remove('hidden');
+            openScoreView();
         });
         
         function openGalleryView() {
@@ -1327,6 +1359,21 @@
                 feedbackMessage.textContent = "Essayez encore pour mieux correspondre aux couleurs cibles.";
             }
 
+            // Enregistrer le score dans l'historique
+            challengeScores.push({
+                date: new Date().toISOString(),
+                target: [
+                    { ...targetColors[0] },
+                    { ...targetColors[1] }
+                ],
+                captured: [
+                    capturedColors[0] ? { ...capturedColors[0] } : null,
+                    capturedColors[1] ? { ...capturedColors[1] } : null
+                ],
+                score: score
+            });
+            localStorage.setItem('challengeScores', JSON.stringify(challengeScores));
+
             if (!nextChallengeBtn) {
                 nextChallengeBtn = document.getElementById('nextChallengeBtn');
             }
@@ -1400,7 +1447,9 @@
                 challengeMode.addEventListener('click', () => {
                     challengeMode.classList.add('active');
                     galleryMode.classList.remove('active');
+                    scoreMode.classList.remove('active');
                     challengeModeContainer.classList.remove('hidden');
+                    scoreModeContainer.classList.add('hidden');
                     
                     if (!streamChallenge) {
                         initChallengeCamera();
@@ -1460,6 +1509,76 @@
                     generateTargetColor();
                 });
             }
+        }
+
+        function openScoreView() {
+            let html = `
+                <h3 style="text-align:center;margin-bottom:10px;">Historique des scores</h3>
+                <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr>
+                            <th style="padding:6px 2px;font-size:0.8em;">Dégradé attendu</th>
+                            <th style="padding:6px 2px;font-size:0.8em;">Dégradé pris</th>
+                            <th style="padding:6px 2px;font-size:0.8em;">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            if (!challengeScores.length) {
+                html += `<tr><td colspan="3" style="text-align:center;padding:12px;">Aucun score enregistré pour l'instant.</td></tr>`;
+            } else {
+                challengeScores.slice().reverse().forEach(entry => {
+                    // Fallback couleurs
+                    const t0 = entry.target[0] || { r:128,g:128,b:128 };
+                    const t1 = entry.target[1] || { r:128,g:128,b:128 };
+                    const c0 = entry.captured[0] || { r:128,g:128,b:128 };
+                    const c1 = entry.captured[1] || { r:128,g:128,b:128 };
+                    html += `
+                        <tr>
+                            <td style="padding:4px;">
+                                <div style="width:60px;height:24px;border-radius:8px;background:linear-gradient(135deg, rgb(${t0.r},${t0.g},${t0.b}), rgb(${t1.r},${t1.g},${t1.b}));border:1px solid #222;"></div>
+                            </td>
+                            <td style="padding:4px;">
+                                <div style="width:60px;height:24px;border-radius:8px;background:linear-gradient(135deg, rgb(${c0.r},${c0.g},${c0.b}), rgb(${c1.r},${c1.g},${c1.b}));border:1px solid #222;"></div>
+                            </td>
+                            <td style="padding:4px;text-align:center;font-weight:bold;color:#00ffcc;text-shadow:0 0 2px #111;">${entry.score}</td>
+                        </tr>
+                    `;
+                });
+            }
+            html += `
+                    </tbody>
+                </table>
+                </div>
+                <div class="button-group" style="margin-top:16px;">
+                    <button id="backToChallengeFromScore" class="primary">
+                        Retour au défi
+                    </button>
+                    <button id="clearScoresBtn" class="danger">
+                        Effacer les scores
+                    </button>
+                </div>
+            `;
+            scoreModeContainer.innerHTML = html;
+
+            document.getElementById('backToChallengeFromScore').onclick = () => {
+                scoreMode.classList.remove('active');
+                challengeMode.classList.add('active');
+                scoreModeContainer.classList.add('hidden');
+                challengeModeContainer.classList.remove('hidden');
+                if (!streamChallenge) {
+                    initChallengeCamera();
+                    generateTargetColor();
+                }
+            };
+            document.getElementById('clearScoresBtn').onclick = () => {
+                if (confirm('Effacer tout l\'historique des scores ?')) {
+                    challengeScores = [];
+                    localStorage.setItem('challengeScores', JSON.stringify(challengeScores));
+                    openScoreView();
+                }
+            };
         }
     </script>
 </body>

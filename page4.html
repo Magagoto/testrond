@@ -1300,15 +1300,23 @@
 
         function displayChallengeResults(score) {
             challengeResult.classList.remove('hidden');
-            
+
+            // Fallback pour éviter un dégradé cassé sur mobile
+            const safeCaptured0 = capturedColors[0] && typeof capturedColors[0].r === 'number'
+                ? capturedColors[0]
+                : { r: 128, g: 128, b: 128 };
+            const safeCaptured1 = capturedColors[1] && typeof capturedColors[1].r === 'number'
+                ? capturedColors[1]
+                : { r: 128, g: 128, b: 128 };
+
             const targetGradient = `linear-gradient(135deg, rgb(${targetColors[0].r}, ${targetColors[0].g}, ${targetColors[0].b}), rgb(${targetColors[1].r}, ${targetColors[1].g}, ${targetColors[1].b}))`;
-            const capturedGradient = `linear-gradient(135deg, rgb(${capturedColors[0].r}, ${capturedColors[0].g}, ${capturedColors[0].b}), rgb(${capturedColors[1].r}, ${capturedColors[1].g}, ${capturedColors[1].b}))`;
-            
+            const capturedGradient = `linear-gradient(135deg, rgb(${safeCaptured0.r}, ${safeCaptured0.g}, ${safeCaptured0.b}), rgb(${safeCaptured1.r}, ${safeCaptured1.g}, ${safeCaptured1.b}))`;
+
             targetColorResult.style.background = targetGradient;
             capturedColorResult.style.background = capturedGradient;
-            
+
             scoreValue.textContent = score;
-            
+
             if (score >= 9) {
                 feedbackMessage.textContent = "Excellent! Vous avez trouvé des correspondances parfaites!";
             } else if (score >= 7) {

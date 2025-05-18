@@ -1101,11 +1101,6 @@
             
             targetColors = [startRGB, endRGB];
             
-            const r = Math.round((startRGB.r + endRGB.r) / 2);
-            const g = Math.round((startRGB.g + endRGB.g) / 2);
-            const b = Math.round((startRGB.b + endRGB.b) / 2);
-            currentTargetColor = { r, g, b };
-            
             targetColor.style.background = `linear-gradient(135deg, ${startColor}, ${endColor})`;
             
             startColorElement.style.backgroundColor = startColor;
@@ -1115,8 +1110,8 @@
             
             challengeResult.classList.add('hidden');
             
-            challengeStatus.textContent = 'Nouvelle couleur générée. Capturez les deux couleurs du dégradé.';
-            captureInstructions.textContent = 'Capturez d\'abord la première couleur, puis la seconde couleur du dégradé';
+            challengeStatus.textContent = 'Nouvelle couleur générée. Capturez d\'abord la couleur de gauche, puis celle de droite.';
+            captureInstructions.textContent = 'Capturez d\'abord la couleur de gauche du dégradé';
         }
         
         function hexToRgb(hex) {
@@ -1128,6 +1123,21 @@
             const b = bigint & 255;
             
             return { r, g, b };
+        }
+        
+        function calculateColorDistance(color1, color2) {
+            if (!color1 || !color2 || 
+                typeof color1.r === 'undefined' || typeof color1.g === 'undefined' || typeof color1.b === 'undefined' ||
+                typeof color2.r === 'undefined' || typeof color2.g === 'undefined' || typeof color2.b === 'undefined') {
+                console.error("Objets de couleur invalides", color1, color2);
+                return 442;
+            }
+            
+            return Math.sqrt(
+                Math.pow(color1.r - color2.r, 2) +
+                Math.pow(color1.g - color2.g, 2) +
+                Math.pow(color1.b - color2.b, 2)
+            );
         }
         
         function startChallengeColorAnalysis() {
@@ -1179,59 +1189,57 @@
         }
         
         function captureChallengeBtnHandler() {
-            // S'assurer que le canvas est visible pour la capture
             canvasChallenge.classList.remove('hidden');
             
             try {
-                // Dessiner l'image depuis la vidéo sur le canvas
                 ctxChallenge.drawImage(videoChallenge, 0, 0, canvasChallenge.width, canvasChallenge.height);
                 
-                // Obtenir les données de l'image pour l'analyse
                 const imageData = ctxChallenge.getImageData(0, 0, canvasChallenge.width, canvasChallenge.height);
                 const dominantColor = extractDominantColor(imageData, true);
                 
-                // Vérifier que nous avons bien obtenu une couleur au format RGB
                 const rgbMatch = dominantColor.rgb.match(/rgb\((\d+), (\d+), (\d+)\)/);
                 if (!rgbMatch) {
                     console.error("Format RGB non valide:", dominantColor.rgb);
                     return;
                 }
                 
-                // Convertir les valeurs RGB en nombres
                 const capturedR = parseInt(rgbMatch[1]);
                 const capturedG = parseInt(rgbMatch[2]);
                 const capturedB = parseInt(rgbMatch[3]);
                 
-                // Créer l'objet de couleur capturée
                 const capturedRGB = { r: capturedR, g: capturedG, b: capturedB };
                 
-                // Stocker la couleur capturée
                 capturedColors[currentCaptureIndex] = capturedRGB;
                 
-                // Mettre à jour l'interface utilisateur
                 const currentSlot = currentCaptureIndex === 0 ? captureSlot1 : captureSlot2;
                 currentSlot.style.backgroundColor = dominantColor.rgb;
                 currentSlot.classList.add('filled');
                 
-                // Enregistrer l'image
                 const photoDataUrl = canvasChallenge.toDataURL('image/jpeg');
                 
                 if (currentCaptureIndex === 0) {
-                    // Après la première capture
                     currentCaptureIndex = 1;
-                    captureInstructions.textContent = "Maintenant, capturez la seconde couleur du dégradé";
+                    
+                    const targetColorStr = `rgb(${targetColors[0].r}, ${targetColors[0].g}, ${targetColors[0].b})`;
+                    captureInstructions.textContent = "Maintenant, capturez la couleur de droite du dégradé";
                     challengeStatus.textContent = "Première couleur capturée. Cherchez maintenant la seconde.";
-                    savePhoto(photoDataUrl, dominantColor, true);
+                    savePhoto(photoDataUrl, dominantColor, targetColorStr, true);
+                    
+                    startColorElement.style.opacity = "0.3";
+                    endColorElement.style.opacity = "1";
                 } else {
-                    // Après la deuxième capture
-                    savePhoto(photoDataUrl, dominantColor, false);
-                    // Évaluer les deux couleurs capturées
+                    const targetColorStr = `rgb(${targetColors[1].r}, ${targetColors[1].g}, ${targetColors[1].b})`;
+                    savePhoto(photoDataUrl, dominantColor, targetColorStr, false);
+                    captureInstructions.textContent = "Les deux couleurs sont capturées!";
+                    
+                    startColorElement.style.opacity = "1";
+                    endColorElement.style.opacity = "1";
+                    
                     setTimeout(() => {
-                        evaluateBothColorsMatch(capturedColors);
+                        evaluateColorMatch();
                     }, 100);
                 }
                 
-                // Masquer à nouveau le canvas après la capture
                 canvasChallenge.classList.add('hidden');
                 
             } catch (error) {
@@ -1239,95 +1247,35 @@
                 challengeStatus.textContent = "Erreur lors de la capture. Veuillez réessayer.";
             }
         }
-        
-        function calculateColorDistance(color1, color2) {
-            // Vérifier que les objets de couleur sont valides
-            if (!color1 || !color2 || 
-                typeof color1.r === 'undefined' || typeof color1.g === 'undefined' || typeof color1.b === 'undefined' ||
-                typeof color2.r === 'undefined' || typeof color2.g === 'undefined' || typeof color2.b === 'undefined') {
-                console.error("Objets de couleur invalides", color1, color2);
-                return 442; // Valeur maximale possible (255*√3)
-            }
-            
-            return Math.sqrt(
-                Math.pow(color1.r - color2.r, 2) +
-                Math.pow(color1.g - color2.g, 2) +
-                Math.pow(color1.b - color2.b, 2)
-            );
-        }
-        
-        function evaluateBothColorsMatch(capturedColors) {
-            // Vérifier que nous avons bien deux couleurs capturées
+
+        function evaluateColorMatch() {
             if (!capturedColors[0] || !capturedColors[1]) {
                 console.error("Les deux couleurs n'ont pas été capturées correctement");
                 challengeStatus.textContent = "Erreur: couleurs incomplètes. Veuillez réessayer.";
                 return;
             }
             
-            // Calculer les distances entre les couleurs capturées et les couleurs cibles
-            const dist1 = calculateColorDistance(capturedColors[0], targetColors[0]) + 
-                        calculateColorDistance(capturedColors[1], targetColors[1]);
+            const distance1 = calculateColorDistance(capturedColors[0], targetColors[0]);
+            const distance2 = calculateColorDistance(capturedColors[1], targetColors[1]);
             
-            const dist2 = calculateColorDistance(capturedColors[0], targetColors[1]) + 
-                        calculateColorDistance(capturedColors[1], targetColors[0]);
-            
-            const bestDistance = Math.min(dist1, dist2);
-            
-            // Calculer le score
-            let score = 10 - (bestDistance / 882) * 10;
+            const totalDistance = distance1 + distance2;
+            let score = 10 - (totalDistance / 441) * 10;
             score = Math.max(0, Math.min(10, score));
             score = Math.round(score * 10) / 10;
             
             if (score > 9.5) score = 10;
             
-            // Afficher les résultats
-            displayChallengeResults({
-                rgb: `rgb(${capturedColors[0].r}, ${capturedColors[0].g}, ${capturedColors[0].b})`,
-                hex: rgbToHex(capturedColors[0].r, capturedColors[0].g, capturedColors[0].b)
-            }, score);
+            displayChallengeResults(score);
             
-            // Indiquer qu'une nouvelle couleur sera générée automatiquement
             challengeStatus.textContent = "Une nouvelle couleur sera générée dans un instant...";
             
-            // Générer une nouvelle couleur après un délai
             setTimeout(() => {
                 generateTargetColor();
             }, 3000);
         }
-        
-        function rgbToHex(r, g, b) {
-            return '#' + [r, g, b].map(x => {
-                const hex = x.toString(16);
-                return hex.length === 1 ? '0' + hex : hex;
-            }).join('');
-        }
-        
-        function displayChallengeResults(capturedColor, score) {
-            challengeResult.classList.remove('hidden');
-            
-            const targetColorHex = rgbToHex(currentTargetColor.r, currentTargetColor.g, currentTargetColor.b);
-            targetColorResult.style.backgroundColor = targetColorHex;
-            capturedColorResult.style.backgroundColor = capturedColor.rgb;
-            
-            scoreValue.textContent = score;
-            
-            if (score >= 9) {
-                feedbackMessage.textContent = "Excellent! Vous avez trouvé une correspondance parfaite!";
-            } else if (score >= 7) {
-                feedbackMessage.textContent = "Très bien! Vous avez trouvé une couleur très proche.";
-            } else if (score >= 5) {
-                feedbackMessage.textContent = "Bien! Vous vous rapprochez de la couleur cible.";
-            } else {
-                feedbackMessage.textContent = "Essayez encore pour mieux correspondre à la couleur cible.";
-            }
-        }
-        
-        function savePhoto(dataUrl, dominantColor, isFirstColor) {
+
+        function savePhoto(dataUrl, dominantColor, targetColorStr, isFirstColor) {
             const timestamp = new Date().toISOString();
-            
-            const targetColorIndex = isFirstColor ? 0 : 1;
-            const targetColorRGB = targetColors[targetColorIndex];
-            const targetColorStr = `rgb(${targetColorRGB.r}, ${targetColorRGB.g}, ${targetColorRGB.b})`;
             
             photos.push({
                 id: Date.now().toString(),
@@ -1340,7 +1288,29 @@
             
             localStorage.setItem('capturedPhotos', JSON.stringify(photos));
         }
-        
+
+        function displayChallengeResults(score) {
+            challengeResult.classList.remove('hidden');
+            
+            const targetGradient = `linear-gradient(135deg, rgb(${targetColors[0].r}, ${targetColors[0].g}, ${targetColors[0].b}), rgb(${targetColors[1].r}, ${targetColors[1].g}, ${targetColors[1].b}))`;
+            const capturedGradient = `linear-gradient(135deg, rgb(${capturedColors[0].r}, ${capturedColors[0].g}, ${capturedColors[0].b}), rgb(${capturedColors[1].r}, ${capturedColors[1].g}, ${capturedColors[1].b}))`;
+            
+            targetColorResult.style.background = targetGradient;
+            capturedColorResult.style.background = capturedGradient;
+            
+            scoreValue.textContent = score;
+            
+            if (score >= 9) {
+                feedbackMessage.textContent = "Excellent! Vous avez trouvé des correspondances parfaites!";
+            } else if (score >= 7) {
+                feedbackMessage.textContent = "Très bien! Vous avez trouvé des couleurs très proches.";
+            } else if (score >= 5) {
+                feedbackMessage.textContent = "Bien! Vous vous rapprochez des couleurs cibles.";
+            } else {
+                feedbackMessage.textContent = "Essayez encore pour mieux correspondre aux couleurs cibles.";
+            }
+        }
+
         function resetCaptureSlots() {
             capturedColors = [null, null];
             currentCaptureIndex = 0;
@@ -1350,6 +1320,9 @@
             
             captureSlot1.classList.remove('filled');
             captureSlot2.classList.remove('filled');
+            
+            startColorElement.style.opacity = "1";
+            endColorElement.style.opacity = "0.3";
         }
         
         function handleOrientationChange() {
@@ -1380,7 +1353,6 @@
                 initChallengeCamera();
                 generateTargetColor();
                 
-                // Attacher l'écouteur d'événement au bouton de capture
                 captureChallengeBtn.addEventListener('click', captureChallengeBtnHandler);
                 
                 setTimeout(() => {

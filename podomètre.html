@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Podomètre Ultra Précis</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      padding: 1em;
+      background-color: #f8f9fa;
+      color: #343a40;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 2em;
+      margin-bottom: 0.5em;
+    }
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5em;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-bottom: 1.5em;
+    }
+    #steps {
+      font-size: 4em;
+      color: #007bff;
+      font-weight: bold;
+      margin: 0.5em 0;
+    }
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      margin: 1em 0;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #28a745;
+    }
+    .stat-label {
+      font-size: 0.9em;
+      color: #6c757d;
+    }
+    button {
+      padding: 0.8em 1.5em;
+      font-size: 1em;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin: 0.5em;
+    }
+    button:hover {
+      background-color: #0069d9;
+    }
+    button:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+    }
+    .btn-reset {
+      background-color: #dc3545;
+    }
+    .btn-reset:hover {
+      background-color: #c82333;
+    }
+    .sensitivity {
+      margin: 1em 0;
+      text-align: left;
+    }
+    .sensitivity label {
+      display: block;
+      margin-bottom: 0.5em;
+    }
+    .debug {
+      margin-top: 1em;
+      text-align: left;
+      font-size: 0.8em;
+      color: #6c757d;
+      display: none;
+    }
+    .debug-title {
+      font-weight: bold;
+      margin-bottom: 0.5em;
+    }
+    .chart-container {
+      height: 150px;
+      margin: 1em 0;
+      position: relative;
+    }
+    #accelerationChart {
+      width: 100%;
+      height: 100%;
+    }
+    .status-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #dc3545;
+      margin-right: 5px;
+    }
+    .status-indicator.active {
+      background-color: #28a745;
+    }
+    .status-text {
+      font-size: 0.9em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Podomètre Ultra Précis</h1>
+    
+    <div class="status-text">
+      <span class="status-indicator" id="statusIndicator"></span>
+      <span id="statusText">En attente</span>
+    </div>
+    
+    <div id="steps">0</div>
+    
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value" id="cadence">0</div>
+        <div class="stat-label">pas/min</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="distance">0.0</div>
+        <div class="stat-label">mètres</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="calories">0</div>
+        <div class="stat-label">cal</div>
+      </div>
+    </div>
+    
+    <div class="chart-container">
+      <canvas id="accelerationChart"></canvas>
+    </div>
+    
+    <div>
+      <button id="start">Démarrer</button>
+      <button id="pause" disabled>Pause</button>
+      <button id="reset" class="btn-reset">Réinitialiser</button>
+    </div>
+    
+    <div class="sensitivity">
+      <label for="sensitivity">Sensibilité : <span id="sensitivityValue">5</span></label>
+      <input type="range" id="sensitivity" min="1" max="10" value="5">
+    </div>
+    
+    <div class="sensitivity">
+      <label for="stepLength">Longueur de pas (cm) : <span id="stepLengthValue">75</span></label>
+      <input type="range" id="stepLength" min="50" max="100" value="75">
+    </div>
+
+    <div class="sensitivity">
+      <label for="debugMode">
+        <input type="checkbox" id="debugMode"> Mode debug
+      </label>
+    </div>
+  </div>
+  
+  <div id="debugInfo" class="debug">
+    <div class="debug-title">Informations de débogage</div>
+    <div>Accélération X: <span id="accX">0</span></div>
+    <div>Accélération Y: <span id="accY">0</span></div>
+    <div>Accélération Z: <span id="accZ">0</span></div>
+    <div>Magnitude: <span id="magnitude">0</span></div>
+    <div>Filtrée: <span id="filtered">0</span></div>
+    <div>Peak: <span id="peak">0</span></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+  <script>
+    // Configuration
+    let config = {
+      sensitivity: 5,
+      stepLength: 75, // en cm
+      weight: 70, // kg, pour le calcul des calories
+      debugMode: false
+    };
+
+    // Variables de l'algorithme
+    let stepCount = 0;
+    let lastStepTime = 0;
+    let stepTimes = [];
+    let isRunning = false;
+    let isPaused = false;
+
+    // Variables pour la détection de pas
+    let accelerationWindow = [];
+    const WINDOW_SIZE = 20;
+    let accelerationHistory = new Array(100).fill(0);
+    let peakThreshold = 0;
+    let valleyThreshold = 0;
+    let inPeak = false;
+    let peakTime = 0;
+    let lastPeakTime = 0;
+    let minPeakInterval = 250; // Temps minimum entre deux pas (ms)
+
+    // Variables pour le filtrage
+    const lowPassAlpha = 0.8;
+    let filteredAcceleration = null;
+    
+    // Graphique d'accélération
+    let accelerationChart;
+    
+    // DOM Elements
+    const stepCountElement = document.getElementById('steps');
+    const cadenceElement = document.getElementById('cadence');
+    const distanceElement = document.getElementById('distance');
+    const caloriesElement = document.getElementById('calories');
+    const sensitivityInput = document.getElementById('sensitivity');
+    const sensitivityValueElement = document.getElementById('sensitivityValue');
+    const stepLengthInput = document.getElementById('stepLength');
+    const stepLengthValueElement = document.getElementById('stepLengthValue');
+    const debugModeCheckbox = document.getElementById('debugMode');
+    const debugInfoElement = document.getElementById('debugInfo');
+    const startButton = document.getElementById('start');
+    const pauseButton = document.getElementById('pause');
+    const resetButton = document.getElementById('reset');
+    const statusIndicator = document.getElementById('statusIndicator');
+    const statusText = document.getElementById('statusText');
+
+    // Initialiser le graphique
+    function initChart() {
+      const ctx = document.getElementById('accelerationChart').getContext('2d');
+      accelerationChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: Array(100).fill(''),
+          datasets: [{
+            label: 'Accélération',
+            data: accelerationHistory,
+            borderColor: 'rgba(0, 123, 255, 1)',
+            borderWidth: 2,
+            fill: false,
+            pointRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              display: false
+            },
+            y: {
+              display: true,
+              suggestedMin: -2,
+              suggestedMax: 2
+            }
+          },
+          animation: {
+            duration: 0
+          },
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      });
+    }
+
+    // Mettre à jour le graphique
+    function updateChart(value) {
+      accelerationHistory.shift();
+      accelerationHistory.push(value);
+      accelerationChart.data.datasets[0].data = accelerationHistory;
+      accelerationChart.update();
+    }
+
+    // Calcul de la cadence en pas/minute
+    function calculateCadence() {
+      // Garder seulement les pas des 60 dernières secondes
+      const now = Date.now();
+      stepTimes = stepTimes.filter(time => now - time < 60000);
+      
+      if (stepTimes.length > 1) {
+        return stepTimes.length;
+      }
+      return 0;
+    }
+
+    // Calcul de la distance parcourue en mètres
+    function calculateDistance() {
+      return ((stepCount * config.stepLength) / 100).toFixed(1);
+    }
+
+    // Calcul approximatif des calories brûlées
+    function calculateCalories() {
+      // Formule approximative: 0.04 calories par pas pour une personne de 70kg
+      const caloriesPerStep = 0.04 * (config.weight / 70);
+      return Math.round(stepCount * caloriesPerStep);
+    }
+
+    // Mettre à jour l'interface
+    function updateUI() {
+      stepCountElement.innerText = stepCount;
+      cadenceElement.innerText = calculateCadence();
+      distanceElement.innerText = calculateDistance();
+      caloriesElement.innerText = calculateCalories();
+    }
+
+    // Détection améliorée des pas
+    function detectStep(magnitude) {
+      // Ajout de la magnitude à la fenêtre
+      accelerationWindow.push(magnitude);
+      if (accelerationWindow.length > WINDOW_SIZE) {
+        accelerationWindow.shift();
+      }
+
+      // Calcul des seuils adaptatifs
+      if (accelerationWindow.length === WINDOW_SIZE) {
+        const mean = accelerationWindow.reduce((a, b) => a + b, 0) / WINDOW_SIZE;
+        const stdDev = Math.sqrt(
+          accelerationWindow.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / WINDOW_SIZE
+        );
+        
+        // Ajuster les seuils en fonction de la sensibilité
+        const sensitivityFactor = config.sensitivity / 5;
+        peakThreshold = mean + (stdDev * (1.5 / sensitivityFactor));
+        valleyThreshold = mean - (stdDev * 0.5);
+        
+        if (config.debugMode) {
+          document.getElementById('peak').innerText = peakThreshold.toFixed(3);
+        }
+
+        const now = Date.now();
+        
+        // Détection des pics (pas)
+        if (!inPeak && magnitude > peakThreshold && now - lastPeakTime > minPeakInterval) {
+          inPeak = true;
+          peakTime = now;
+        } else if (inPeak && magnitude < valleyThreshold) {
+          inPeak = false;
+          if (now - peakTime < 300) { // Vérifier que le pic n'est pas trop long
+            stepCount++;
+            stepTimes.push(now);
+            lastPeakTime = now;
+            updateUI();
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    // Commencer à écouter les mouvements
+    function startListening() {
+      isRunning = true;
+      isPaused = false;
+      startButton.disabled = true;
+      pauseButton.disabled = false;
+      statusIndicator.classList.add('active');
+      statusText.innerText = 'Actif';
+
+      window.addEventListener("devicemotion", handleMotion);
+    }
+
+    // Mettre en pause
+    function pauseListening() {
+      isPaused = true;
+      pauseButton.innerText = 'Reprendre';
+      pauseButton.removeEventListener('click', pauseListening);
+      pauseButton.addEventListener('click', resumeListening);
+      statusIndicator.classList.remove('active');
+      statusText.innerText = 'En pause';
+    }
+
+    // Reprendre
+    function resumeListening() {
+      isPaused = false;
+      pauseButton.innerText = 'Pause';
+      pauseButton.removeEventListener('click', resumeListening);
+      pauseButton.addEventListener('click', pauseListening);
+      statusIndicator.classList.add('active');
+      statusText.innerText = 'Actif';
+    }
+
+    // Gérer le mouvement
+    function handleMotion(event) {
+      if (isPaused) return;
+      
+      const acc = event.accelerationIncludingGravity;
+      if (!acc || !acc.x || !acc.y || !acc.z) return;
+
+      // Calculer la magnitude de l'accélération
+      const magnitude = Math.sqrt(acc.x ** 2 + acc.y ** 2 + acc.z ** 2) - 9.8; // Soustraire la gravité
+
+      // Appliquer un filtre passe-bas pour réduire le bruit
+      if (filteredAcceleration === null) {
+        filteredAcceleration = magnitude;
+      } else {
+        filteredAcceleration = lowPassAlpha * filteredAcceleration + (1 - lowPassAlpha) * magnitude;
+      }
+
+      // Mettre à jour les données de débogage
+      if (config.debugMode) {
+        document.getElementById('accX').innerText = acc.x.toFixed(3);
+        document.getElementById('accY').innerText = acc.y.toFixed(3);
+        document.getElementById('accZ').innerText = acc.z.toFixed(3);
+        document.getElementById('magnitude').innerText = magnitude.toFixed(3);
+        document.getElementById('filtered').innerText = filteredAcceleration.toFixed(3);
+      }
+
+      // Mettre à jour le graphique
+      updateChart(filteredAcceleration);
+
+      // Détecter un pas
+      detectStep(filteredAcceleration);
+    }
+
+    // Réinitialiser
+    function resetCounter() {
+      stepCount = 0;
+      stepTimes = [];
+      accelerationWindow = [];
+      accelerationHistory = new Array(100).fill(0);
+      updateUI();
+      updateChart(0);
+    }
+
+    // Événements des boutons
+    startButton.addEventListener('click', () => {
+      if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        DeviceMotionEvent.requestPermission()
+          .then(permissionState => {
+            if (permissionState === 'granted') {
+              startListening();
+            } else {
+              alert("Vous devez autoriser l'accès au mouvement pour utiliser le podomètre.");
+            }
+          }).catch(error => {
+            console.error("Erreur de permission:", error);
+            alert("Erreur lors de la demande d'autorisation. Veuillez réessayer.");
+          });
+      } else {
+        startListening();
+      }
+    });
+
+    pauseButton.addEventListener('click', pauseListening);
+    resetButton.addEventListener('click', resetCounter);
+
+    // Événements des contrôles
+    sensitivityInput.addEventListener('input', (e) => {
+      config.sensitivity = parseInt(e.target.value);
+      sensitivityValueElement.innerText = config.sensitivity;
+    });
+
+    stepLengthInput.addEventListener('input', (e) => {
+      config.stepLength = parseInt(e.target.value);
+      stepLengthValueElement.innerText = config.stepLength;
+      updateUI(); // Mettre à jour la distance avec la nouvelle longueur de pas
+    });
+
+    debugModeCheckbox.addEventListener('change', (e) => {
+      config.debugMode = e.target.checked;
+      debugInfoElement.style.display = config.debugMode ? 'block' : 'none';
+    });
+
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', () => {
+      initChart();
+    });
+  </script>
+</body>
+</html>

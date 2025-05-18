@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Le Jeu</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #fff;
+      color: #000;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      justify-content: space-between;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+    }
+
+    main {
+      text-align: center;
+      padding: 2rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .button {
+      background: #000;
+      color: #fff;
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      margin-top: 2rem;
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>Le Jeu</div>
+    <div><a href="#">Accéder au jeu</a></div>
+  </header>
+
+  <main>
+    <p>
+      Bienvenue dans Le Jeu.<br/>
+      Ce jeu utilise vos données de navigation.<br/>
+      En continuant, vous acceptez les conditions générales d'utilisation.
+    </p>
+    <button class="button">J’accepte les conditions</button>
+  </main>
+</body>
+</html>

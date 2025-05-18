@@ -771,6 +771,11 @@
             <div class="feedback-message" id="feedbackMessage">
                 Essayez encore pour mieux correspondre à la couleur cible.
             </div>
+            <div style="text-align:center; margin-top:10px;">
+                <button id="nextChallengeBtn" class="primary" style="display:none;">
+                    Défi suivant
+                </button>
+            </div>
         </div>
         
         <p id="challengeStatus" class="status-message">Initialisation du défi...</p>
@@ -781,6 +786,7 @@
         let photos = JSON.parse(localStorage.getItem('capturedPhotos')) || [];
         let streamChallenge;
         let challengeColorAnalysisInterval;
+        let nextChallengeBtn;
         
         const gradientMap = {
             "#00A993": "#E68B4A", "#E68B4A": "#7A1619", "#7A1619": "#362777",
@@ -1266,12 +1272,15 @@
             if (score > 9.5) score = 10;
             
             displayChallengeResults(score);
-            
-            challengeStatus.textContent = "Une nouvelle couleur sera générée dans un instant...";
-            
-            setTimeout(() => {
-                generateTargetColor();
-            }, 3000);
+
+            challengeStatus.textContent = "Appuyez sur 'Défi suivant' pour continuer.";
+            if (!nextChallengeBtn) {
+                nextChallengeBtn = document.getElementById('nextChallengeBtn');
+            }
+            if (nextChallengeBtn) {
+                nextChallengeBtn.style.display = '';
+                nextChallengeBtn.disabled = false;
+            }
         }
 
         function savePhoto(dataUrl, dominantColor, targetColorStr, isFirstColor) {
@@ -1309,6 +1318,14 @@
             } else {
                 feedbackMessage.textContent = "Essayez encore pour mieux correspondre aux couleurs cibles.";
             }
+
+            if (!nextChallengeBtn) {
+                nextChallengeBtn = document.getElementById('nextChallengeBtn');
+            }
+            if (nextChallengeBtn) {
+                nextChallengeBtn.style.display = '';
+                nextChallengeBtn.disabled = false;
+            }
         }
 
         function resetCaptureSlots() {
@@ -1323,6 +1340,14 @@
             
             startColorElement.style.opacity = "1";
             endColorElement.style.opacity = "0.3";
+
+            if (!nextChallengeBtn) {
+                nextChallengeBtn = document.getElementById('nextChallengeBtn');
+            }
+            if (nextChallengeBtn) {
+                nextChallengeBtn.style.display = 'none';
+                nextChallengeBtn.disabled = true;
+            }
         }
         
         function handleOrientationChange() {
@@ -1377,6 +1402,15 @@
             };
             
             reattachMainButtonListeners();
+
+            nextChallengeBtn = document.getElementById('nextChallengeBtn');
+            if (nextChallengeBtn) {
+                nextChallengeBtn.addEventListener('click', function() {
+                    nextChallengeBtn.style.display = 'none';
+                    nextChallengeBtn.disabled = true;
+                    generateTargetColor();
+                });
+            }
         });
         
         function reinitializeChallengeReferences() {
@@ -1398,6 +1432,7 @@
             const captureSlot1 = document.getElementById('captureSlot1');
             const captureSlot2 = document.getElementById('captureSlot2');
             const captureInstructions = document.getElementById('captureInstructions');
+            const nextChallengeBtnRef = document.getElementById('nextChallengeBtn');
             
             if (captureChallengeBtn) {
                 captureChallengeBtn.addEventListener('click', captureChallengeBtnHandler);
@@ -1407,6 +1442,14 @@
                 switchCameraChallenge.addEventListener('click', () => {
                     facingMode = facingMode === 'user' ? 'environment' : 'user';
                     initChallengeCamera();
+                });
+            }
+
+            if (nextChallengeBtnRef) {
+                nextChallengeBtnRef.addEventListener('click', function() {
+                    nextChallengeBtnRef.style.display = 'none';
+                    nextChallengeBtnRef.disabled = true;
+                    generateTargetColor();
                 });
             }
         }

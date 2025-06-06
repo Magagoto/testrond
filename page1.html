@@ -845,7 +845,7 @@
 
     let score = 0;
     let gameActive = false;
-    let timerSeconds = 5; // Durée de la partie en secondes (réduite à 5 secondes)
+    let timerSeconds = 90; // Durée de la partie en secondes (1min30)
     let timerInterval;
     updateScoreDisplay();
 
@@ -1372,12 +1372,12 @@
         setGyroStatusActive();
 
         // Afficher le timer dès le début
-        timerDisplay.textContent = "00:05";
+        timerDisplay.textContent = "01:30";
         timerDisplay.style.color = "white";
         timerDisplay.style.animation = "none";
 
         // Démarrer le timer et les animations
-        timerSeconds = 5; // 5 secondes pour chaque partie
+        timerSeconds = 90; // 1min30 pour chaque partie
         timerInterval = setInterval(updateTimer, 1000);
         initCageAnimations();
 
@@ -1464,8 +1464,8 @@
         }, 700); // Délai pour laisser le temps aux animations de disparition de se terminer
         
         // Pas de réinitialisation du score ici pour éviter de perdre la valeur
-        timerSeconds = 5; // Remettre à 5 secondes pour la prochaine partie
-        timerDisplay.textContent = "00:05";
+        timerSeconds = 90; // Remettre à 1min30 pour la prochaine partie
+        timerDisplay.textContent = "01:30";
         timerDisplay.style.color = "white";
         timerDisplay.style.animation = "none";
     }

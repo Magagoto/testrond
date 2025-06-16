@@ -652,6 +652,10 @@
     </div>
     -->
   </div>
+  <!-- BOUTON MOBILE POUR FAIRE TOURNER LE LOADER -->
+  <button id="rotateDonutBtn" style="display:none;position:fixed;left:16px;bottom:24px;z-index:10001;padding:12px 18px;background:#222;color:#0ff;border:2px solid #0ff;border-radius:8px;font-size:1.1em;cursor:pointer;">
+    Tourner le loader
+  </button>
   <script>
     // Animation du remplissage façon Pacman
     (function() {
@@ -876,6 +880,25 @@
       btn.style.cursor = 'pointer';
       btn.onclick = window.saveLoaderPositions;
       document.body.appendChild(btn);
+    })();
+
+    // --- Option mobile : faire tourner le loader donut au tap ---
+    (function() {
+      function isMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      }
+      const rotateBtn = document.getElementById('rotateDonutBtn');
+      const donut = document.querySelector('.loader-donut');
+      let donutRotation = 0;
+
+      if (isMobile() && donut) {
+        rotateBtn.style.display = '';
+        rotateBtn.addEventListener('touchstart', function(e) {
+          e.preventDefault();
+          donutRotation = (donutRotation + 90) % 360;
+          donut.style.transform = `rotate(${donutRotation}deg)`;
+        });
+      }
     })();
   </script>
 </body>

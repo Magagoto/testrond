@@ -661,7 +661,7 @@
   <!-- Bannière du jeu -->
   <div id="game-banner">
     <div id="banner-content">
-      <span id="timer-display">00:05</span>
+      <span id="timer-display">01:10</span>
       <span id="score-display">Score: 0</span>
       <span id="gyro-status"></span>
     </div>
@@ -804,6 +804,9 @@
 
     // Afficher le tutoriel au chargement de la page
     window.addEventListener("DOMContentLoaded", () => {
+      // Afficher correctement 01:10 dans le timer dès le chargement
+      timerDisplay.textContent = "01:10";
+      
       // Attendre un peu avant d'afficher pour permettre le chargement complet
       setTimeout(() => {
         tutorialOverlay.classList.add("active");
@@ -1371,13 +1374,13 @@
         startBtn.style.display = 'none';
         setGyroStatusActive();
 
-        // Afficher le timer dès le début
+        // Afficher le timer dès le début avec la bonne durée
         timerDisplay.textContent = "01:10";
         timerDisplay.style.color = "white";
         timerDisplay.style.animation = "none";
 
         // Démarrer le timer et les animations
-        timerSeconds = 70; // 1min10 pour chaque partie
+        timerSeconds = 70; // 1min10 exactement
         timerInterval = setInterval(updateTimer, 1000);
         initCageAnimations();
 
@@ -1464,8 +1467,8 @@
         }, 700); // Délai pour laisser le temps aux animations de disparition de se terminer
         
         // Pas de réinitialisation du score ici pour éviter de perdre la valeur
-        timerSeconds = 70; // Remettre à 1min10 pour la prochaine partie
-        timerDisplay.textContent = "01:10";
+        timerSeconds = 70; // Exactement 1min10
+        timerDisplay.textContent = "01:10"; // Format correct
         timerDisplay.style.color = "white";
         timerDisplay.style.animation = "none";
     }

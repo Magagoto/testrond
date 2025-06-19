@@ -18,12 +18,33 @@ body {
   /* Motif SVG de fond comme sur page 1 */
   background: #111;
   background-image: url('data:image/svg+xml;utf8,<svg width="120" height="120" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="30" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><circle cx="90" cy="30" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><circle cx="30" cy="90" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><circle cx="90" cy="90" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><polyline points="90,0 90,30 30,30 30,90 90,90 90,120" fill="none" stroke="%23222" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/></svg>');
+  padding-top: 40px; /* Ajout d'un padding-top pour l'ensemble du contenu */
+  overflow-y: auto; /* Permettre le défilement si nécessaire */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE et Edge */
 }
+
+/* Masquer la barre de défilement sur WebKit/Chrome */
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* Masquer les barres de défilement pour tous les éléments */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE et Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
 model-viewer {
   width: 100%;
   max-width: 800px;
   height: 600px;
   background: transparent;
+  margin-top: 20px; /* Ajout d'une marge pour le modèle 3D */
 }
 /* Grille 2x2 pour les rectangles, tout le temps */
 .info-row {
@@ -34,7 +55,7 @@ model-viewer {
   margin-bottom: 32px;
   width: 100%;
   max-width: 500px;
-  margin-top: 48px; /* Ajouté pour baisser les rectangles */
+  margin-top: 80px; /* Augmenté pour baisser davantage les rectangles */
 }
 .info-rect {
   /* Style inspiré du bouton gyroscope page 1 */
@@ -76,7 +97,7 @@ model-viewer {
   color: #f5f6fa;
   font-size: 1rem;
   text-align: center;
-  margin-top: 20px;
+  margin-top: 30px; /* Augmenté pour plus d'espacement */
   max-width: 600px;
   padding: 0 20px;
 }
@@ -140,6 +161,217 @@ model-viewer {
   50%  { transform: scale(1.3) translateY(-12px); opacity: 1; }
   100% { transform: scale(1) translateY(0); opacity: 0.7; }
 }
+
+/* Style pour le pop-up du tutoriel */
+.tutorial-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.tutorial-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.tutorial-container {
+  position: relative;
+  width: 95%;
+  max-width: 800px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: linear-gradient(145deg, #182c4c 0%, #111 100%);
+  border: 2px solid #00ffcc;
+  border-radius: 16px;
+  padding: 24px;
+  color: white;
+  box-shadow: 0 0 30px #00ffcc44, 0 0 15px #2a489966;
+  margin: 0 10px;
+}
+
+.tutorial-header {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #00ffcc;
+  text-shadow: 0 0 10px #00ffcc66;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  letter-spacing: 1px;
+}
+
+.tutorial-header h2 {
+  font-size: 2em;
+  font-weight: 600;
+  margin: 0.5em 0;
+}
+
+.tutorial-content {
+  margin-bottom: 24px;
+  line-height: 1.6;
+  font-family: sans-serif;
+  font-size: 18px;
+}
+
+.tutorial-step {
+  display: flex;
+  margin-bottom: 24px;
+  padding-bottom: 8px;
+  align-items: flex-start;
+}
+
+.step-number {
+  background: #00ffcc;
+  color: #111;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  margin-right: 18px;
+  flex-shrink: 0;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  font-size: 20px;
+}
+
+.tutorial-btn {
+  padding: 1em 2em;
+  font-size: 1.2em;
+  background: rgba(0,255,204,0.13);
+  color: #00ffcc;
+  border: 2px solid #00ffcc;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  font-weight: 600;
+  box-shadow: 0 2px 16px #00ffcc22, 0 1px 8px #0004;
+  backdrop-filter: blur(2px);
+  letter-spacing: 1px;
+  transition: background 0.3s, color 0.3s, border 0.3s, box-shadow 0.3s;
+  display: block;
+  margin: 0 auto;
+  text-align: center;
+  width: 100%;
+  max-width: 320px;
+}
+
+.tutorial-btn:hover {
+  background: #00ffcc;
+  color: #111;
+  border: 2px solid #00ffcc;
+  box-shadow: 0 0 24px #00ffcc88;
+}
+
+.highlight {
+  color: #00ffcc;
+  font-weight: bold;
+  text-shadow: 0 0 6px #00ffcc33;
+}
+
+/* Ajustements spécifiques pour mobile et tablette */
+@media (max-width: 800px) {
+  .tutorial-container {
+    padding: 24px;
+    width: 98%;
+    max-width: none;
+    max-height: 94vh;
+    border-radius: 12px;
+    margin: 10px auto;
+  }
+  
+  .tutorial-header h2 {
+    font-size: 2.4em;
+    margin-bottom: 0.6em;
+  }
+  
+  .tutorial-content {
+    font-size: 1.5em;
+    line-height: 1.5;
+  }
+  
+  .step-number {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    margin-right: 20px;
+  }
+  
+  .tutorial-btn {
+    margin-top: 20px;
+    padding: 1.2em 1em;
+    font-size: 1.6em;
+    max-width: 90%;
+    border-radius: 14px;
+  }
+  
+  .tutorial-step p {
+    margin: 1em 0;
+  }
+  
+  .tutorial-step {
+    margin-bottom: 36px;
+    padding-bottom: 14px;
+  }
+}
+
+/* Ajustements pour les téléphones */
+@media (max-width: 480px) {
+  .tutorial-container {
+    padding: 20px;
+    width: 100%;
+    max-height: 96vh;
+    border-radius: 10px;
+    margin: 5px 0;
+    border-width: 1px;
+  }
+  
+  .tutorial-content {
+    font-size: 1.3em;
+  }
+  
+  .step-number {
+    width: 46px;
+    height: 46px;
+    margin-right: 16px;
+  }
+  
+  .tutorial-btn {
+    max-width: 100%;
+    margin-top: 10px;
+  }
+}
+
+/* Ajustements pour les très petits écrans */
+@media (max-width: 320px) {
+  .tutorial-container {
+    padding: 15px;
+  }
+  
+  .tutorial-header h2 {
+    font-size: 2em;
+  }
+  
+  .tutorial-content {
+    font-size: 1.2em;
+  }
+  
+  .step-number {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    margin-right: 12px;
+  }
+}
 </style>
 </head>
 <body>
@@ -158,6 +390,57 @@ model-viewer {
     <div class="loader-dot"></div>
   </div>
 </div>
+
+<!-- Pop-up du tutoriel -->
+<div class="tutorial-overlay" id="tutorial-overlay">
+  <div class="tutorial-container">
+    <div class="tutorial-header">
+      <h2>Rite d'Harmonisation Cinétique</h2>
+    </div>
+    <div class="tutorial-content">
+      <div class="tutorial-step">
+        <div class="step-number">1</div>
+        <div>
+          <p>Bienvenue, Raffineur.</p>
+          <p>Tu t'apprêtes à entamer un <span class="highlight">rite d'harmonisation cinétique</span>.</p>
+          <p>Pour ce faire, saisis ton artefact — ton téléphone — et mets-toi en marche.</p>
+          <p>Ton mouvement trace les lignes d'un équilibre invisible.</p>
+        </div>
+      </div>
+      
+      <div class="tutorial-step">
+        <div class="step-number">2</div>
+        <div>
+          <p>Observe le seuil : il indique la vitesse idéale à maintenir.</p>
+          <p>Plus tu avances rapidement, plus la cage raffine intensément.</p>
+          <p>Mais prends garde : chaque énergie possède son propre rythme de transmutation.</p>
+          <p>Certaines requièrent la lenteur. D'autres exigent l'élan.</p>
+        </div>
+      </div>
+      
+      <div class="tutorial-step">
+        <div class="step-number">3</div>
+        <div>
+          <p>Ton objectif : rester dans le seuil indiqué, toujours.</p>
+          <p>Si tu maintiens l'harmonie, tu gagnes <span class="highlight">+2 points</span>.</p>
+          <p>Si tu dévies, l'énergie se brouille : <span class="highlight">-1 point</span>.</p>
+        </div>
+      </div>
+      
+      <div class="tutorial-step">
+        <div class="step-number">4</div>
+        <div>
+          <p><span class="highlight">⏱ Tu as 20 minutes</span> pour affiner ta cadence et équilibrer les flux.</p>
+          <p>Avance avec justesse. Ressens la friction du seuil.</p>
+          <p>Ce n'est pas une course. C'est une écoute.</p>
+          <p>Bonne chance, Raffineur.</p>
+        </div>
+      </div>
+    </div>
+    <button class="tutorial-btn" id="tutorial-close-btn">J'ai compris, commencer le rite</button>
+  </div>
+</div>
+
 <div class="info-row">
   <div class="info-rect" id="distanceInfo">marche en cours: 8km</div>
   <div class="info-rect" id="timeInfo">temps restant: 9 minutes</div>
@@ -173,8 +456,7 @@ model-viewer {
   disable-zoom>
 </model-viewer>
 
-<p class="instructions">Marchez avec votre appareil. La vitesse de rotation du modèle s'adaptera à votre allure.<br>
-Sur ordinateur: utilisez la barre d'espace pour simuler des pas, et la touche 'R' pour réinitialiser.</p>
+<p class="instructions">Marchez avec votre appareil.<br>La vitesse de rotation du modèle s'adaptera à votre allure.</p>
 
 <div class="debug-info" id="debugInfo"></div>
 
@@ -187,6 +469,10 @@ Sur ordinateur: utilisez la barre d'espace pour simuler des pas, et la touche 'R
   const statusInfo = document.getElementById('statusInfo');
   const debugInfo = document.getElementById('debugInfo');
   const loaderOverlay = document.getElementById('loader-overlay');
+  
+  // Éléments du tutoriel
+  const tutorialOverlay = document.getElementById("tutorial-overlay");
+  const tutorialCloseBtn = document.getElementById("tutorial-close-btn");
   
   // Variables pour la détection de la marche
   let isTracking = false;
@@ -309,15 +595,25 @@ Sur ordinateur: utilisez la barre d'espace pour simuler des pas, et la touche 'R
     }
     
     // Calculer distance approximative parcourue
-    const distancePerStep = 0.0007; // environ 0.7m par pas
-    const distanceKm = (stepCount * distancePerStep).toFixed(2);
+    const distancePerStep = 0.00067; // environ 67cm par pas (plus réaliste)
+    let distanceKm = stepCount * distancePerStep;
+    
+    // Garantir une valeur entre 3 et 6 km si la marche est active
+    if (walkingSpeed > 0) {
+      // Normaliser la distance pour qu'elle soit entre 3 et 6 km
+      distanceKm = Math.max(3, Math.min(6, Math.round(distanceKm)));
+    } else {
+      // Arrondir simplement si non actif
+      distanceKm = Math.round(distanceKm);
+    }
+    
     distanceInfo.textContent = `marche en cours: ${distanceKm}km`;
     
     // Estimer le temps restant
-    const remainingDistance = 8 - parseFloat(distanceKm);
+    const remainingDistance = 8 - distanceKm;
     if (remainingDistance > 0 && walkingSpeed > 0) {
-      // Conversion pas par minute en km/h approximatif
-      const kmPerHour = walkingSpeed * 0.042; // conversion approximative
+      // Conversion pas par minute en km/h approximatif (légèrement ajustée)
+      const kmPerHour = walkingSpeed * 0.04; // 100 pas/min ≈ 4 km/h
       if (kmPerHour > 0) {
         const remainingHours = remainingDistance / kmPerHour;
         const remainingMinutes = Math.ceil(remainingHours * 60);
@@ -496,8 +792,19 @@ Sur ordinateur: utilisez la barre d'espace pour simuler des pas, et la touche 'R
 
   // Loader overlay gestion
   modelViewer.addEventListener('load', function() {
+    // D'abord cacher le loader
     loaderOverlay.style.opacity = '0';
-    setTimeout(() => loaderOverlay.style.display = 'none', 400);
+    
+    // Puis afficher le tutoriel après un court délai
+    setTimeout(() => {
+      loaderOverlay.style.display = 'none';
+      tutorialOverlay.classList.add("active");
+    }, 400);
+  });
+  
+  // Fermer le tutoriel quand le bouton est cliqué
+  tutorialCloseBtn.addEventListener("click", () => {
+    tutorialOverlay.classList.remove("active");
   });
   
   // Ajout d'une simulation de marche pour tests sur ordinateur
@@ -510,6 +817,19 @@ Sur ordinateur: utilisez la barre d'espace pour simuler des pas, et la touche 'R
       peakDetected = true;
       isMoving = true;
       movementEnergy = MOVEMENT_THRESHOLD + 0.2;
+      
+      // Ajuster les temps de pas pour simuler une vitesse de marche réaliste
+      // Si aucun pas n'a été détecté récemment, ajouter des pas simulés
+      const now = Date.now();
+      if (lastStepTimes.length === 0 || now - lastStepTimes[lastStepTimes.length - 1] > 2000) {
+        // Si on commence à marcher ou après une pause, réinitialiser les temps
+        lastStepTimes = [];
+        for (let i = 0; i < MAX_STEP_TIMES - 1; i++) {
+          // Simuler des pas à environ 100 pas par minute (600ms entre chaque pas)
+          lastStepTimes.push(now - (MAX_STEP_TIMES - i) * 600);
+        }
+      }
+      
       setTimeout(() => {
         filteredAcceleration = STEP_THRESHOLD - 0.6;
         accelerationValues.push(filteredAcceleration);

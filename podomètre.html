@@ -1,149 +1,44 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Empreintes comportementales</title>
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      background: #111;
-      overflow: hidden;
-      color: #fff;
-      font-family: monospace;
-    }
-    canvas {
-      display: block;
-    }
-    #legend {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 10px;
-      border: 1px solid #444;
-      font-size: 12px;
-      max-width: 300px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generateur de Direction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        button {
+            font-size: 16px;
+            padding: 10px 20px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-<canvas id="canvas"></canvas>
-<div id="legend">
-  <strong>Légende visuelle</strong><br>
-  ░░░░ Inclinaison → diagonale dominante<br>
-  ████ Vitesse → épaisseur des blocs<br>
-  ~~~~ Score instable → déformation<br>
-  ◯◯◯◯ Réussite → cercle net<br>
-  XXX Erreurs → taches rouges<br>
-  ▼▼▼ Stress → dégradation en fin de ligne<br>
-</div>
-<script>
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-// Génère des profils fictifs
-const profiles = [
-  {
-    name: "Profil 1 - Expressif",
-    gamma: 20,
-    beta: 35,
-    velX: 3,
-    velY: 0.5,
-    speed: 4,
-    deltaSpeed: 2,
-    successRate: 0.8,
-    errorPattern: false,
-    scoreDrop: false
-  },
-  {
-    name: "Profil 2 - Stressé",
-    gamma: -15,
-    beta: 10,
-    velX: 1,
-    velY: 0.4,
-    speed: 1.2,
-    deltaSpeed: 4,
-    successRate: 0.5,
-    errorPattern: true,
-    scoreDrop: true
-  },
-  {
-    name: "Profil 3 - Lent et précis",
-    gamma: 5,
-    beta: 15,
-    velX: 0.6,
-    velY: 0.3,
-    speed: 0.9,
-    deltaSpeed: 0.5,
-    successRate: 0.92,
-    errorPattern: false,
-    scoreDrop: false
-  }
-];
-
-let startY = 50;
-const spacing = 200;
-
-profiles.forEach((p, index) => {
-  drawProfile(p, 50, startY + index * spacing);
-});
-
-function drawProfile(p, startX, startY) {
-  const width = canvas.width - 100;
-  const height = 80;
-  const steps = 40;
-  const stepW = width / steps;
-
-  for (let i = 0; i < steps; i++) {
-    const x = startX + i * stepW;
-    const y = startY + Math.sin(i * 0.3 + p.gamma * 0.05) * p.beta;
-
-    const thickness = p.speed * 3;
-    const distortion = p.deltaSpeed > 3 ? Math.random() * 10 : 0;
-
-    // Corps principal : ligne comportementale
-    ctx.beginPath();
-    ctx.strokeStyle = `hsl(${200 + p.speed * 30}, 100%, 60%)`;
-    ctx.lineWidth = thickness;
-    ctx.moveTo(x, y);
-    ctx.lineTo(x, y + height + distortion);
-    ctx.stroke();
-
-    // Cercles de réussite
-    if (Math.random() < p.successRate) {
-      ctx.beginPath();
-      ctx.fillStyle = "white";
-      ctx.arc(x, y + height / 2, 4, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // Erreurs
-    if (p.errorPattern && Math.random() < 0.1) {
-      ctx.beginPath();
-      ctx.fillStyle = "red";
-      ctx.arc(x, y + height / 2 + 10, 6, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // Dégradation visuelle finale (stress)
-    if (p.scoreDrop && i > steps - 10) {
-      ctx.beginPath();
-      ctx.strokeStyle = "rgba(0,0,0,0.4)";
-      ctx.lineWidth = thickness + 2;
-      ctx.moveTo(x, y);
-      ctx.lineTo(x, y + height);
-      ctx.stroke();
-    }
-  }
-
-  // Nom du profil
-  ctx.fillStyle = "white";
-  ctx.font = "12px monospace";
-  ctx.fillText(p.name, startX, startY - 10);
-}
-</script>
+    <div class="container">
+        <h1 id="direction">Cliquez pour générer une direction</h1>
+        <button onclick="generateDirection()">Générer</button>
+    </div>
+    <script>
+        function generateDirection() {
+            const directions = ['Droite', 'Gauche', 'Tout droit', 'En arrière'];
+            const randomIndex = Math.floor(Math.random() * directions.length);
+            const randomDirection = directions[randomIndex];
+            document.getElementById('direction').innerText = randomDirection;
+        }
+    </script>
 </body>
 </html>

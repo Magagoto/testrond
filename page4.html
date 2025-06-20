@@ -788,8 +788,8 @@
         }
 
         .tutorial-btn {
-            padding: 0.8em 1em;
-            font-size: 1.1em;
+            padding: 1em 2em;
+            font-size: 1.2em;
             background: rgba(0,255,204,0.13);
             color: #00ffcc;
             border: 2px solid #00ffcc;
@@ -806,8 +806,6 @@
             text-align: center;
             width: 100%;
             max-width: 320px;
-            white-space: normal;
-            line-height: 1.4;
         }
 
         .tutorial-btn:hover {
@@ -829,7 +827,7 @@
                 padding: 20px;
                 width: 98%;
                 max-width: none;
-                max-height: 92vh;
+                max-height: 94vh;
                 border-radius: 12px;
                 margin: 10px auto;
             }
@@ -840,40 +838,39 @@
             }
             
             .tutorial-content {
-                font-size: 1.3em;
+                font-size: 1.2em;
                 line-height: 1.4;
-            }
-            
-            .step-number {
-                width: 44px;
-                height: 44px;
-                font-size: 20px;
-                margin-right: 20px;
             }
             
             .tutorial-btn {
                 margin-top: 20px;
-                padding: 0.8em 1em;
+                padding: 1em 0.8em;
                 font-size: 1.2em;
-                max-width: 80%;
+                max-width: 90%;
                 border-radius: 14px;
-                white-space: normal;
             }
             
             .tutorial-step p {
-                margin: 0.5em 0;
+                margin: 0.7em 0;
             }
             
             .tutorial-step {
-                margin-bottom: 24px;
+                margin-bottom: 20px;
                 padding-bottom: 10px;
+            }
+            
+            .step-number {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+                margin-right: 14px;
             }
         }
 
         /* Ajustements pour les téléphones */
         @media (max-width: 480px) {
             .tutorial-container {
-                padding: 18px;
+                padding: 16px;
                 width: 100%;
                 max-height: 96vh;
                 border-radius: 10px;
@@ -882,19 +879,20 @@
             }
             
             .tutorial-content {
-                font-size: 1.1em;
+                font-size: 1em;
                 line-height: 1.4;
             }
             
             .tutorial-header h2 {
                 font-size: 1.5em;
+                margin-bottom: 0.4em;
             }
             
             .step-number {
-                width: 38px;
-                height: 38px;
-                font-size: 18px;
-                margin-right: 14px;
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+                margin-right: 12px;
             }
             
             .tutorial-btn {
@@ -902,20 +900,17 @@
                 margin-top: 10px;
                 font-size: 1em;
                 padding: 0.8em 0.5em;
-                white-space: normal;
-                line-height: 1.3;
             }
             
             .tutorial-step p {
                 margin: 0.4em 0;
-                line-height: 1.4;
             }
         }
 
         /* Ajustements pour les très petits écrans */
         @media (max-width: 360px) {
             .tutorial-container {
-                padding: 15px;
+                padding: 12px;
             }
             
             .tutorial-header h2 {
@@ -923,20 +918,19 @@
             }
             
             .tutorial-content {
-                font-size: 1em;
+                font-size: 0.9em;
             }
             
             .step-number {
-                width: 32px;
-                height: 32px;
-                font-size: 16px;
+                width: 28px;
+                height: 28px;
+                font-size: 14px;
                 margin-right: 10px;
-                flex-shrink: 0;
             }
             
             .tutorial-step {
-                margin-bottom: 16px;
-                padding-bottom: 8px;
+                margin-bottom: 14px;
+                padding-bottom: 6px;
             }
             
             .highlight {
@@ -948,39 +942,42 @@
         @media (max-height: 500px) and (orientation: landscape) {
             .tutorial-container {
                 max-height: 90vh;
-                padding: 15px;
+                padding: 12px;
+                display: flex;
+                flex-direction: column;
             }
             
             .tutorial-header {
-                margin-bottom: 10px;
+                margin-bottom: 8px;
             }
             
             .tutorial-header h2 {
-                font-size: 1.3em;
-                margin: 0.3em 0;
+                font-size: 1.2em;
+                margin: 0.2em 0;
             }
             
             .tutorial-content {
-                font-size: 0.95em;
-                margin-bottom: 15px;
+                font-size: 0.85em;
+                margin-bottom: 10px;
+                overflow-y: auto;
             }
             
             .step-number {
-                width: 32px;
-                height: 32px;
-                font-size: 16px;
-                margin-right: 12px;
+                width: 28px;
+                height: 28px;
+                font-size: 14px;
+                margin-right: 10px;
             }
             
             .tutorial-step {
-                margin-bottom: 12px;
-                padding-bottom: 6px;
+                margin-bottom: 8px;
+                padding-bottom: 4px;
             }
             
             .tutorial-btn {
-                padding: 0.7em 0.8em;
-                font-size: 1em;
-                margin-top: 10px;
+                padding: 0.6em 0.7em;
+                font-size: 0.9em;
+                margin-top: 6px;
             }
         }
     </style>
@@ -1042,7 +1039,7 @@
                     </div>
                 </div>
             </div>
-            <button class="tutorial-btn" id="tutorial-close-btn">J'ai compris, commencer</button>
+            <button class="tutorial-btn" id="tutorial-close-btn">J'ai compris, commencer le rite</button>
         </div>
     </div>
     

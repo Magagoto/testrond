@@ -328,6 +328,116 @@
       .loader-pacman-circle { grid-column: 1; grid-row: auto; }
       .loader-l { grid-column: 1; grid-row: auto; }
     }
+    /* Ajustements pour les téléphones */
+    @media (max-width: 480px) {
+      .tutorial-container {
+        padding: 16px;
+        width: 100%;
+        max-height: 96vh;
+        border-radius: 10px;
+        margin: 5px 0;
+        border-width: 1px;
+      }
+      
+      .tutorial-content {
+        font-size: 1em;
+        line-height: 1.4;
+      }
+      
+      .tutorial-header h2 {
+        font-size: 1.5em;
+        margin-bottom: 0.4em;
+      }
+      
+      .step-number {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+        margin-right: 12px;
+      }
+      
+      .tutorial-btn {
+        max-width: 100%;
+        margin-top: 10px;
+        font-size: 1em;
+        padding: 0.8em 0.5em;
+      }
+      
+      .tutorial-step p {
+        margin: 0.4em 0;
+      }
+    }
+
+    /* Ajustements pour les très petits écrans */
+    @media (max-width: 360px) {
+      .tutorial-container {
+        padding: 14px;
+      }
+      
+      .tutorial-header h2 {
+        font-size: 1.3em;
+      }
+      
+      .tutorial-content {
+        font-size: 0.9em;
+      }
+      
+      .step-number {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+        margin-right: 10px;
+      }
+      
+      .tutorial-step {
+        margin-bottom: 14px;
+        padding-bottom: 6px;
+      }
+    }
+
+    /* Ajustements pour les écrans en mode paysage sur mobile */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .tutorial-container {
+        max-height: 90vh;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .tutorial-header {
+        margin-bottom: 8px;
+      }
+      
+      .tutorial-header h2 {
+        font-size: 1.2em;
+        margin: 0.2em 0;
+      }
+      
+      .tutorial-content {
+        font-size: 0.85em;
+        margin-bottom: 10px;
+        overflow-y: auto;
+        flex-grow: 1;
+      }
+      
+      .step-number {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+        margin-right: 10px;
+      }
+      
+      .tutorial-step {
+        margin-bottom: 8px;
+        padding-bottom: 4px;
+      }
+      
+      .tutorial-btn {
+        padding: 0.6em 0.7em;
+        font-size: 0.9em;
+        margin-top: 6px;
+      }
+    }
     html, body {
       box-sizing: border-box;
       width: 100vw;
@@ -720,6 +830,77 @@
       
       .tutorial-step p {
         margin: 0.4em 0;
+      }
+    }
+
+    /* Ajustements pour les très petits écrans */
+    @media (max-width: 360px) {
+      .tutorial-container {
+        padding: 14px;
+      }
+      
+      .tutorial-header h2 {
+        font-size: 1.3em;
+      }
+      
+      .tutorial-content {
+        font-size: 0.9em;
+      }
+      
+      .step-number {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+        margin-right: 10px;
+      }
+      
+      .tutorial-step {
+        margin-bottom: 14px;
+        padding-bottom: 6px;
+      }
+    }
+
+    /* Ajustements pour les écrans en mode paysage sur mobile */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .tutorial-container {
+        max-height: 90vh;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .tutorial-header {
+        margin-bottom: 8px;
+      }
+      
+      .tutorial-header h2 {
+        font-size: 1.2em;
+        margin: 0.2em 0;
+      }
+      
+      .tutorial-content {
+        font-size: 0.85em;
+        margin-bottom: 10px;
+        overflow-y: auto;
+        flex-grow: 1;
+      }
+      
+      .step-number {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+        margin-right: 10px;
+      }
+      
+      .tutorial-step {
+        margin-bottom: 8px;
+        padding-bottom: 4px;
+      }
+      
+      .tutorial-btn {
+        padding: 0.6em 0.7em;
+        font-size: 0.9em;
+        margin-top: 6px;
       }
     }
 

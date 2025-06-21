@@ -5,9 +5,11 @@
   <title>10 Barres de Chargement WTF</title>
   <style>
     body {
-      background: #181818;
-      color: #fff;
+      background: #111;
+      /* SVG de fond : grille de ronds alignés + ligne continue */
+      background-image: url('data:image/svg+xml;utf8,<svg width="120" height="120" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="30" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><circle cx="90" cy="30" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><circle cx="30" cy="90" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><circle cx="90" cy="90" r="16" fill="none" stroke="%23222" stroke-width="1.2"/><polyline points="90,0 90,30 30,30 30,90 90,90 90,120" fill="none" stroke="%23222" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/></svg>');
       font-family: sans-serif;
+      color: #fff;
       min-height: 100vh;
       margin: 0;
       display: flex;
@@ -34,26 +36,26 @@
       justify-items: center;
       position: relative;
     }
-    /* Affichage visuel de la grille de composition */
+    /* Affichage visuel de la grille de composition - on la rend invisible */
     .dashboard-grid::before {
       content: "";
       position: absolute;
       inset: 0;
       pointer-events: none;
       z-index: 10;
-      /* Grille principale : 6 colonnes, 4 lignes */
+      /* Grille principale : 6 colonnes, 4 lignes - on rend les lignes transparentes */
       background:
         repeating-linear-gradient(
           to right,
-          rgba(255,255,255,0.25) 0,
-          rgba(255,255,255,0.25) 1px,
+          rgba(255,255,255,0) 0,
+          rgba(255,255,255,0) 1px,
           transparent 1px,
           transparent calc(100%/6)
         ),
         repeating-linear-gradient(
           to bottom,
-          rgba(255,255,255,0.25) 0,
-          rgba(255,255,255,0.25) 1px,
+          rgba(255,255,255,0) 0,
+          rgba(255,255,255,0) 1px,
           transparent 1px,
           transparent calc(100%/4)
         );
@@ -132,7 +134,7 @@
       transform: rotate(-90deg);
     }
     .loader-donut-bg circle {
-      stroke: #333;
+      stroke: #222;
       stroke-width: 24;
       fill: none;
     }
@@ -144,7 +146,7 @@
       transform: rotate(-90deg);
     }
     .loader-donut-progress circle {
-      stroke: #0f0;
+      stroke: #362777;
       stroke-width: 24;
       fill: none;
       stroke-dasharray: 565.5;
@@ -174,7 +176,7 @@
     .loader-dots span {
       width: 48px;
       height: 48px;
-      background: #0ff;
+      background: #0069AA;
       border-radius: 50%;
       display: block;
       animation: dot-bounce-vertical 0.7s infinite alternate;
@@ -187,13 +189,13 @@
       top: 0;
       width: 12px;
       height: 0;
-      background: linear-gradient(180deg, #0f0 0%, #0ff 100%);
+      background: linear-gradient(180deg, #DC0C15 0%, #E03A8D 100%);
       border-radius: 6px;
       z-index: 0;
       animation: dots-progress-vertical 180s linear forwards;
     }
     @keyframes dot-bounce-vertical {
-      to { transform: translateY(-32px) scale(1.2); background: #f0f; }
+      to { transform: translateY(-32px) scale(1.2); background: #DC0C15; }
     }
     @keyframes dots-progress-vertical {
       to { height: 100%; }
@@ -217,7 +219,7 @@
     .loader-dots span {
       width: 48px;
       height: 48px;
-      background: #0ff;
+      background: #0069AA;
       border-radius: 50%;
       display: block;
       animation: dot-bounce-vertical 0.7s infinite alternate;
@@ -230,13 +232,13 @@
       top: 0;
       width: 12px;
       height: 0;
-      background: linear-gradient(180deg, #0f0 0%, #0ff 100%);
+      background: linear-gradient(180deg, #DC0C15 0%, #E03A8D 100%);
       border-radius: 6px;
       z-index: 0;
       animation: dots-progress-vertical 180s linear forwards;
     }
     @keyframes dot-bounce-vertical {
-      to { transform: translateY(-32px) scale(1.2); background: #f0f; }
+      to { transform: translateY(-32px) scale(1.2); background: #DC0C15; }
     }
     @keyframes dots-progress-vertical {
       to { height: 100%; }
@@ -466,7 +468,7 @@
       top: 0;
       width: 100%;
       height: 40px;
-      background: linear-gradient(225deg, #ff0 60%, #f0f 100%);
+      background: linear-gradient(225deg, #E68B4A 60%, #7A1619 100%);
       clip-path: polygon(0 0, 100% 0, 50% 100%);
       animation: zigzag-move-vertical 1.2s linear infinite;
       z-index: 1;
@@ -477,7 +479,7 @@
       top: 0;
       width: 100%;
       height: 0;
-      background: linear-gradient(180deg, #0ff 0%, #0f0 100%);
+      background: linear-gradient(180deg, #00A993 0%, #E68B4A 100%);
       z-index: 0;
       border-radius: 8px;
       animation: zigzag-progress-vertical 60s linear forwards;
@@ -532,7 +534,7 @@
       position: absolute; left: 0; top: 0;
       width: 30px; height: 30px;
       border-radius: 8px;
-      background: linear-gradient(90deg, #0ff 0%, #f0f 100%);
+      background: linear-gradient(90deg, #2A4899 0%, #00A993 100%);
       opacity: 0.3;
       z-index: 0;
       clip-path: inset(0 100% 0 0);
@@ -553,7 +555,7 @@
       min-width: 120px; max-width: 400px;
     }
     .loader-bars span {
-      width: 6px; height: 100%; background: #0af;
+      width: 6px; height: 100%; background: #7A1619;
       border-radius: 3px;
       animation: bars-grow 0.8s infinite alternate;
     }
@@ -563,14 +565,14 @@
     .loader-bars span:nth-child(5) { animation-delay: 0.4s;}
     .loader-bars-progress {
       position: absolute; left: 0; bottom: 0; height: 6px;
-      background: linear-gradient(90deg, #f0f 0%, #0ff 100%);
+      background: linear-gradient(90deg, #362777 0%, #EB7AAE 100%);
       border-radius: 3px;
       z-index: 0;
       width: 0;
       animation: bars-progress 420s linear forwards;
     }
     @keyframes bars-grow {
-      to { height: 8px; background: #fa0;}
+      to { height: 8px; background: #0069AA;}
     }
     @keyframes bars-progress {
       to { width: 100%; }
@@ -598,13 +600,13 @@
       display: block;
     }
     .loader-l polyline {
-      stroke: #0ff;
+      stroke: #EB7AAE;
       stroke-width: 24;
       fill: none;
       stroke-linecap: round;
       stroke-linejoin: round;
       shape-rendering: geometricPrecision;
-      filter: drop-shadow(0 0 6px #0ffb);
+      filter: drop-shadow(0 0 6px rgba(235, 122, 174, 0.7));
     }
     .loader-l .l1 {
       stroke-dasharray: 320;
@@ -974,6 +976,137 @@
         margin-top: 6px;
       }
     }
+
+    /* Remplacer les dégradés actuels des barres de chargement */
+
+    /* Loader Zigzag */
+    .loader-zigzag-bar {
+      background: linear-gradient(225deg, #E68B4A 60%, #7A1619 100%);
+    }
+    .loader-zigzag-progress {
+      background: linear-gradient(180deg, #00A993 0%, #E68B4A 100%);
+    }
+
+    /* Loader Donut */
+    .loader-donut-progress circle {
+      stroke: #362777;
+    }
+
+    /* Loader L */
+    .loader-l polyline {
+      stroke: #EB7AAE;
+      filter: drop-shadow(0 0 6px rgba(235, 122, 174, 0.7));
+    }
+
+    /* Loader Dots */
+    .loader-dots span {
+      background: #0069AA;
+    }
+    .loader-dots-progress {
+      background: linear-gradient(180deg, #DC0C15 0%, #E03A8D 100%);
+    }
+
+    /* Loader Square */
+    .loader-square {
+      border-color: #FFFFFF;
+    }
+    .loader-square-progress {
+      background: linear-gradient(90deg, #2A4899 0%, #00A993 100%);
+    }
+
+    /* Loader Bars */
+    .loader-bars span {
+      background: #7A1619;
+    }
+    .loader-bars-progress {
+      background: linear-gradient(90deg, #362777 0%, #EB7AAE 100%);
+    }
+
+    /* Loader Pacman */
+    #pacman-fill {
+      fill: #E03A8D;
+    }
+
+    /* Remplacer les animations pour correspondre aux nouvelles couleurs */
+    @keyframes dot-bounce-vertical {
+      to { transform: translateY(-32px) scale(1.2); background: #DC0C15; }
+    }
+
+    @keyframes bars-grow {
+      to { height: 8px; background: #0069AA; }
+    }
+
+    /* Modification du style de la grille */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 32px 24px;
+      width: 100vw;
+      height: 80vh;
+      padding: 32px 32px 0 32px;
+      box-sizing: border-box;
+      align-items: center;
+      justify-items: center;
+      position: relative;
+    }
+
+    /* Harmonisation des couleurs de fond pour les éléments */
+    .loader-donut-bg circle {
+      stroke: #222;
+      stroke-width: 24;
+      fill: none;
+    }
+
+    .loader-l .bg-polyline {
+      stroke: #222;
+      stroke-width: 24;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      shape-rendering: geometricPrecision;
+    }
+
+    /* Ajout d'ombres néon aux éléments principaux, similaires à celle de la balle de page1 */
+    .loader-l polyline {
+      filter: drop-shadow(0 0 12px rgba(0, 255, 204, 0.5));
+    }
+
+    .loader-donut-progress circle {
+      stroke: url(#donutGradient);
+      filter: drop-shadow(0 0 10px rgba(42, 72, 153, 0.7));
+    }
+
+    .loader-dots span {
+      box-shadow: 0 0 15px rgba(0, 105, 170, 0.6), 0 0 25px rgba(0, 255, 204, 0.3);
+    }
+
+    /* Style du tutoriel harmonisé avec page1 */
+    .tutorial-container {
+      background: linear-gradient(145deg, #182c4c 0%, #111 100%);
+      border: 2px solid #00ffcc;
+      box-shadow: 0 0 30px #00ffcc44, 0 0 15px #2a489966;
+    }
+
+    .tutorial-btn:hover {
+      background: #00ffcc;
+      color: #111;
+      border: 2px solid #00ffcc;
+      box-shadow: 0 0 24px #00ffcc88;
+    }
+
+    /* Ajout d'un effet d'ombre lumineuse sur certains loaders */
+    .loader-square {
+      box-shadow: 0 0 18px 6px rgba(0, 255, 204, 0.3), 0 0 30px 10px rgba(42, 72, 153, 0.3);
+    }
+
+    .loader-zigzag-progress {
+      box-shadow: 0 0 15px rgba(0, 255, 204, 0.4);
+    }
+
+    .loader-dots-progress {
+      box-shadow: 0 0 10px rgba(220, 12, 21, 0.5);
+    }
   </style>
 </head>
 <body>
@@ -1040,12 +1173,21 @@
         <circle cx="100" cy="100" r="88"/>
       </svg>
       <svg class="loader-donut-progress" width="200" height="200">
+        <defs>
+          <linearGradient id="donutGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#2A4899" />
+            <stop offset="100%" stop-color="#00A993" />
+          </linearGradient>
+        </defs>
         <circle cx="100" cy="100" r="88"/>
       </svg>
     </div>
     <!-- Barre de chargement en forme de L -->
     <div class="loader-l">
       <svg viewBox="0 0 80 180">
+        <!-- Arrière-plan gris -->
+        <polyline class="bg-polyline" points="10,22 10,110 70,110"/>
+        <polyline class="bg-polyline" points="70,110 70,178"/>
         <!-- Première barre en L -->
         <polyline class="l1" points="10,22 10,110 70,110"/>
         <!-- Deuxième barre verticale à droite pour former un angle droit vers le bas -->
@@ -1058,15 +1200,18 @@
     </div>
     <!-- 4. Saut de points (vertical, haut gauche, grand, barre à gauche des points) -->
     <div class="loader-dots">
+      <div class="loader-dots-bg"></div>
       <span></span><span></span><span></span>
       <div class="loader-dots-progress"></div>
     </div>
     <!-- 6. Carré qui tourne -->
     <div class="loader-square">
+      <div class="loader-square-bg"></div>
       <div class="loader-square-progress"></div>
     </div>
     <!-- 7. Barres verticales -->
     <div class="loader-bars">
+      <div class="loader-bars-bg"></div>
       <div class="loader-bars-progress"></div>
       <span></span><span></span><span></span><span></span><span></span>
     </div>
@@ -1074,7 +1219,7 @@
     <div class="loader-pacman-circle">
       <svg width="80" height="80" viewBox="0 0 80 80" style="position:relative;z-index:1;">
         <circle cx="40" cy="40" r="36" fill="#222"/>
-        <path id="pacman-fill" fill="#0ff"
+        <path id="pacman-fill" fill="#E03A8D"
           d="" />
         <circle cx="54" cy="28" r="5" fill="#222"/>
       </svg>

@@ -1377,71 +1377,7 @@
       }
       setTimeout(applySavedPositions, 100);
 
-      // Drag & drop
-      let dragEl = null, offsetX = 0, offsetY = 0, resizing = false, resizeEl = null, startW = 0, startH = 0, startX = 0, startY = 0;
-      allLoaders.forEach(el => {
-        el.addEventListener('mousedown', function(e) {
-          if (e.target.classList.contains('resize-handle')) {
-            resizing = true;
-            resizeEl = el;
-            startW = el.offsetWidth;
-            startH = el.offsetHeight;
-            startX = e.clientX;
-            startY = e.clientY;
-            e.preventDefault();
-            return;
-          }
-          dragEl = el;
-          offsetX = e.clientX - el.offsetLeft;
-          offsetY = e.clientY - el.offsetTop;
-          el.style.zIndex = 100;
-          e.preventDefault();
-        });
-      });
-      document.addEventListener('mousemove', function(e) {
-        if (dragEl && !resizing) {
-          dragEl.style.left = (e.clientX - offsetX) + 'px';
-          dragEl.style.top = (e.clientY - offsetY) + 'px';
-        }
-        if (resizing && resizeEl) {
-          let newW = Math.max(40, startW + (e.clientX - startX));
-          let newH = Math.max(40, startH + (e.clientY - startY));
-          resizeEl.style.width = newW + 'px';
-          resizeEl.style.height = newH + 'px';
-        }
-      });
-      document.addEventListener('mouseup', function() {
-        if (dragEl) dragEl.style.zIndex = 10;
-        dragEl = null;
-        resizing = false;
-        resizeEl = null;
-      });
-
-      // Empêche la sélection de texte pendant le drag
-      document.addEventListener('selectstart', function(e) {
-        if (dragEl || resizing) e.preventDefault();
-      });
-
-      // Sauvegarde des positions et tailles dans un fichier texte
-      window.saveLoaderPositions = function() {
-        const data = allLoaders.map(el => {
-          return {
-            classList: Array.from(el.classList),
-            left: el.style.left,
-            top: el.style.top,
-            width: el.style.width,
-            height: el.style.height
-          };
-        });
-        const blob = new Blob([JSON.stringify(data, null, 2)], {type: "text/plain"});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = "positions-loaders.txt";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        alert("Fichier positions-loaders.txt téléchargé !");
-      };
+      // Fonctionnalité de drag & drop supprimée pour empêcher le déplacement
 
     })();
 

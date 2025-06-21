@@ -4,6 +4,36 @@
   <meta charset="UTF-8">
   <title>10 Barres de Chargement WTF</title>
   <style>
+    /* Ajout pour masquer les barres de défilement */
+    html, body {
+      overflow-x: hidden;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE et Edge */
+    }
+
+    html::-webkit-scrollbar, 
+    body::-webkit-scrollbar {
+      display: none; /* Chrome, Safari et Opera */
+    }
+
+    /* Masquer également les barres de défilement pour tous les éléments scrollables */
+    .tutorial-content, 
+    .dashboard-grid, 
+    .loader-serpent,
+    .tutorial-container,
+    .tutorial-overlay {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .tutorial-content::-webkit-scrollbar, 
+    .dashboard-grid::-webkit-scrollbar,
+    .loader-serpent::-webkit-scrollbar,
+    .tutorial-container::-webkit-scrollbar,
+    .tutorial-overlay::-webkit-scrollbar {
+      display: none;
+    }
+
     body {
       background: #111;
       /* SVG de fond : grille de ronds alignés + ligne continue */
@@ -1637,6 +1667,193 @@
     document.getElementById("tutorial-close-btn").addEventListener("click", () => {
       document.getElementById("tutorial-overlay").classList.remove("active");
     });
+  </script>
+  <!-- Fonction pour ajouter des barres de chargement supplémentaires -->
+  <script>
+    (function() {
+  // Seulement exécuter sur mobile
+  if (!/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+    return;
+  }
+  
+  const grid = document.getElementById('dashboard-grid');
+  
+  // Liste des types de loaders à dupliquer
+  const loaderTypes = [
+    {
+      type: 'zigzag',
+      html: `<div class="loader-zigzag">
+              <div class="loader-zigzag-progress"></div>
+              <div class="loader-zigzag-bar"></div>
+            </div>`
+    },
+    {
+      type: 'dots',
+      html: `<div class="loader-dots">
+              <div class="loader-dots-bg"></div>
+              <span></span><span></span><span></span>
+              <div class="loader-dots-progress"></div>
+            </div>`
+    },
+    {
+      type: 'square',
+      html: `<div class="loader-square">
+              <div class="loader-square-bg"></div>
+              <div class="loader-square-progress"></div>
+            </div>`
+    },
+    {
+      type: 'bars',
+      html: `<div class="loader-bars">
+              <div class="loader-bars-bg"></div>
+              <div class="loader-bars-progress"></div>
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>`
+    },
+    {
+      type: 'pacman',
+      html: `<div class="loader-pacman-circle">
+              <svg width="80" height="80" viewBox="0 0 80 80" style="position:relative;z-index:1;">
+                <circle cx="40" cy="40" r="36" fill="#222"/>
+                <path class="pacman-fill" fill="#E03A8D" d="" />
+                <circle cx="54" cy="28" r="5" fill="#222"/>
+              </svg>
+            </div>`
+    },
+    {
+      type: 'l',
+      html: `<div class="loader-l">
+              <svg viewBox="0 0 80 180">
+                <polyline class="bg-polyline" points="10,22 10,110 70,110"/>
+                <polyline class="bg-polyline" points="70,110 70,178"/>
+                <polyline class="l1" points="10,22 10,110 70,110"/>
+                <polyline class="l2" points="70,110 70,178"/>
+              </svg>
+            </div>`
+    }
+  ];
+  
+  // Couleurs supplémentaires à utiliser
+  const colors = [
+    ["#00A993", "#E68B4A"],
+    ["#E68B4A", "#7A1619"],
+    ["#7A1619", "#362777"],
+    ["#362777", "#EB7AAE"],
+    ["#EB7AAE", "#0069AA"],
+    ["#0069AA", "#DC0C15"],
+    ["#DC0C15", "#E03A8D"],
+    ["#E03A8D", "#FFFFFF"],
+    ["#FFFFFF", "#2A4899"],
+    ["#2A4899", "#00A993"]
+  ];
+  
+  // Ajouter 10 loaders supplémentaires
+  for (let i = 0; i < 10; i++) {
+    // Choisir un type de loader aléatoire
+    const randomType = loaderTypes[Math.floor(Math.random() * loaderTypes.length)];
+    
+    // Créer un élément temporaire pour parser le HTML
+    const template = document.createElement('div');
+    template.innerHTML = randomType.html;
+    const newLoader = template.firstChild;
+    
+    // Attribuer un identifiant unique
+    newLoader.classList.add('loader-added');
+    newLoader.dataset.index = i;
+    
+    // Appliquer des couleurs aléatoires
+    const colorIndex = i % colors.length;
+    const colorPair = colors[colorIndex];
+    
+    if (randomType.type === 'zigzag') {
+      const bar = newLoader.querySelector('.loader-zigzag-bar');
+      const progress = newLoader.querySelector('.loader-zigzag-progress');
+      
+      bar.style.background = `linear-gradient(225deg, ${colorPair[0]} 60%, ${colorPair[1]} 100%)`;
+      progress.style.background = `linear-gradient(180deg, ${colorPair[1]} 0%, ${colorPair[0]} 100%)`;
+    }
+    else if (randomType.type === 'dots') {
+      const spans = newLoader.querySelectorAll('span');
+      const progress = newLoader.querySelector('.loader-dots-progress');
+      
+      spans.forEach(span => {
+        span.style.background = colorPair[0];
+        span.style.boxShadow = `0 0 15px ${colorPair[0]}99, 0 0 25px ${colorPair[1]}66`;
+      });
+      progress.style.background = `linear-gradient(180deg, ${colorPair[0]} 0%, ${colorPair[1]} 100%)`;
+    }
+    else if (randomType.type === 'l') {
+      const polylines = newLoader.querySelectorAll('.l1, .l2');
+      polylines.forEach(line => {
+        line.style.stroke = colorPair[0];
+        line.style.filter = `drop-shadow(0 0 6px ${colorPair[1]}bb)`;
+      });
+    }
+    
+    // Ajouter le nouveau loader à la grille
+    grid.appendChild(newLoader);
+    
+    // Appliquer des styles aléatoires pour la taille
+    const width = 80 + Math.floor(Math.random() * 200) + 'px';
+    const height = 100 + Math.floor(Math.random() * 150) + 'px';
+    
+    newLoader.style.width = width;
+    newLoader.style.height = height;
+    newLoader.style.margin = '40px 0';
+    
+    // Animations spécifiques aux types
+    if (randomType.type === 'pacman') {
+      const pathElement = newLoader.querySelector('.pacman-fill');
+      
+      // Fonction pour animer le pacman
+      (function animatePacman() {
+        const svg = newLoader.querySelector('svg');
+        const path = svg.querySelector('.pacman-fill');
+        let progress = 0;
+        const duration = 8; // secondes pour un tour complet
+    
+        function polarToCartesian(cx, cy, r, angle) {
+          const a = (angle-90) * Math.PI / 180.0;
+          return {
+            x: cx + (r * Math.cos(a)),
+            y: cy + (r * Math.sin(a))
+          };
+        }
+    
+        function describePacmanArc(cx, cy, r, progress) {
+          const startAngle = 30;
+          const endAngle = 330 * progress + 30;
+          const largeArc = endAngle - startAngle > 180 ? 1 : 0;
+          const start = polarToCartesian(cx, cy, r, startAngle);
+          const end = polarToCartesian(cx, cy, r, endAngle);
+          if (progress === 0) return '';
+          if (progress >= 1) {
+            return `M ${cx} ${cy} 
+              L ${polarToCartesian(cx, cy, r, startAngle).x} ${polarToCartesian(cx, cy, r, startAngle).y}
+              A ${r} ${r} 0 1 1 ${polarToCartesian(cx, cy, r, startAngle-1).x} ${polarToCartesian(cx, cy, r, startAngle-1).y}
+              Z`;
+          }
+          return [
+            `M ${cx} ${cy}`,
+            `L ${start.x} ${start.y}`,
+            `A ${r} ${r} 0 ${largeArc} 1 ${end.x} ${end.y}`,
+            'Z'
+          ].join(' ');
+        }
+        
+        path.style.fill = colorPair[0];
+        
+        function animate() {
+          progress += 1/(60*duration);
+          if (progress > 1) progress = 0;
+          path.setAttribute('d', describePacmanArc(40, 40, 36, progress));
+          requestAnimationFrame(animate);
+        }
+        animate();
+      })();
+    }
+  }
+})();
   </script>
 </body>
 </html>

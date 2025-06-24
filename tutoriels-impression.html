@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Tutoriels - Version imprimable</title>
+  <style>
+    @page {
+      size: A3;
+      margin: 1.5cm; /* Réduction des marges de page pour donner plus d'espace au contenu */
+    }
+    
+    body {
+      font-family: 'Arial', sans-serif;
+      line-height: 1.5;
+      color: white;
+      background-color: #111;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .tutorial-section {
+      width: calc(100% - 2cm); /* Augmentation de la largeur de la zone de contenu */
+      height: auto; /* Permettre une hauteur variable selon le contenu */
+      min-height: calc(100vh - 3cm); /* Hauteur minimale pour remplir la page */
+      page-break-after: always;
+      break-inside: avoid;
+      background: linear-gradient(145deg, #1a3366 0%, #0c0c14 100%); /* Dégradé plus contrasté */
+      border: 3px solid #00ffdd; /* Bordure plus épaisse et couleur plus vive */
+      border-radius: 20px;
+      padding: 2cm; /* Réduction légère du padding */
+      color: white;
+      box-shadow: 0 0 40px #00ffd444, 0 0 25px #2a489988; /* Ombres plus prononcées */
+      margin: 0 auto; /* Centrage horizontal */
+      box-sizing: border-box;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      overflow: visible; /* S'assurer que le contenu n'est pas coupé */
+    }
+    
+    .tutorial-section:last-child {
+      page-break-after: avoid;
+    }
+    
+    .tutorial-header {
+      text-align: center;
+      margin-bottom: 1.5cm;
+      color: #00ffdd; /* Cyan plus vif */
+      text-shadow: 0 0 15px #00ffd488, 0 0 5px #ffffff55; /* Lueur plus intense */
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      letter-spacing: 1px;
+    }
+    
+    .tutorial-header h2 {
+      font-size: 2.4em;
+      font-weight: 600;
+      margin: 0;
+    }
+    
+    .tutorial-content {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-family: sans-serif;
+      margin-bottom: 1.5cm; /* Ajustement pour que le footer reste visible */
+    }
+    
+    .tutorial-step {
+      display: flex;
+      margin-bottom: 0.8cm;
+      align-items: flex-start;
+    }
+    
+    .step-number {
+      background: #00ffdd; /* Couleur plus vive */
+      color: #080808; /* Noir plus prononcé pour contraste */
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      margin-right: 24px;
+      flex-shrink: 0;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      font-size: 24px;
+      box-shadow: 0 0 12px #00ffdd77; /* Ajout d'une lueur autour des numéros */
+    }
+    
+    .highlight {
+      color: #00ffdd; /* Couleur plus vive */
+      font-weight: bold;
+      text-shadow: 0 0 10px #00ffdd55, 0 0 5px #ffffff22; /* Lueur plus intense */
+    }
+    
+    #tutorial-1, #tutorial-2, #tutorial-3 {
+      font-size: 22px;
+      height: auto; /* Adaptative à la taille du contenu */
+    }
+    
+    #tutorial-4 {
+      font-size: 21px; /* Légèrement plus petit car plus de contenu */
+      height: auto; /* Adaptative à la taille du contenu */
+    }
+    
+    @media print {
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+      
+      html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      
+      body {
+        background-color: #111;
+        color: white;
+      }
+      
+      .tutorial-section {
+        margin: 0 auto; /* Centrage horizontal */
+        height: 96vh; /* Hauteur ajustée pour occuper presque toute la page */
+        width: 98%; /* Augmentation pour occuper presque toute la largeur */
+        max-height: none; /* Supprimer la limite de hauteur maximale */
+        box-sizing: border-box;
+        page-break-inside: avoid; /* Éviter les sauts de page au milieu d'une section */
+        overflow: visible; /* Assurer que le contenu débordant est visible */
+        border-radius: 20px; /* Maintien des coins arrondis */
+        background: linear-gradient(145deg, #1a3366 0%, #0c0c14 100%);
+        border: 3px solid #00ffdd;
+        box-shadow: 0 0 40px #00ffd444, 0 0 25px #2a489988;
+      }
+
+      p {
+        margin-top: 0.3em;
+        margin-bottom: 0.3em;
+      }
+      
+      .tutorial-header {
+        color: #00ffdd;
+        text-shadow: 0 0 15px #00ffd488, 0 0 5px #ffffff55;
+      }
+      
+      .highlight {
+        color: #00ffdd;
+        font-weight: bold;
+        text-shadow: 0 0 10px #00ffdd55, 0 0 5px #ffffff22;
+      }
+      
+      .step-number {
+        background: #00ffdd;
+        color: #080808;
+        box-shadow: 0 0 12px #00ffdd77;
+        border: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="tutorial-section" id="tutorial-1">
+    <div class="tutorial-header">
+      <h2>Rite d'Alignement Énergétique</h2>
+    </div>
+    <div class="tutorial-content">
+      <div class="tutorial-step">
+        <div class="step-number">1</div>
+        <div>
+          <p>Bienvenue, Raffineur.</p>
+          <p>Tu t'apprêtes à entamer un <span class="highlight">rite d'alignement énergétique</span>.</p>
+          <p>Pour ce faire, saisis ton artefact — ton téléphone — et incline-le pour guider l'énergie jusqu'à son réceptacle.</p>
+        </div>
+      </div>
+      
+      <div class="tutorial-step">
+        <div class="step-number">2</div>
+        <div>
+          <p>Observe sa teinte : elle t'indique la cage qui lui correspond. Il te suffit d'amener l'énergie dans un réceptacle de même couleur.</p>
+          <p>Ton objectif est simple : faire correspondre la couleur de l'énergie avec celle des cages.</p>
+          <p>Si les énergies s'accordent, tu gagnes <span class="highlight">+2 points</span>. En cas de dissonance, tu perds <span class="highlight">-1 point</span>.</p>
+        </div>
+      </div>
+      
+      <div class="tutorial-step">
+        <div class="step-number">3</div>
+        <div>
+          <p>À chaque contact, l'énergie change de forme — une <span class="highlight">transmutation aléatoire</span>.</p>
+          <p>Les réceptacles eux aussi sont instables : leurs dimensions fluctuent au fil du temps.</p>
+        </div>
+      </div>
+      
+      <div class="tutorial-step">
+        <div class="step-number">4</div>
+        <div>
+          <p><span class="highlight">⏱ Tu as 1 minute et 10 secondes</span> pour affiner ta trajectoire et récolter un maximum de points.</p>
+          <p>Respire. Ressens. Laisse-toi guider par l'équilibre.</p>
+          <p>Bonne chance, Raffineur.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tutorial-section" id="tutorial-2">
+    <div class="tutorial-header">
+      <h2>Rite de Synchronisation</h2>
+    </div>
+    <div class="tutorial-content">
+      <div class="tutorial-step">
+        <div class="step-number">1</div>
+        <div>
+          <p>Bienvenue, Raffineur.</p>
+          <p>Tu t'apprêtes à entamer un <span class="highlight">rite de synchronisation énergétique</span>.</p>
+          <p>Ici, nul sentier obligatoire.</p>
+          <p>Tu es libre de partir à tout moment, ou de rester pour affiner l'alignement.</p>
+        </div>
+      </div>
+      
+      <div class="tutorial-step">
+        <div class="step-number">2</div>
+        <div>
+          <p>Devant toi, des flux en cours de stabilisation.</p>
+          <p>Chaque barre de chargement représente une convergence,</p>
+          <p>un moment précis où l'énergie atteint son pic de résonance.</p>
+        </div>
+      </div>
+      
+      <div class="tutorial-step">
+        <div class="step-number">3</div>
+        <div>
+          <p>Lorsque l'un de ces flux arrive à maturité, tu reçois des points.</p>
+          <p>Mais attention : toutes les barres n'ont pas la même valeur.</p>
+          <p>Certaines transportent plus d'énergie que d'autres.</p>
+          <p>Plus tu observes, plus tu te synchronises.</p>
+          <p>Plus tu synchronises, plus tu raffines.</p>
+        </div>
+      </div>
+      
+      <div class="tutorial-step">
+        <div class="step-number">4</div>
+        <div>
+          <p>Mais souviens-toi : la porte reste ouverte.</p>
+          <p>Tu peux quitter le rite à tout instant.</p>
+          <p>L'équilibre réside autant dans le choix que dans l'attente.</p>
+          <p>Bonne chance, Raffineur.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tutorial-section" id="tutorial-3">
+    <div class="tutorial-header">
+      <h2>Rite d'Harmonisation Cinétique</h2>
+    </div>
+    <div class="tutorial-content">
+      <div class="tutorial-step">
+        <div class="step-number">1</div>
+        <div>
+          <p>Bienvenue, Raffineur.</p>
+          <p>Tu t'apprêtes à entamer un <span class="highlight">rite d'harmonisation cinétique</span>.</p>
+          <p>Pour ce faire, saisis ton artefact — ton téléphone — et mets-toi en marche.</p>
+          <p>Ton mouvement trace les lignes d'un équilibre invisible.</p>
+        </div>
+      </div>
+      
+      <div class="tutorial-step">
+        <div class="step-number">2</div>
+        <div>
+          <p>Observe le seuil : il indique la vitesse idéale à maintenir.</p>
+          <p>Plus tu avances rapidement, plus la cage raffine intensément.</p>
+          <p>Mais prends garde : chaque énergie possède son propre rythme de transmutation.</p>
+          <p>Certaines requièrent la lenteur. D'autres exigent l'élan.</p>
+        </div>
+      </div>
+      
+      <div class="tutorial-step">
+        <div class="step-number">3</div>
+        <div>
+          <p>Ton objectif : rester dans le seuil indiqué, toujours.</p>
+          <p>Si tu maintiens l'harmonie, tu gagnes <span class="highlight">+2 points</span>.</p>
+          <p>Si tu dévies, l'énergie se brouille : <span class="highlight">-1 point</span>.</p>
+        </div>
+      </div>
+      
+      <div class="tutorial-step">
+        <div class="step-number">4</div>
+        <div>
+          <p><span class="highlight">⏱ Tu as 20 minutes</span> pour affiner ta cadence et équilibrer les flux.</p>
+          <p>Avance avec justesse. Ressens la friction du seuil.</p>
+          <p>Ce n'est pas une course. C'est une écoute.</p>
+          <p>Bonne chance, Raffineur.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tutorial-section" id="tutorial-4">
+    <div class="tutorial-header">
+      <h2>Rite de Résonance Chromatique</h2>
+    </div>
+    <div class="tutorial-content">
+      <div class="tutorial-step">
+        <div class="step-number">1</div>
+        <div>
+          <p>Bienvenue, Raffineur.</p>
+          <p>Tu t'apprêtes à entamer un <span class="highlight">rite de résonance chromatique</span>.</p>
+          <p>Ton artefact, cette fois, est un œil mécanique : ton appareil photo.</p>
+          <p>C'est lui qui captera l'énergie diffuse du monde.</p>
+        </div>
+      </div>
+      
+      <div class="tutorial-step">
+        <div class="step-number">2</div>
+        <div>
+          <p>Tu as <span class="highlight">quinze minutes</span>. Quinze minutes pour explorer,</p>
+          <p>arpenter les lieux de ton choix,</p>
+          <p>et révéler — par l'image — les fragments d'un équilibre lumineux.</p>
+        </div>
+      </div>
+      
+      <div class="tutorial-step">
+        <div class="step-number">3</div>
+        <div>
+          <p>Observe les deux teintes du dégradé énergétique.</p>
+          <p>Elles sont tes pôles, tes guides, tes balises.</p>
+          <p>Chaque photo prise doit s'en approcher, subtilement, fidèlement.</p>
+          <p>Plus la colorimétrie est juste, plus l'essence est pure.</p>
+        </div>
+      </div>
+      
+      <div class="tutorial-step">
+        <div class="step-number">4</div>
+        <div>
+          <p>Lorsque tu auras capturé une première résonance,</p>
+          <p>n'oublie pas la seconde. Elle est tout aussi cruciale.</p>
+          <p>L'équilibre ne tolère pas l'oubli d'un pôle.</p>
+        </div>
+      </div>
+      
+      <div class="tutorial-step">
+        <div class="step-number">5</div>
+        <div>
+          <p><span class="highlight">À l'issue de chaque manche, tu pourras remporter jusqu'à 10 points</span>
+          pour la correspondance colorimétrique avec l'énergie recherchée.</p>
+          <p>Vois, ressens, déclenche.</p>
+          <p>Cherche l'éclat juste dans le chaos du monde.</p>
+          <p>Bonne chance, Raffineur.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.onload = function() {
+      setTimeout(function() {
+        window.print();
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

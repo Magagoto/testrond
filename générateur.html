@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generateur de Direction</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            background-color: #fafafa;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #333;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            font-weight: 300;
+            letter-spacing: 0.5px;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+            font-size: 2rem;
+        }
+
+        button {
+            font-size: 16px;
+            padding: 12px 24px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 4px;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 400;
+            width: auto;
+            min-width: 120px;
+        }
+
+        button:hover {
+            background-color: #e0e0e0;
+        }
+        
+        button:active {
+            transform: translateY(2px);
+        }
+
+        /* Media queries pour smartphone */
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem;
+                min-width: auto;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+                margin-bottom: 1.5rem;
+            }
+
+            button {
+                font-size: 15px;
+                padding: 10px 20px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="direction">Cliquez pour générer une direction</h1>
+        <button onclick="generateDirection()">Générer</button>
+    </div>
+    <script>
+        function generateDirection() {
+            const directions = ['Droite', 'Gauche', 'Tout droit', 'En arrière'];
+            const randomIndex = Math.floor(Math.random() * directions.length);
+            const randomDirection = directions[randomIndex];
+            document.getElementById('direction').innerText = randomDirection;
+        }
+    </script>
+</body>
+</html>
